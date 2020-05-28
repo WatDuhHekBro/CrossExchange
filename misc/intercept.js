@@ -1,0 +1,1 @@
+// Function to call to react to messages when there's certain content (like "French").

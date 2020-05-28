@@ -1,0 +1,36 @@
+K 17 (armor)
+C 16
+S 16
+G 10
+F 9
+I 10
+seldan 13
+other 10,16,13
+
+total: 130
+
+You already have most of the CC emotes out there, so this'll mostly be Velsarbor + other random emotes.
+For Velsarbor, the trio + Seldan and his loved one are probably enough.
+
+[Kento]
+kentoHappy (7)
+kentoJoy (8)
+kentoAnnoyed (17)
+kentoSurprised (16)
+kentoShocked (15)
+kentoSmug (14)
+kentoast
+
+[Cibon]
+cibonHappy
+cibonJoy
+cibonSurprised
+
+[Soko]
+
+
+[Seldan]
+seldanAngry
+seldan???
+seldanShout
+redheadDying

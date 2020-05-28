@@ -53,5 +53,9 @@ module.exports = {
 	randSign(num = 1)
 	{
 		return num * (Math.random() < 0.5 ? -1 : 1);
+	},
+	randDeviation(base, deviation)
+	{
+		return this.rand(base - deviation, base + deviation);
 	}
 };

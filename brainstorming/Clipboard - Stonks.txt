@@ -1,0 +1,59 @@
+Stocks:
+
+The trend determines the propensity or how much the market is going and the direction it's going (the value and the sign respectively).
+
+0% volatility means that the market is always stable no matter what. It doesn't mean that there's no downward trend, but that it'll always follow the trend, so it's predictable.
+
+100% volatility means that the market will trend at completely random, meaning the trend just doesn't matter what determines the market value.
+
+Amplitude determines how much gains/losses the market value changes by per iteration. It isn't tied to volatility, but nonetheless, you shouldn't make it deviate too far. Again, it's a chance, not a guarantee. The market value per iteration will be multiplied by 1 plus the amplitude, meaning it could ultimately just be left alone. The multiplier is up to that amplitude.
+
+And a final twist: None of these will be the actual values, only the starting values. General market trends across all markets will have a sway on all other markets that'll add up.
+
+Any change affects parent markets too, hence why several declining markets in one area sinks the entire area as well. The impact it has on its parent market depends on how many markets there are as well as its market value at the time of iteration. I'd say 30% and 70% respectively. Obviously, one bad market isn't sinking the whole ship. There'll be three levels, per market, per area, and per world. Tora and Shadoon. Also, the amount of investors can affect the success of the market as well.
+
+Market
+Parent Market (affecting it too)
+Value: # credits (an integer in transactions and display, but a decimal when dealt with internally)
+Trend: any number (credit gain in market value per iteration, roughly)
+Variance: 0 min (the variability of the trend, how far back or forward it change range from)
+Amplitude: -1 to 1 (no maximum limit though, just don't go overboard, negative values after adding 1 just don't make sense, that'd mess with the market trend which is what determines that) (actually, it'll most likely be more than 1 due to deviations near 1 more likely to shoot downwards) (also calculated by how much is invested)
+Deviation: 0 min (aka the amplitude deviation potential, must not be negative since it basically works like absolute value, determined by volatility per iteration)
+Volatility: 0 to 1 (% value)
+
+Per Iteration:
+Value = round(Value * Factor)
+Factor =  * (1 + max(Amplitude + (rand(-1 or 1, 50/50) * rand(0 to Deviation)), -1))
+
+Also, since iteration can happen on their own because there's already a trajectory, events will be announced real time and will shake up that trajectory and cause sudden changes. Events are therefore not connected to iterations.
+
+Also, all people are given is the previous market values to compare to. And that's not going to help guess how all the randomness will play out.
+
+Basic Idea:
+Value = Value * (((Trend + Variance) * Volatility) * (Amplitude + Deviation))
+
+Each variable is then recalculated afterwards.
+
+Trend = Trend * (1 +- (1/(Variance+1))) * (Amplitude + Deviation) <-- The purpose of the 1/v+1 is to make it always be a decimal value. Has a Volatility% chance to take a 50% chance at being negative, otherwise, the sign remains the same. Simply adds it though. Then multiply it by the amplitude ranging by an absolute value of the deviation.
+
+Amplitude = 0.6 * Invested + 0.4 * Avg of all market values in the area (markets are chosen in a random order)
+
+Variance = Variance * (Invested / (Invested + rand(Volatility))) * (1 + rand(-1 to 1)) <-- flipped if negative
+
+Deviation = Deviation * Volatility * (1 + rand(-1 to 1)) <-- flipped if negative
+
+Volatility = Avg of all volatilities in the area * rand(0 to 1)
+
+Then for each market area and then realm of influence (world), it goes as follows:
+
+(Same formulas as above.)
+
+Trend = Trend * (0.7 * (Trend per market * % of Market Value aka Influence) + 0.3 * (1 / Total # of markets in the area) * rand(0 to 1))
+
+Market - Helnovien Mine
+Value: 300 credits
+Trend (changing): 3.63 credits per iteration
+Amplitude: 0.6
+Volatility: 0.4 (extremely volatile) (40% chance to go out of bounds, either in the opposite way or way beyond the trend's natural limit (up to 3x beyond or 3x backwards), 60% chance it stays in bounds)
+
+There'll be a history of iterations and events showing the increases and decreases. The time will also be variable, even if it's bound to a certain range. Events occur less frequently though they can drastically change market trends and have fixed ranges (still random in-between). I think once per hour and once per 4 hours respectively.
