@@ -1,19 +1,14 @@
 module.exports = {
 	description: "test-desc",
-	run(message, args)
+	run(message, args, lib)
 	{
-		const lib = require('../lib.js');
-		let userdata = lib.readJSON('userdata', {});
+		let users = lib.readJSON('users', {});
+		let guilds = lib.readJSON('guilds', {});
 		
-		userdata[message.author.id] = {guilds: {}};
-		userdata[message.author.id].guilds[message.channel.guild.id] = {};
+		users[message.author.id] = {};
+		guilds[message.channel.guild.id] = {};
 		
-		lib.writeJSON('userdata', userdata);
+		lib.writeJSON('users', users);
+		lib.writeJSON('guilds', guilds);
 	}
 };
-
-/*if(message.content === 'time')
-{
-	//let date = new Date();
-	//message.channel.send(`${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}`);
-}*/

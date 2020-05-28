@@ -1,0 +1,73 @@
+{
+	"config":
+	{
+		"token": "<ENTER YOUR TOKEN HERE>",
+		"prefix": "$",
+		"reload": false
+	},
+	"stonks":
+	{
+		"markets":
+		{
+			"shadoon":
+			{
+				"name": "The Planet of Shadoon",
+				"value": 0,
+				"invested": 0,
+				"trend": 0,
+				"variance": 0,
+				"volatility": 0,
+				"amplitude": 0,
+				"deviation": 0
+			},
+			"tora":
+			{
+				"name": "The Continent of Tora",
+				"value": 0,
+				"invested": 0,
+				"trend": 0,
+				"variance": 0,
+				"volatility": 0,
+				"amplitude": 0,
+				"deviation": 0
+			},
+			"gaia":
+			{
+				"name": "Gaia's Garden",
+				"parent": "shadoon",
+				"value": 0,
+				"invested": 0,
+				"trend": 0,
+				"variance": 0,
+				"volatility": 0,
+				"amplitude": 0,
+				"deviation": 0
+			},
+			"basin":
+			{
+				"name": "Basin Keep",
+				"parent": "gaia",
+				"value": 1000,
+				"invested": 0,
+				"trend": 25,
+				"variance": 5,
+				"volatility": 0.15,
+				"amplitude": 10,
+				"deviation": 5
+			},
+			"helnovien":
+			{
+				"name": "The Helnovien Mine",
+				"parent": "tora",
+				"value": 1000,
+				"invested": 0,
+				"trend": 35,
+				"variance": 10,
+				"volatility": 0.4,
+				"amplitude": 15,
+				"deviation": 10
+			}
+		},
+		"catalog": []
+	}
+}
