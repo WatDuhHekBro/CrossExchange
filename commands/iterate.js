@@ -1,3 +1,4 @@
+// Maybe change the trend to actually fit the trend, have it be a random deviation separate from influencing itself. -1 to 1. Then have the "rate" be the rate of change, which is what the current trend variable is.
 module.exports = {
 	run(message, args, lib, extra)
 	{

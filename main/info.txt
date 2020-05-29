@@ -1,1 +1,0 @@
-Place your main functions here so they aren't making the top-level folder a mess. Here goes stuff like lib.js and initialization.json.

@@ -1,0 +1,5 @@
+$<file>
+$<file> <subcommand 1>
+$<file> <subcommand 2>
+$<file> <number>
+Also cache JSON data, write but keep it in memory. Have methods that detect which JSON files are touched and write after the subcommand is executed.

@@ -2,7 +2,7 @@
   "name": "CrossExchange",
   "version": "0.2.0",
   "description": "Yet another Discord bot.",
-  "main": "index.js",
+  "main": "main/index.js",
   "dependencies": {
     "discord.js": "^12.2.0"
   },
