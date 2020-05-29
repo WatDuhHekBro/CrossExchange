@@ -1,0 +1,60 @@
+[
+{
+"message": "The demand for iron has sharply increased. Helnovien's and Bergen's stocks increased in value by 50%.",
+"helnovien": 50,
+"bergen": 50
+},
+{
+"message": "Ethical concerns rise about the use of prisoners for labor and threatening to starve them if they don't work hard enough, diminishing the value of Helnovien's stocks by 35% and increasing the value of Bergen's stocks by 40%.",
+"helnovien": -35,
+"bergen": 40
+},
+A mutation has made bugs stronger and more aggressive, affecting the trade of nearby cities. The value of stocks in Gencorin and the Cave Inn are decreased by 65%.
+]
+
+CrossExchange
+
+Negative numbers for decreases in value. And maybe make it randomized.
+
+Stock values decreased by $1 and $1, a dollar value of $$1, and that other thing increased by $2.
+Then "range": [30,50], and it'll choose a random number in between, inclusive and decimal.
+
+
+
+Every hour, there's a new event. Now the exact minute and second of that hour is random, but it's every hour. Actually, every 4 hours.
+
+Each iteration brings an event with its corresponding changes. Each iteration also brings some (or just one) credits to trade stonks. There's a limit to the amount of credits that can be stockpiled. These settings can be changed with $admin.
+
+$ is the general prefix, $stonks is the main command.
+
+Example: Got 8 credits from 32 hours. Traded 
+
+Also, while you can invest in cities, you can also invest in individual shops and such. Tara's Shop isn't a good idea to invest in. Teak's Steaks is. Rookie's Best, Rookie's Starter, etc. Based on 100 credits for a sandwich, you get 25 credits per iteration. You can stockpile up to a week of inactivity, so 42 iterations or 1050 credits. Different places/shops have different stonk prices, depending on its market value. Shops also affect their general area. Market value is the buy AND sell price. Locations are affected by their shops but also have a market value of their own, which tends to be more stable than any shop.
+
+Now these trends aren't always chaotic. So there's a trend coefficient, as well as a volatility coefficient. Volatility is how likely the trend will be followed, and the trend affects how severe each increase or decrease is.
+
+Besides that though, the market is ultimately played by randomness.
+
+$stonks commands are roughly as follows. $stonks buy/sell/info <location/shop> <amount>. Also, $stonks profile. $stonks info will show you how many stonks you have. "How many stonks do you want?" "Yes" is a valid response, a shortcut to buying/selling everything you can.
+
+Users can also define their own alises. CrossExchange won't just be limited to stonks, I plan to extend it to be multi-purpose. IE playlists and such.
+
+Also, there has to be a limit to everything, for both the general money supply and the amount of stonks. Actually, you can always buy stonks, the only limit is its cost. And the general money supply? Do I really care? It's just a simple stonk exchange.
+
+Also, I should pick a name that doesn't limit me. CrossExchange will probably only relate to the stonks.
+
+
+
+My bot when playing music will have people cast a vote on whether to skip. People can skip their own songs, and of course admins can do both.
+
+$admin emoji currency credit (set the currency emoji to :credit:)
+
+Also, try WebAudio for looping again?
+
+
+
+I should have a separate channel for universal scoreboard updates so there's less spam.
+
+
+
+Maybe have an other scripts folder? The top level is rather messy right now.

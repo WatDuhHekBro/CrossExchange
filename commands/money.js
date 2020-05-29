@@ -21,11 +21,12 @@ module.exports = {
 			
 		}
 	},
-	run(message, args, lib)
+	run(message, args, lib, extra)
 	{
 		let users = lib.readJSON('users', {});
 		let user = users[message.author.id] || (users[message.author.id] = {});
 		
+		// #ffff00
 		if(args[0] === 'amount')
 			message.reply(`you have ${user.money || (user.money = 0)} credit${user.money === 1 ? '' : 's'}.`);
 		else if(args[0] === 'pay')

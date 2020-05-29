@@ -1,0 +1,22 @@
+{
+	"markets":
+	[
+		{
+			"name": "helnovien",
+			"description": "Iron mining."
+		}
+	],
+	"events":
+	[
+		{
+			"message": "stonks -$1, not $$1",
+			"changes":
+			[
+				{
+					"affected": [0],
+					"range": [30,40]
+				}
+			]
+		}
+	]
+}

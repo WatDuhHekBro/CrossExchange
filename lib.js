@@ -57,5 +57,10 @@ module.exports = {
 	randDeviation(base, deviation)
 	{
 		return this.rand(base - deviation, base + deviation);
+	},
+	// e.g. pluralise(5, 'credit', 's') and pluralise(5, 'part', 'ies', 'y'). You can just have two fields as well if you're entering something like pluralise(5, 'sheep') while looping through the data.
+	pluralise(number, word, plural = '', singular = '')
+	{
+		return number === 1 ? word + singular : word + plural;
 	}
 };

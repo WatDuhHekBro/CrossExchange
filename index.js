@@ -12,6 +12,7 @@ const config = lib.readJSON('config', {
 });
 
 // Login //
+// Leave a message if the token is still "<ENTER YOUR TOKEN HERE>" and pause the command line.
 const client = new Discord.Client();
 client.login(config.token);
 

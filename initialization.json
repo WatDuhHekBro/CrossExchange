@@ -12,6 +12,7 @@
 			"shadoon":
 			{
 				"name": "The Planet of Shadoon",
+				"description": "",
 				"value": 0,
 				"invested": 0,
 				"trend": 0,
@@ -23,6 +24,7 @@
 			"tora":
 			{
 				"name": "The Continent of Tora",
+				"description": "",
 				"value": 0,
 				"invested": 0,
 				"trend": 0,
@@ -34,6 +36,7 @@
 			"gaia":
 			{
 				"name": "Gaia's Garden",
+				"description": "",
 				"parent": "shadoon",
 				"value": 0,
 				"invested": 0,
@@ -46,6 +49,7 @@
 			"basin":
 			{
 				"name": "Basin Keep",
+				"description": "",
 				"parent": "gaia",
 				"value": 1000,
 				"invested": 0,
@@ -58,6 +62,7 @@
 			"helnovien":
 			{
 				"name": "The Helnovien Mine",
+				"description": "",
 				"parent": "tora",
 				"value": 1000,
 				"invested": 0,
@@ -68,6 +73,17 @@
 				"deviation": 10
 			}
 		},
+		"events":
+		[
+			{
+				"headline": "",
+				"description": "",
+				"effects":
+				[
+					
+				]
+			}
+		],
 		"catalog": []
 	}
 }

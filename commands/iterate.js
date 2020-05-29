@@ -4,7 +4,7 @@ module.exports = {
 		let stonks = lib.readJSON('stonks');
 		let markets = stonks.markets;
 		let embed = new extra.Discord.MessageEmbed()
-		.setTitle("Markets")
+		.setTitle("Market Values")
 		.setDescription("The current iteration of markets' values and data (for testing purposes only).")
 		.setColor("#00ad2e");
 		
@@ -20,19 +20,23 @@ module.exports = {
 		for(let market in markets)
 		{
 			let selected = markets[market];
+			let oldValue = Math.round(selected.value);
 			
 			// Calculate New Parameters //
+			// Note: I'm probably going to revise these equations later on. From what it looks like, high volatility doesn't make the trend go down. But that's a task for another day.
+			// Actually, let's introduce another variable into the mix. No wait, let's make volatility affect bigger markets. Bigger markets with bigger volatility will have a higher chance of the sign being decreasing.
 			let factor = (Math.random() < selected.volatility) ? 5 : 1; // Math.random() < number between 0 and 1 = Has number% chance to be true.
 			let gain = lib.randDeviation(selected.trend, selected.variance * factor); // If it's a volatile gain, go up to 5x out of bounds.
 			let amplitudeMultiplier = 1 + Math.max(lib.randDeviation(selected.amplitude, selected.deviation), -1 + Math.random()); // Must be at minimum -1 and then some (multiplier > 0), 
 			selected.value += gain * amplitudeMultiplier;
 			
 			// Now just left on its own, the trend will continue spiraling in the direction it's headed. However, it'll be the events that shake up these trends.
-			let sign = (Math.random() < selected.volatility) ? lib.randSign() : 1;
+			let sign = ((Math.random() < selected.volatility) && (selected.trend > 100)) ? lib.randSign() : 1; // Apply the potential sign only if the trend passes a certain threshold, affecting big markets.
 			let variationPotential = lib.randDeviation(selected.variance, selected.variance * selected.volatility); // I multiplied the variance by the volatility here to create a greater deviation potential.
-			let trendMultiplier = Math.log10(variationPotential + 10); // The +10 here is to make only negatives multiply by a decimal. Also, I used base 10 rather than base e here in order to reduce how big the multiplier is. The problem with 1/x is that it caps out and is inverse as well, and I think that higher trends should count for more rather than the other way around.
+			let trendMultiplier = sign * Math.log10(variationPotential + 10); // The +10 here is to make only negatives multiply by a decimal. Also, I used base 10 rather than base e here in order to reduce how big the multiplier is. The problem with 1/x is that it caps out and is inverse as well, and I think that higher trends should count for more rather than the other way around.
 			let trendBuffer = 0.25 * (trendMultiplier - 1); // To stabilize the multiplier further, there'll be a buffer to make the changes more minute. Reduce the range by 25% on each end.
 			selected.trend *= trendMultiplier - lib.rand(trendBuffer, trendMultiplier - 1 - trendBuffer); // However, even log base 10 generates multipliers too high. A small trend could easily spiral out into infinity. So I want to control that.
+			console.log(market, selected.trend);
 			
 			// The amplitude will be based on both the percentage of market influence the selected market has compared to all markets everywhere and a random number. Since both will be decimals anyway, they can't go past 1, which would break the numbers by a lot. My reasoning for this is that the amplitude should show the power/influence of the market compared to every other market. And the other part will just be random since markets' influence vary anyways (and plus, you need to have some number for a multiplier).
 			let influence = totalInvested !== 0 ? (selected.invested / totalInvested) : 0;
@@ -49,19 +53,8 @@ module.exports = {
 			selected.volatility = lib.randDeviation(selected.volatility, selected.volatility * Math.random() * Math.random() * Math.random()); // Not the same as Math.pow(Math.random(), 3);
 			
 			// Display Market Value //
-			embed.addFields({
-				name: "Market",
-				value: selected.name || "",
-				inline: true
-			},{
-				name: "Parent Market",
-				value: (selected.parent && markets[selected.parent].name) || "None",
-				inline: true
-			},{
-				name: "Market Value",
-				value: Math.round(selected.value),
-				inline: true
-			});
+			let displayValue = Math.round(selected.value);
+			embed.addField(selected.name || "", displayValue + (displayValue === 1 ? " credit, " : " credits, ") + (displayValue - oldValue) + " credit change");
 			
 			// Also, just catalog the market value. That's all users will see anyway. Invested is a property users can see but it won't be logged, and in that regard, is just another factor.
 		}
