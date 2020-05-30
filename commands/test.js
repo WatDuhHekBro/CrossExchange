@@ -3,7 +3,21 @@ module.exports = {
 	message: "Top level command intercept.",
 	run($)
 	{
-		
+		/*$.channel.messages.fetch('716390502773293086').then(message => message.edit({
+			embed:
+			{
+				title: "Market Name2",
+				description: "Market description...",
+				color: "#008000",
+				fields:
+				[
+					{
+						name: "date1",
+						value: "0"
+					}
+				]
+			}
+		})).catch(console.error);*/
 	},
 	subcommands:
 	{

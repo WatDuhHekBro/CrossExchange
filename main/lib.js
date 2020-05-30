@@ -1,14 +1,14 @@
 const fs = require('fs');
 const init = require('./init.json');
 
+// It might actually be a good idea to make a loader function for lib.js then go from there as if you loaded the code. Currently, it's quite messy, especially with += and such.
+
 // In a command file...
 // Call into your script: let stonks = lib.loadJSON('stonks'); // do not use lib.stack.stonks, it won't auto-write
 // Get key and add it if it's missing: let value = lib.get(stonks.markets, 'shadoon', {});
 module.exports = {
 	// I think all these synchronous functions are good in my case actually, I want to make sure that the file loads before doing anything else.
 	// The plan is to load JSON files into a cache-like system, and write when necessary (but don't do unnecessary loading).
-	stack: {},
-	write: [],
 	// lib.readJSON and lib.writeJSON will be simply that, reading and writing JSON files. Leave the rest to other functions.
 	// Read a JSON file. If it exists, check with the template and add any missing keys. If it doesn't exist, check if there's a template, and if not, write an empty object into it then return that.
 	// Templating only adds keys. If you want to update your values to whatever's in init.json, delete your data.
@@ -96,6 +96,8 @@ module.exports = {
 	// Used during initialization. Initialize all pre-existing JSON files.
 	loadStack()
 	{
+		this.stack = {};
+		this.write = [];
 		let files = this.searchDirectory('data', file => file.endsWith('.json'));
 		
 		for(let file of files)
@@ -158,13 +160,13 @@ module.exports = {
 		return this.rand(base - deviation, base + deviation);
 	},
 	// e.g. pluralise(5, 'credit', 's') and pluralise(5, 'part', 'ies', 'y'). You can just have two fields as well if you're entering something like pluralise(5, 'sheep') while looping through the data.
-	// Maybe also make pluralise include the number as well (a separate function).
-	pluralise(number, word, plural = '', singular = '')
+	pluraliseExclude(number, word, plural = '', singular = '')
 	{
 		return number === 1 ? word + singular : word + plural;
 	},
-	pluraliseWithNumber(number, word, plural = '', singular = '')
+	// A separate function to include the number with pluralization to avoid redundancy.
+	pluralise(number, word, plural = '', singular = '')
 	{
-		return number + ' ' + this.pluralise(number, word, plural, singular);
+		return number + ' ' + this.pluraliseSolo(number, word, plural, singular);
 	}
 };

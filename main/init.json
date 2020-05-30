@@ -4,7 +4,8 @@
 		"token": "<ENTER YOUR TOKEN HERE>",
 		"prefix": "$",
 		"reload": false,
-		"spacedJSON": true
+		"spacedJSON": true,
+		"admins": []
 	},
 	"stonks":
 	{
@@ -20,7 +21,8 @@
 				"variance": 0,
 				"volatility": 0,
 				"amplitude": 0,
-				"deviation": 0
+				"deviation": 0,
+				"catalog": []
 			},
 			"tora":
 			{
@@ -32,7 +34,8 @@
 				"variance": 0,
 				"volatility": 0,
 				"amplitude": 0,
-				"deviation": 0
+				"deviation": 0,
+				"catalog": []
 			},
 			"gaia":
 			{
@@ -45,7 +48,8 @@
 				"variance": 0,
 				"volatility": 0,
 				"amplitude": 0,
-				"deviation": 0
+				"deviation": 0,
+				"catalog": []
 			},
 			"basin":
 			{
@@ -58,7 +62,8 @@
 				"variance": 5,
 				"volatility": 0.15,
 				"amplitude": 10,
-				"deviation": 5
+				"deviation": 5,
+				"catalog": []
 			},
 			"helnovien":
 			{
@@ -71,7 +76,8 @@
 				"variance": 10,
 				"volatility": 0.4,
 				"amplitude": 15,
-				"deviation": 10
+				"deviation": 10,
+				"catalog": []
 			}
 		},
 		"events":
@@ -84,8 +90,7 @@
 					
 				]
 			}
-		],
-		"catalog": []
+		]
 	},
 	"test":
 	{

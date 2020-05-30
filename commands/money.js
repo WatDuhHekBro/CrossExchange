@@ -10,7 +10,7 @@ module.exports = {
 			run($)
 			{
 				let user = $.lib.get($.lib.loadJSON('users'), $.author.id, {});
-				let amountOfMoney = $.lib.pluraliseWithNumber($.lib.get(user, 'money', 0), 'credit', 's');
+				let amountOfMoney = $.lib.pluralise($.lib.get(user, 'money', 0), 'credit', 's');
 				$.message.reply(`You have ${amountOfMoney}`);
 			}
 		},

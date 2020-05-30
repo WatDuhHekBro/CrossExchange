@@ -1,10 +1,9 @@
 // Dependencies //
 const Discord = require('discord.js');
 const lib = require('./lib.js');
+const stonks = require('./stonks.js');
 
 // Generate Files //
-lib.createDirectory('data');
-lib.createDirectory('data/assets');
 lib.loadStack();
 const config = lib.loadJSON('config', true);
 
@@ -80,8 +79,10 @@ client.on('message', message => {
 				channel: message.channel,
 				client: client,
 				common: common,
+				guild: message.guild,
 				lib: lib,
-				message: message
+				message: message,
+				stonks: stonks
 			});
 		}
 		
