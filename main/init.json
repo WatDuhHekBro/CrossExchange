@@ -3,7 +3,8 @@
 	{
 		"token": "<ENTER YOUR TOKEN HERE>",
 		"prefix": "$",
-		"reload": false
+		"reload": false,
+		"spacedJSON": true
 	},
 	"stonks":
 	{
@@ -85,5 +86,9 @@
 			}
 		],
 		"catalog": []
+	},
+	"test":
+	{
+		"lmao": "nice try"
 	}
 }

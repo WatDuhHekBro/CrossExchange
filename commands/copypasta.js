@@ -1,6 +1,6 @@
 module.exports = {
-	run(message, args, lib)
+	run($)
 	{
-		
+		// Paste a script like those game scripts. Or copypastas?
 	}
 };

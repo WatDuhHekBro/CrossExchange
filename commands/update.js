@@ -1,8 +1,8 @@
 module.exports = {
 	description: "(test) manually updates iterations",
-	run(message, args, lib)
+	run($)
 	{
-		let storage = lib.readJSON('storage', {});
+		/*let storage = lib.readJSON('storage', {});
 		let date = new Date();
 		
 		storage.lastUpdated = {
@@ -15,6 +15,6 @@ module.exports = {
 		
 		message.channel.send(storage.lastUpdated.iterations);
 		
-		lib.writeJSON('storage', storage);
+		lib.writeJSON('storage', storage);*/
 	}
 };

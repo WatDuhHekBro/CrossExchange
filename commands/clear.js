@@ -1,7 +1,7 @@
 module.exports = {
-	run(message, args, lib)
+	run($)
 	{
 		console.clear();
-		message.channel.send("Cleared the console.");
+		$.channel.send("Cleared the console.");
 	}
 };

@@ -1,11 +1,10 @@
 // Dependencies //
 const Discord = require('discord.js');
-const fs = require('fs');
 const lib = require('./lib.js');
 
 // Generate Files //
-lib.mkdir('data');
-lib.mkdir('data/assets');
+lib.createDirectory('data');
+lib.createDirectory('data/assets');
 lib.loadStack();
 const config = lib.loadJSON('config', true);
 
@@ -16,8 +15,9 @@ client.login(config.token);
 
 // Load Commands //
 const commands = new Discord.Collection();
+let files = lib.searchDirectory('commands', file => file.endsWith('.js'));
 
-for(let file of fs.readdirSync('commands').filter(file => file.endsWith('.js')))
+for(let file of files)
 	commands.set(file.substring(0, file.lastIndexOf('.js')), require(`../commands/${file}`));
 
 // Message Events //
@@ -41,12 +41,15 @@ client.on('message', message => {
 		}
 		
 		let cmd = commands.get(action);
+		let common = cmd.common; // You can add some common functions or properties that you can access from any function, since each individual run command is sandboxed due to how its scope.
 		let level = 0;
 		let isNumber = false;
 		
-		// subcommands overrides number as it's more specific
-		for(let param of args)
+		// "subcommands" overrides "number" as it's more specific. Then after that, it's "any".
+		for(let i = 0; i < args.length; i++)
 		{
+			let param = args[i];
+			
 			if(cmd.subcommands && (param in cmd.subcommands))
 			{
 				cmd = cmd.subcommands[param];
@@ -55,9 +58,14 @@ client.on('message', message => {
 			}
 			else if(cmd.number && Number(param))
 			{
+				args[i] = Number(param);
 				cmd = cmd.number;
 				isNumber = true;
-				level++;
+			}
+			else if(cmd.any)
+			{
+				cmd = cmd.any;
+				isNumber = false;
 			}
 		}
 		
@@ -65,18 +73,14 @@ client.on('message', message => {
 			message.channel.send(cmd.message);
 		else
 		{
-			if(isNumber)
-			{
-				level--;
-				args[level] = Number(args[level]);
-			}
-			
-			// run(lib, args, e)
-			cmd.run(lib, args.slice(level), {
+			// Just merge everything into "$". No more issues with the order of those parameters! :leaSMUG::emilieSMUG::ctronSMUG:
+			cmd.run({
+				args: args.slice(level),
 				author: message.author,
 				channel: message.channel,
 				client: client,
-				Discord: Discord,
+				common: common,
+				lib: lib,
 				message: message
 			});
 		}

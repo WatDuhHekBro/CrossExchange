@@ -1,10 +1,10 @@
 module.exports = {
-	run(message, args, lib)
+	run($)
 	{
-		let collector = message.channel.createMessageCollector({
+		/*let collector = message.channel.createMessageCollector({
 			filter: new RegExp(args[0])
 		});
-		collector.on('collect', console.log);
+		collector.on('collect', console.log);*/
 		//collector.on('end', collected => console.log('Collected:', collected.size));
 		/*message.channel.messages.fetch({
 			limit: -1,

@@ -1,10 +1,6 @@
 module.exports = {
-	run(message, args, lib, extra)
+	run($)
 	{
-		let stonks = lib.readJSON('stonks');
 		
-		
-		
-		lib.writeJSON('stonks', stonks);
 	}
 };
