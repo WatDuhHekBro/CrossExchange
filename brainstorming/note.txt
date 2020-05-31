@@ -1,4 +1,15 @@
-Include what market value you bought your stonks at.
-You can buy x stocks at (market).
-Looks like the math can make the trend flip by a negative, hence the extremely unstable markets.
-Seems like the amount invested can go into negatives because $stonks sell <> all sells more than you have?
+- Include what market value you bought your stonks at.
+- You can buy x stocks at (market).
+- Looks like the math can make the trend flip by a negative, hence the extremely unstable markets.
+- Seems like the amount invested can go into negatives because $stonks sell <> all sells more than you have?
+- Have the trend variable be an actual trend (following a sine wave, range is -1 to 1), then a rate variable which shows the credit rate per iteration.
+- lib.get and lib.init (lib.init is called by lib.get), or maybe lib.val?
+- $profile
+- Add the two nations of Tora and have them be regions like Gaia's Garden.
+- The market value shouldn't go under 0. Negative numbers mess with everything, plus, 0 means bankruptcy.
+- The events should go in a separate channel and won't be edited like the markets.
+- $stonks, convert amount into an int.
+- Aliases will work either as replacement of the entire string or just one argument. For the entire string, you could do something like "stonks buy" --> "b" to do $b basin 2. Or you could do "stonks" --> "s" and have $s buy basin 2.
+- Mins can be handled by the messages, customized too. Maxs can be handled by a dead end property/message which disallows any further arguments, unlike some commands which might use those functions to have an arbitrary amount of parameters or such.
+- Maybe have a convert command? Convert currencies to and fro with a conversion standard. Then have a script to convert between currencies on your side. Try Monis to credits.
+- Also, the new trend variable should be based on a sine wave because it'll oscillate. That's how it'll increase and decrease in waves. Then track where the trend is via the cycle. This should especially be internal, and should be inconcise in precise timings. And make the new models prone to sudden events that knock it off its trajectory.

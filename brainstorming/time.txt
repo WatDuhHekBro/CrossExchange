@@ -1,1 +1,0 @@
-Instead of using actual time, I can circumvent this by having it be updated only when a user requests it. It then calculates how much time has passed and makes changes accordingly. Events still happen, just sped up when it's updated. Same goes for that "real-time" strategy game. As long as no new commands are inputted, the list of events to be taken are already set in motion.

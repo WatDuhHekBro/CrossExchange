@@ -1,1 +1,0 @@
-$search <channel> <regex pattern (allowing for emotes)>

@@ -41,8 +41,6 @@ Users can also define their own alises. CrossExchange won't just be limited to s
 
 Also, there has to be a limit to everything, for both the general money supply and the amount of stonks. Actually, you can always buy stonks, the only limit is its cost. And the general money supply? Do I really care? It's just a simple stonk exchange.
 
-Also, I should pick a name that doesn't limit me. CrossExchange will probably only relate to the stonks.
-
 
 
 My bot when playing music will have people cast a vote on whether to skip. People can skip their own songs, and of course admins can do both.
@@ -50,11 +48,3 @@ My bot when playing music will have people cast a vote on whether to skip. Peopl
 $admin emoji currency credit (set the currency emoji to :credit:)
 
 Also, try WebAudio for looping again?
-
-
-
-I should have a separate channel for universal scoreboard updates so there's less spam.
-
-
-
-Maybe have an other scripts folder? The top level is rather messy right now.

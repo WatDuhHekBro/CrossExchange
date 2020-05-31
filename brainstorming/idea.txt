@@ -41,6 +41,4 @@ Updates every few minutes throughout the day (if it's 24/7 running), so there's 
 
 Also, for each map, there are a finite amount of resources. And that's it. That's all there'll ever be for that map.
 
-$obliterate stops a user's ability to trade stonks for an hour.
-
 And more specifically, the stocks will be based on trends. The trends will affect how severe each increase/decrease is.

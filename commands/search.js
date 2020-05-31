@@ -1,4 +1,5 @@
 module.exports = {
+	// usage: $search <channel> <regex pattern (allowing for emotes)>
 	run($)
 	{
 		/*let collector = message.channel.createMessageCollector({
