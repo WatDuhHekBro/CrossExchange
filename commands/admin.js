@@ -31,6 +31,27 @@ module.exports = {
 					console.clear();
 					$.channel.send("Cleared the console.");
 				}
+			},
+			subcommands:
+			{
+				catalog:
+				{
+					run($)
+					{
+						if($.common.authenticate($))
+						{
+							let stonks = $.lib.loadJSON('stonks');
+							
+							for(let tag in stonks.markets)
+							{
+								let market = stonks.markets[tag];
+								market.catalog = [];
+							}
+							
+							$.channel.send("Cleared the market catalog.");
+						}
+					}
+				}
 			}
 		},
 		init:

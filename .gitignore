@@ -1,7 +1,7 @@
 # Specific to this repository
 data/
 tmp/
-run.bat
+*.bat
 
 # Logs
 logs

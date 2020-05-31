@@ -1,0 +1,4 @@
+Include what market value you bought your stonks at.
+You can buy x stocks at (market).
+Looks like the math can make the trend flip by a negative, hence the extremely unstable markets.
+Seems like the amount invested can go into negatives because $stonks sell <> all sells more than you have?

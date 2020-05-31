@@ -146,10 +146,10 @@ module.exports = {
 	{
 		return (Math.random() * (max - min)) + min;
 	},
-	// Random Integer Inclusive
+	// Random Integer (Exclusive)
 	randInt(min, max)
 	{
-		return Math.floor((Math.random() * (max - min + 1)) + min);
+		return Math.floor((Math.random() * (max - min)) + min);
 	},
 	randSign(num = 1)
 	{
@@ -167,6 +167,6 @@ module.exports = {
 	// A separate function to include the number with pluralization to avoid redundancy.
 	pluralise(number, word, plural = '', singular = '')
 	{
-		return number + ' ' + this.pluraliseSolo(number, word, plural, singular);
+		return number + ' ' + this.pluraliseExclude(number, word, plural, singular);
 	}
 };

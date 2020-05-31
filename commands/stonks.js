@@ -9,8 +9,13 @@ module.exports = {
 			let user = $.lib.get($.lib.loadJSON('users'), $.author.id, {});
 			let market = stonks.markets[m];
 			let value = Math.round(market.value);
+			let money = $.lib.get(user, 'money', 0);
 			
-			if($.lib.get(user, 'money', 0) >= (value * amount))
+			// buy all
+			if(amount === -1)
+				amount = Math.floor(money / value);
+			
+			if(money >= (value * amount))
 			{
 				$.lib.get(user, 'stonks', {});
 				let userAmount = $.lib.get(user.stonks, m, 0);
@@ -32,8 +37,12 @@ module.exports = {
 			let market = stonks.markets[m];
 			let value = Math.round(market.value);
 			$.lib.get(user, 'stonks', {});
+			let stocks = $.lib.get(user.stonks, m, 0);
 			
-			if($.lib.get(user.stonks, m, 0) > 0)
+			if(amount === -1)
+				amount = stocks;
+			
+			if(stocks > 0)
 			{
 				user.stonks[m] -= amount;
 				let userMoney = $.lib.get(user, 'money', 0);
@@ -63,7 +72,20 @@ module.exports = {
 				{
 					run($)
 					{
-						$.common.buy($, $.args[0], $.args[1]);
+						if($.args[1] >= 0)
+							$.common.buy($, $.args[0], $.args[1]);
+						else
+							$.channel.send("You need to enter in a value of 0 or greater!");
+					}
+				},
+				any:
+				{
+					run($)
+					{
+						if($.args[1] === 'all' || $.args[1] === 'yes')
+							$.common.buy($, $.args[0], -1);
+						else
+							$.channel.send(`${$.args[1]} is not a valid amount!`);
 					}
 				}
 			}
@@ -81,7 +103,20 @@ module.exports = {
 				{
 					run($)
 					{
-						$.common.sell($, $.args[0], $.args[1]);
+						if($.args[1] >= 0)
+							$.common.sell($, $.args[0], $.args[1]);
+						else
+							$.channel.send("You need to enter in a value of 0 or greater!");
+					}
+				},
+				any:
+				{
+					run($)
+					{
+						if($.args[1] === 'all' || $.args[1] === 'yes')
+							$.common.sell($, $.args[0], -1);
+						else
+							$.channel.send(`${$.args[1]} is not a valid amount!`);
 					}
 				}
 			}

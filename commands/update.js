@@ -16,5 +16,8 @@ module.exports = {
 		message.channel.send(storage.lastUpdated.iterations);
 		
 		lib.writeJSON('storage', storage);*/
+		
+		//$.channel.send('in 3 seconds');
+		//setTimeout(() => {$.channel.send('test')}, 3000);
 	}
 };
