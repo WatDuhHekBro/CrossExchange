@@ -12,8 +12,6 @@
 A mutation has made bugs stronger and more aggressive, affecting the trade of nearby cities. The value of stocks in Gencorin and the Cave Inn are decreased by 65%.
 ]
 
-CrossExchange
-
 Negative numbers for decreases in value. And maybe make it randomized.
 
 Stock values decreased by $1 and $1, a dollar value of $$1, and that other thing increased by $2.
@@ -21,11 +19,7 @@ Then "range": [30,50], and it'll choose a random number in between, inclusive an
 
 
 
-Every hour, there's a new event. Now the exact minute and second of that hour is random, but it's every hour. Actually, every 4 hours.
-
 Each iteration brings an event with its corresponding changes. Each iteration also brings some (or just one) credits to trade stonks. There's a limit to the amount of credits that can be stockpiled. These settings can be changed with $admin.
-
-$ is the general prefix, $stonks is the main command.
 
 Example: Got 8 credits from 32 hours. Traded 
 
@@ -37,14 +31,4 @@ Besides that though, the market is ultimately played by randomness.
 
 $stonks commands are roughly as follows. $stonks buy/sell/info <location/shop> <amount>. Also, $stonks profile. $stonks info will show you how many stonks you have. "How many stonks do you want?" "Yes" is a valid response, a shortcut to buying/selling everything you can.
 
-Users can also define their own alises. CrossExchange won't just be limited to stonks, I plan to extend it to be multi-purpose. IE playlists and such.
-
 Also, there has to be a limit to everything, for both the general money supply and the amount of stonks. Actually, you can always buy stonks, the only limit is its cost. And the general money supply? Do I really care? It's just a simple stonk exchange.
-
-
-
-My bot when playing music will have people cast a vote on whether to skip. People can skip their own songs, and of course admins can do both.
-
-$admin emoji currency credit (set the currency emoji to :credit:)
-
-Also, try WebAudio for looping again?

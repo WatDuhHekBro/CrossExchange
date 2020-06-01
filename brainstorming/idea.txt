@@ -28,17 +28,3 @@ Domarkor: Metallurgy & Trading
 
 -= Shadoon Extra =-
 Arcane Lab: Fishing & Transportation
-
-
-
-So what can you do with all this money? You can hire an army and take over a fictional land! It goes Wesnoth style, where you send different groups to different areas and have a limited radius you can view. Of course status updates are sent to the DMs. You start out randomly somewhere, then if you're in an occupied area, you can launch a rebellion. There's also resourceful towns, key points, and terrain differences and such.
-
-Also, a music bot that loops perfectly? Scratch that, it just doesn't work. But maybe have user playlists and such that can shuffle together in unison, so everyone gets their turn. I haven't seen that before. Either add to the current (temporary) playlist or draw from a user-defined playlist.
-
-Also, you can turn off the joke part, like oil and french.
-
-Updates every few minutes throughout the day (if it's 24/7 running), so there's no feasible way you can stay on all the time, so there's a risk factor involved.
-
-Also, for each map, there are a finite amount of resources. And that's it. That's all there'll ever be for that map.
-
-And more specifically, the stocks will be based on trends. The trends will affect how severe each increase/decrease is.
