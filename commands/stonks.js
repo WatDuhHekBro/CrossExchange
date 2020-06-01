@@ -5,6 +5,7 @@ module.exports = {
 	{
 		buy: function($, m, amount)
 		{
+			amount = Math.floor(amount);
 			let stonks = $.lib.loadJSON('stonks');
 			let user = $.lib.get($.lib.loadJSON('storage').users, $.author.id, {});
 			let market = stonks.markets[m];
@@ -32,6 +33,7 @@ module.exports = {
 		// Also keep track of how much value the stock had when the user had it to tell them whether it was a gain or a loss. It'll just tell the user the net effect so don't worry about keeping track of each individual stock.
 		sell: function($, m, amount)
 		{
+			amount = Math.floor(amount);
 			let stonks = $.lib.loadJSON('stonks');
 			let user = $.lib.get($.lib.loadJSON('storage').users, $.author.id, {});
 			let market = stonks.markets[m];

@@ -69,11 +69,16 @@ module.exports = {
 	{
 		if(!data)
 		{
-			console.warn("Warning: The JSON header " + header + " is being written without any value!");
-			data = {};
+			if(header in this.stack)
+				data = this.stack[header];
+			else
+			{
+				console.warn("Warning: The JSON header " + header + " is being written without any value!");
+				data = {};
+			}
 		}
 		
-		fs.writeFileSync(`data/${header}.json`, JSON.stringify(data, null, '\t'));
+		fs.writeFileSync(`data/${header}.json`, JSON.stringify(data, null, header === 'config' ? '\t' : null));
 	},
 	// Load a JSON file into a command. If it exists in the stack, load it, otherwise, attempt to read a file. "readOnly" determines whether or not any changes are saved.
 	loadJSON(header, readOnly = false)

@@ -20,7 +20,7 @@ for(let file of files)
 	commands.set(file.substring(0, file.lastIndexOf('.js')), require(`../commands/${file}`));
 
 // Message Events //
-client.on('message', message => {
+client.on("message", message => {
 	if(message.author.bot || !message.content.startsWith(config.prefix))
 		return;
 	
@@ -132,7 +132,7 @@ client.on('message', message => {
 	if(currentTime - scheduled >= 0)
 		intervals++;
 	
-	lib.writeJSON('stonks', stonks);
+	lib.writeJSON('stonks');
 	
 	// Start the iteration loop.
 	/*setTimeout(() => {
@@ -161,6 +161,6 @@ client.on('message', message => {
 })();
 
 // Ready State //
-client.once('ready', () => {
-	console.log('Ready!');
+client.once("ready", () => {
+	console.log("Ready!");
 });

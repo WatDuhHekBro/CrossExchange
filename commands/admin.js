@@ -62,7 +62,7 @@ module.exports = {
 			{
 				stonks:
 				{
-					run($)
+					async run($)
 					{
 						if($.common.authenticate($))
 						{
@@ -73,15 +73,12 @@ module.exports = {
 							for(let tag in stonks.markets)
 							{
 								let market = stonks.markets[tag];
-								
-								$.channel.send(`Market values for ${market.name || ""}...`, {
-									embed: $.stonks.display(market)
-								}).then(message => {
-									market.message = message.id;
-									// Write the data manually because this is a callback function that'll likely occur after the automatic writing to stack.
-									$.lib.writeJSON('stonks', stonks);
-								}).catch(console.error);
+								let message = await $.channel.send(`Market values for ${market.name || ""}...`, {embed: $.stonks.display(market)})
+								market.message = message.id;
 							}
+							
+							// Still isn't auto-writing after the command for some reason.
+							$.lib.writeJSON('stonks', stonks);
 						}
 					}
 				}
@@ -119,12 +116,15 @@ module.exports = {
 		},
 		test:
 		{
-			// generic test function
+			// Generic test function
 			run($)
 			{
 				if($.common.authenticate($))
 				{
-					
+					$.message.channel.send($.author.avatarURL({
+						format: 'png',
+						dynamic: true
+					}));
 				}
 			},
 			subcommands:
@@ -135,7 +135,7 @@ module.exports = {
 					{
 						if($.common.authenticate($))
 						{
-							setInterval(() => {
+							setInterval(async() => {
 								let stonks = $.lib.loadJSON('stonks', true);
 								let markets = stonks.markets;
 								$.stonks.calculate(markets);
@@ -143,9 +143,8 @@ module.exports = {
 								for(let tag in markets)
 								{
 									let market = markets[tag];
-									$.guild.channels.cache.get(stonks.channel).messages.fetch(market.message).then(message => message.edit({
-										embed: $.stonks.display(market)
-									})).catch(console.error);
+									let message = await $.guild.channels.cache.get(stonks.channel).messages.fetch(market.message);
+									await message.edit({embed: $.stonks.display(market)});
 								}
 								
 								// You then have to write it manually because you're not accessing it from the command anymore.

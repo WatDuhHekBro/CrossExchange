@@ -51,10 +51,7 @@ module.exports = {
 			
 			// Also, catalog just the market value. That's all users will see anyway. Invested is a property users can see but it won't be logged, and in that regard, is just another factor.
 			// "catalog" will act like a stack where the top-most value is at the front and the back-most values are at the back. Include the market value and a string of the date. YYYY-MM-DD HH:MM:SS
-			selected.catalog.unshift({
-				value: Math.round(selected.value),
-				time: Math.floor(Date.now() / 1000)
-			});
+			selected.catalog.unshift([Math.round(selected.value), Math.floor(Date.now() / 1000)]);
 		}
 	},
 	// Creates an embed to display a market based on its values and previous values.
@@ -70,21 +67,21 @@ module.exports = {
 		for(let i = 0, cap = Math.min(10, market.catalog.length); i < cap; i++)
 		{
 			let log = market.catalog[i];
-			let d = new Date(log.time * 1000);
+			let d = new Date(log[1] * 1000);
 			let pad = num => num.toString().padStart(2, '0');
 			let previous = market.catalog[i+1];
 			let change = '';
 			
 			if(previous)
 			{
-				let diff = log.value - previous.value;
+				let diff = log[0] - previous[0];
 				let sign = diff >= 0 ? '+' : '';
 				change = ', ' + sign + lib.pluralise(diff, 'credit', 's');
 			}
 			
 			embed.fields.push({
 				name: `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`,
-				value: lib.pluralise(log.value, 'credit', 's') + change
+				value: lib.pluralise(log[0], 'credit', 's') + change
 			});
 		}
 		

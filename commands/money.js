@@ -12,7 +12,10 @@ module.exports = {
 				author:
 				{
 					name: author.username,
-					icon_url: author.avatarURL()
+					icon_url: author.avatarURL({
+						format: 'png',
+						dynamic: true
+					})
 				},
 				description: `Balance: ${amountOfMoney}`,
 				color: "#ffff00"
@@ -25,7 +28,7 @@ module.exports = {
 	},
 	subcommands:
 	{
-		pay:
+		send:
 		{
 			message: "You need to enter an amount you're sending.",
 			number:
@@ -33,54 +36,83 @@ module.exports = {
 				message: "Who are you sending this money to?",
 				any:
 				{
-					run($)
+					// If you don't have the amount of money.
+					async run($)
 					{
 						let amount = Math.floor($.args[0]);
+						let storage = $.lib.loadJSON('storage');
+						let senderData = $.lib.get(storage.users, $.author.id, {});
+						let senderMoney = $.lib.get(senderData, 'money', 0);
 						
-						if(amount > 0)
+						if(senderMoney < amount)
+							$.channel.send("You don't have enough money to do that!", {embed: $.common.balance($)});
+						else if(amount > 0)
 						{
 							if(/<@!\d+>/.test($.args[1]))
 							{
-								let userID = $.args[1].substring(3, $.args[1].length-1);
-								let user = $.guild.members.cache.get(userID).user;
-								let userData = $.lib.get($.lib.loadJSON('storage').users, userID, {});
-								let senderData = $.lib.get($.lib.loadJSON('storage').users, $.author.id, {});
-								userData.money = $.lib.get(userData, 'money', 0) + amount;
-								senderData.money = $.lib.get(senderData, 'money', 0) - amount;
-								$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${user.toString()}!`);
+								let receiverID = $.args[1].substring(3, $.args[1].length-1);
+								let receiver = $.guild.members.cache.get(receiverID).user;
+								let receiverData = $.lib.get(storage.users, receiverID, {});
+								let receiverMoney = $.lib.get(receiverData, 'money', 0);
+								senderData.money -= amount;
+								receiverData.money += amount;
+								$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${receiver.toString()}!`);
 							}
 							else
 							{
 								let username = $.args.slice(1).join(' ');
-								
-								$.guild.members.fetch({
+								let members = await $.guild.members.fetch({
 									query: username,
 									limit: 1
-								}).then(members => {
-									if(members.first())
-									{
-										let user = members.first().user;
-										
-										$.channel.send(`Is this the person you're looking for?`, {
-											embed:
-											{
-												author:
-												{
-													name: user.username + '#' + user.discriminator,
-													icon_url: user.avatarURL()
-												},
-												color: "#ffff00"
-											}
-										}).then(message => {
-											message.react("✅").then(console.log).catch(console.error);
-											message.react("❌").then(console.log).catch(console.error);
-										}).catch(console.error);
-									}
-									else
-										$.channel.send(`Couldn't find a user by the name of "${username}"!`);
-								}).catch(console.error);
+								});
 								
-								// Add an on-react event listener
+								if(members.first())
+								{
+									let receiver = members.first().user;
+									let message = await $.channel.send("Is this the person you're looking for?", {embed: {
+										author:
+										{
+											name: receiver.username + '#' + receiver.discriminator,
+											icon_url: receiver.avatarURL({
+												format: 'png',
+												dynamic: true
+											})
+										},
+										color: "#ffff00"
+									}});
+									await message.react('✅');
+									await message.react('❌');
+									
+									// Put this after the bot reacts because there's a timeout (in milliseconds) for awaitReactions where there won't be any commands executed until then.
+									let isCorrect = false;
+									let isDeleted = false;
+									// Because of that though, you also need to edit the message to let the user know when they can react.
+									await message.edit(message.content + " You can now react to this message.");
+									await message.awaitReactions((reaction, user) => {
+										if(user.id === $.author.id)
+										{
+											if(reaction.emoji.name === '✅')
+												isCorrect = true;
+											isDeleted = true;
+											message.delete();
+										}
+									}, {time: 10000});
+									
+									if(!isDeleted)
+										message.delete();
+									
+									if(isCorrect)
+									{
+										let receiverData = $.lib.get(storage.users, receiver.id, {});
+										let receiverMoney = $.lib.get(receiverData, 'money', 0);
+										senderData.money -= amount;
+										receiverData.money += amount;
+										$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${receiver.toString()}!`);
+										$.lib.writeJSON('storage'); // It seems that after any async operation, you can't rely on auto-write anymore.
+									}
+								}
+								else
+									$.channel.send(`Couldn't find a user by the name of "${username}"!`);
 							}
 						}
 						else
@@ -122,11 +154,49 @@ module.exports = {
 						$.channel.send("It's too soon to pick up your daily credits.");
 				}
 			}
+		},
+		leaderboard:
+		{
+			run($)
+			{
+				// Really nice foresight there. :/ Should this be separated by guild?
+				if($.guild.available)
+				{
+					let users = $.lib.loadJSON('storage').users;
+					let tags = Object.keys(users);
+					tags.sort((a, b) => {return users[b].money - users[a].money});
+					let fields = [];
+					
+					for(let i = 0, limit = Math.min(10, tags.length); i < limit; i++)
+					{
+						let id = tags[i];
+						
+						fields.push({
+							name: $.guild.members.cache.get(id).user.username,
+							value: $.lib.pluralise(users[id].money, 'credit', 's')
+						});
+					}
+					
+					$.channel.send({embed: {
+						author:
+						{
+							name: $.guild.name,
+							icon_url: $.guild.iconURL({
+								format: 'png',
+								dynamic: true
+							})
+						},
+						title: "Top 10 Richest Players",
+						color: "#ffff00",
+						fields: fields
+					}});
+				}
+			}
 		}
 	},
 	any:
 	{
-		run($)
+		async run($)
 		{
 			if(/<@!\d+>/.test($.args[0]))
 			{
@@ -137,16 +207,15 @@ module.exports = {
 			else
 			{
 				let username = $.args.join(' ');
-				
-				$.guild.members.fetch({
+				let members = await $.guild.members.fetch({
 					query: username,
 					limit: 1
-				}).then(members => {
-					if(members.first())
-						$.channel.send({embed: $.common.balance($, members.first().user)});
-					else
-						$.channel.send(`Couldn't find a user by the name of "${username}"!`);
-				}).catch(console.error);
+				});
+				
+				if(members.first())
+					$.channel.send({embed: $.common.balance($, members.first().user)});
+				else
+					$.channel.send(`Couldn't find a user by the name of "${username}"!`);
 			}
 		}
 	}
