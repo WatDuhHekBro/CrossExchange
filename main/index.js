@@ -2,6 +2,7 @@
 const Discord = require('discord.js');
 const lib = require('./lib.js');
 const stonks = require('./stonks.js');
+const events = require('./events.js');
 
 // Generate Files //
 lib.loadStack();
@@ -21,7 +22,12 @@ for(let file of files)
 
 // Message Events //
 client.on("message", message => {
-	if(message.author.bot || !message.content.startsWith(config.prefix))
+	if(message.author.bot)
+		return;
+	
+	events.intercept(message);
+	
+	if(!message.content.startsWith(config.prefix))
 		return;
 	
 	let args = message.content.substring(config.prefix.length).split(/ +/);

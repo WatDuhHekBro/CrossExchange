@@ -9,8 +9,10 @@ At its core, the stock market, at least for this bot, is a series of ups and dow
 - If I want to slow down or speed up the progress of the curve, change how much is added to the `cycle` variable.
 - I will first multiply the sine wave by pi horizontally so each cycle matches a nice -1 to 1 range, and I think it's easier to work with that than pi. A negative cycle means that you're in a downward trend, while a positive cycle means that you're in an upward trend.
 - Actually, it'll be just initial variables that have a pre-assigned value, then it goes from there.
+- One of the biggest things is that starting values are NOT static. Markets change over time, and even though a market is going to start one particular way, it can and will change eventually according to the players' decisions.
 
 # Variables
+
 ## Manually-Assigned
 - ``: 
 - ``: 

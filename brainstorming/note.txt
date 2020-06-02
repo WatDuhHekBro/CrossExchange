@@ -13,3 +13,7 @@
 - Mins can be handled by the messages, customized too. Maxs can be handled by a dead end property/message which disallows any further arguments, unlike some commands which might use those functions to have an arbitrary amount of parameters or such.
 - Maybe have a convert command? Convert currencies to and fro with a conversion standard. Then have a script to convert between currencies on your side. Try Monis to credits.
 - Also, the new trend variable should be based on a sine wave because it'll oscillate. That's how it'll increase and decrease in waves. Then track where the trend is via the cycle. This should especially be internal, and should be inconcise in precise timings. And make the new models prone to sudden events that knock it off its trajectory.
+- Add gambling.
+- Prevent sending money to yourself and maybe any bot?
+- Guild groups for the bot. Guilds will still be separated, but you can group guilds together to share the same stats. Guild groups are named.
+- $stonks info --> Shows a list of markets by tag and by name.
