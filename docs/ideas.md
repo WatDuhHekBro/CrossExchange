@@ -8,6 +8,7 @@
 	- $admin emoji currency credit (set the currency emoji to :credit:)
 - Users can also define their own alises. CrossExchange won't just be limited to stonks, I plan to extend it to be multi-purpose. IE playlists and such.
 - (Organizational) Maybe add a `templates` key in `init.json` to initialize stuff like the user object in storage?
+- Currency uses: emojis from another server, access to certain channels/commands, a cost on certain commands (like `get`), etc. (all temporary).
 
 # Command Ideas
 - `$copypasta`: Paste a text file of a script like those copypastas or game text dumps.

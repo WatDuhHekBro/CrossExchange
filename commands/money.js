@@ -36,7 +36,6 @@ module.exports = {
 				message: "Who are you sending this money to?",
 				any:
 				{
-					// If you don't have the amount of money.
 					async run($)
 					{
 						let amount = Math.floor($.args[0]);

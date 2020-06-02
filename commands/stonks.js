@@ -3,7 +3,7 @@ module.exports = {
 	message: "Use subcommands `buy`, `sell`, and `info`!",
 	common:
 	{
-		buy: function($, m, amount)
+		buy($, m, amount, query = false)
 		{
 			amount = Math.floor(amount);
 			let stonks = $.lib.loadJSON('stonks');
@@ -31,7 +31,7 @@ module.exports = {
 				$.channel.send("You don't have enough money!");
 		},
 		// Also keep track of how much value the stock had when the user had it to tell them whether it was a gain or a loss. It'll just tell the user the net effect so don't worry about keeping track of each individual stock.
-		sell: function($, m, amount)
+		sell($, m, amount, query = false)
 		{
 			amount = Math.floor(amount);
 			let stonks = $.lib.loadJSON('stonks');
@@ -57,6 +57,16 @@ module.exports = {
 			}
 			else
 				$.channel.send(`You don't have any stocks in ${market.name}!`);
+		},
+		isValidMarket($, m)
+		{
+			let stonks = $.lib.loadJSON('stonks', true);
+			let isValid = m in stonks.markets;
+			
+			if(!isValid)
+				$.channel.send(`"${m}" is not a valid market!`);
+			
+			return isValid;
 		}
 	},
 	subcommands:
@@ -68,26 +78,44 @@ module.exports = {
 			{
 				run($)
 				{
-					$.common.buy($, $.args[0], 1);
+					// Show the number of stocks you can buy
+					/*if($.common.isValidMarket($, $.args[0]))
+					{
+						let stonks = $.lib.loadJSON('stonks', true);
+						let market = Math.round(stonks.markets[$.args[0]]);
+						let user = $.lib.get($.lib.loadJSON('storage', true).users, $.author.id, {});
+						let amount = Math.floor(user.money / market.value);
+						
+						if(amount === 0 || market.value <= 0)
+							$.channel.send(`You can't buy any stocks from ${market.name}!`);
+						else
+							$.channel.send(`You can buy up to ${amount} stocks from ${market.name}!`);
+					}*/
 				},
 				number:
 				{
 					run($)
 					{
-						if($.args[1] >= 0)
-							$.common.buy($, $.args[0], $.args[1]);
-						else
-							$.channel.send("You need to enter in a value of 0 or greater!");
+						if($.common.isValidMarket($, $.args[0]))
+						{
+							if($.args[1] >= 0)
+								$.common.buy($, $.args[0], $.args[1]);
+							else
+								$.channel.send("You need to enter in a value of 0 or greater!");
+						}
 					}
 				},
 				any:
 				{
 					run($)
 					{
-						if($.args[1] === 'all' || $.args[1] === 'yes')
-							$.common.buy($, $.args[0], -1);
-						else
-							$.channel.send(`${$.args[1]} is not a valid amount!`);
+						if($.common.isValidMarket($, $.args[0]))
+						{
+							if($.args[1] === 'all' || $.args[1] === 'yes')
+								$.common.buy($, $.args[0], -1);
+							else
+								$.channel.send(`${$.args[1]} is not a valid amount!`);
+						}
 					}
 				}
 			}
@@ -99,26 +127,39 @@ module.exports = {
 			{
 				run($)
 				{
-					$.common.sell($, $.args[0], 1);
+					// Shows the amount of stocks you have to sell.
+					/*if($.common.isValidMarket($, $.args[0]))
+					{
+						let user = $.lib.get($.lib.loadJSON('storage', true).users, $.author.id, {});
+						let stonks = $.lib.get($.lib.get(user, 'stonks', {}), $.args[0], 0);
+						let market = Math.round($.lib.loadJSON('stonks', true).markets[$.args[0]]);
+						$.channel.send(`You have ${$.lib.pluralise(stonks, 'stock', 's')} to sell in ${market.name}.`);
+					}*/
 				},
 				number:
 				{
 					run($)
 					{
-						if($.args[1] >= 0)
-							$.common.sell($, $.args[0], $.args[1]);
-						else
-							$.channel.send("You need to enter in a value of 0 or greater!");
+						if($.common.isValidMarket($, $.args[0]))
+						{
+							if($.args[1] >= 0)
+								$.common.sell($, $.args[0], $.args[1]);
+							else
+								$.channel.send("You need to enter in a value of 0 or greater!");
+						}
 					}
 				},
 				any:
 				{
 					run($)
 					{
-						if($.args[1] === 'all' || $.args[1] === 'yes')
-							$.common.sell($, $.args[0], -1);
-						else
-							$.channel.send(`${$.args[1]} is not a valid amount!`);
+						if($.common.isValidMarket($, $.args[0]))
+						{
+							if($.args[1] === 'all' || $.args[1] === 'yes')
+								$.common.sell($, $.args[0], -1);
+							else
+								$.channel.send(`${$.args[1]} is not a valid amount!`);
+						}
 					}
 				}
 			}
@@ -130,7 +171,17 @@ module.exports = {
 			{
 				run($)
 				{
-					//#8000ff
+					if($.common.isValidMarket($, $.args[0]))
+					{
+						let stonks = $.lib.loadJSON('stonks', true);
+						let market = stonks.markets[$.args[0]];
+						// include an icon, maybe
+						$.channel.send({embed: {
+							title: "sample title",
+							description: "sample desc",
+							color: "#8000ff"
+						}});
+					}
 				}
 			}
 		}

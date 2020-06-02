@@ -1,5 +1,5 @@
 - Include what market value you bought your stonks at.
-- You can buy x stocks at (market).
+- You can buy x stocks at (market). (the new $stonks buy <market>, rather than buying one)
 - Looks like the math can make the trend flip by a negative, hence the extremely unstable markets.
 - Seems like the amount invested can go into negatives because $stonks sell <> all sells more than you have?
 - Have the trend variable be an actual trend (following a sine wave, range is -1 to 1), then a rate variable which shows the credit rate per iteration.

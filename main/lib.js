@@ -80,8 +80,8 @@ module.exports = {
 		
 		fs.writeFileSync(`data/${header}.json`, JSON.stringify(data, null, header === 'config' ? '\t' : null));
 	},
-	// Load a JSON file into a command. If it exists in the stack, load it, otherwise, attempt to read a file. "readOnly" determines whether or not any changes are saved.
-	loadJSON(header, readOnly = false)
+	// Load a JSON file into a command. If it exists in the stack, load it, otherwise, attempt to read a file. "disableAutoWrite" determines whether or not any changes are automatically saved.
+	loadJSON(header, disableAutoWrite = false)
 	{
 		let data;
 		
@@ -93,7 +93,7 @@ module.exports = {
 			this.stack[header] = data;
 		}
 		
-		if(!readOnly)
+		if(!disableAutoWrite)
 			this.write.push(header);
 		
 		return data;

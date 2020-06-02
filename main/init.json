@@ -4,7 +4,6 @@
 		"token": "<ENTER YOUR TOKEN HERE>",
 		"prefix": "$",
 		"reload": false,
-		"stringify": null,
 		"admins": []
 	},
 	"stonks":

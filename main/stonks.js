@@ -86,5 +86,28 @@ module.exports = {
 		}
 		
 		return embed;
+	},
+	// Activates one iteration. To be used every 15 minute interval.
+	iterate(guild)
+	{
+		let stonks = lib.loadJSON('stonks');
+		let markets = stonks.markets;
+		this.calculate(markets);
+		
+		for(let tag in markets)
+		{
+			let market = markets[tag];
+			// I used .then instead of await because there's a very noticeable difference in when each message gets updated.
+			guild.channels.cache.get(stonks.channelMarket).messages.fetch(market.message)
+			.then(message => message.edit({embed: this.display(market)}))
+			.catch(console.error);
+		}
+		
+		lib.writeJSON('stonks');
+	},
+	// Activates one event. To be used every 24 hour interval.
+	event()
+	{
+		
 	}
 };

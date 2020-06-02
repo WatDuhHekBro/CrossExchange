@@ -3,7 +3,7 @@ module.exports = {
 	run($)
 	{
 		if($.common.authenticate($))
-			$.message.reply("You are an admin.");
+			$.message.reply("you are an admin.");
 	},
 	common:
 	{
@@ -14,7 +14,7 @@ module.exports = {
 			
 			if(!isAdmin)
 			{
-				$.message.reply("You are not an admin. If you have access to the server files, add yourself to it manually in `config.json`. Your user ID should now be logged in the console.");
+				$.message.reply("you are not an admin. If you have access to the server files, add yourself to it manually in `config.json`. Your user ID should now be logged in the console.");
 				console.log($.author.id);
 			}
 			
@@ -68,7 +68,7 @@ module.exports = {
 						{
 							$.channel.bulkDelete(6);
 							let stonks = $.lib.loadJSON('stonks');
-							stonks.channel = $.channel.id;
+							stonks.channelMarket = $.channel.id;
 							
 							for(let tag in stonks.markets)
 							{
@@ -79,6 +79,16 @@ module.exports = {
 							
 							// Still isn't auto-writing after the command for some reason.
 							$.lib.writeJSON('stonks', stonks);
+						}
+					}
+				},
+				events:
+				{
+					run($)
+					{
+						if($.common.authenticate($))
+						{
+							
 						}
 					}
 				}
@@ -135,21 +145,7 @@ module.exports = {
 					{
 						if($.common.authenticate($))
 						{
-							setInterval(async() => {
-								let stonks = $.lib.loadJSON('stonks', true);
-								let markets = stonks.markets;
-								$.stonks.calculate(markets);
-								
-								for(let tag in markets)
-								{
-									let market = markets[tag];
-									let message = await $.guild.channels.cache.get(stonks.channel).messages.fetch(market.message);
-									await message.edit({embed: $.stonks.display(market)});
-								}
-								
-								// You then have to write it manually because you're not accessing it from the command anymore.
-								$.lib.writeJSON('stonks', stonks);
-							}, 5000);
+							setInterval(() => {$.stonks.iterate($.guild)}, 5000);
 							$.channel.send("Every 5 seconds, the market will update.");
 						}
 					}
@@ -160,7 +156,8 @@ module.exports = {
 					{
 						if($.common.authenticate($))
 						{
-							
+							$.stonks.event();
+							$.channel.send("Manually activated one event.");
 						}
 					}
 				}
