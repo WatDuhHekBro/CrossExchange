@@ -17,10 +17,9 @@
 				"value": 0,
 				"invested": 0,
 				"trend": 0,
-				"variance": 0,
+				"rate": 0,
 				"volatility": 0,
 				"amplitude": 0,
-				"deviation": 0,
 				"catalog": []
 			},
 			"tora":
@@ -30,10 +29,9 @@
 				"value": 0,
 				"invested": 0,
 				"trend": 0,
-				"variance": 0,
+				"rate": 0,
 				"volatility": 0,
 				"amplitude": 0,
-				"deviation": 0,
 				"catalog": []
 			},
 			"gaia":
@@ -44,10 +42,9 @@
 				"value": 0,
 				"invested": 0,
 				"trend": 0,
-				"variance": 0,
+				"rate": 0,
 				"volatility": 0,
 				"amplitude": 0,
-				"deviation": 0,
 				"catalog": []
 			},
 			"basin":
@@ -55,13 +52,12 @@
 				"name": "Basin Keep",
 				"description": "",
 				"parent": "gaia",
-				"value": 1000,
+				"value": 0,
 				"invested": 0,
-				"trend": 25,
-				"variance": 5,
-				"volatility": 0.15,
-				"amplitude": 10,
-				"deviation": 5,
+				"trend": 0,
+				"rate": 0,
+				"volatility": 0,
+				"amplitude": 0,
 				"catalog": []
 			},
 			"helnovien":
@@ -69,13 +65,12 @@
 				"name": "The Helnovien Mine",
 				"description": "",
 				"parent": "tora",
-				"value": 1000,
+				"value": 0,
 				"invested": 0,
-				"trend": 35,
-				"variance": 10,
-				"volatility": 0.4,
-				"amplitude": 15,
-				"deviation": 10,
+				"trend": 0,
+				"rate": 0,
+				"volatility": 0,
+				"amplitude": 0,
 				"catalog": []
 			}
 		},

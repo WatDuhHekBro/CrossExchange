@@ -6,7 +6,6 @@ module.exports = {
 		balance($, author = $.author)
 		{
 			let user = $.lib.get($.lib.loadJSON('storage').users, author.id, {});
-			let amountOfMoney = $.lib.pluralise($.lib.get(user, 'money', 0), 'credit', 's');
 			
 			return {
 				author:
@@ -17,8 +16,18 @@ module.exports = {
 						dynamic: true
 					})
 				},
-				description: `Balance: ${amountOfMoney}`,
-				color: "#ffff00"
+				color: "#ffff00",
+				fields:
+				[
+					{
+						name: "Balance",
+						value: $.lib.pluralise($.lib.get(user, 'money', 0), 'credit', 's')
+					},
+					{
+						name: "uwuing Penalties",
+						value: $.lib.pluralise($.lib.get(user, 'penalties', 0) * 350, 'credit', 's')
+					}
+				]
 			};
 		}
 	},

@@ -78,7 +78,7 @@ module.exports = {
 			}
 		}
 		
-		fs.writeFileSync(`data/${header}.json`, JSON.stringify(data, null, header === 'config' ? '\t' : null));
+		fs.writeFileSync(`data/${header}.json`, JSON.stringify(data, null, /*header === 'config' ? '\t' : null*/ '\t'));
 	},
 	// Load a JSON file into a command. If it exists in the stack, load it, otherwise, attempt to read a file. "disableAutoWrite" determines whether or not any changes are automatically saved.
 	loadJSON(header, disableAutoWrite = false)

@@ -17,3 +17,5 @@
 - Prevent sending money to yourself and maybe any bot?
 - Guild groups for the bot. Guilds will still be separated, but you can group guilds together to share the same stats. Guild groups are named.
 - $stonks info --> Shows a list of markets by tag and by name.
+- Maybe also make a list of returns rather than having a ton of indents for if elses. The indent should roughly indicate the subcommand level.
+- Events: An array of changes. Each element is as follows: {"variable": "volatility", "operation": "multiply", "range": [1.2, 1.5]}

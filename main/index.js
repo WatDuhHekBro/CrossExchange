@@ -1,8 +1,8 @@
 // Dependencies //
-const Discord = require('discord.js');
-const lib = require('./lib.js');
-const stonks = require('./stonks.js');
-const events = require('./events.js');
+const Discord = require("discord.js");
+const lib = require("./lib.js");
+const stonks = require("./stonks.js");
+const events = require("./events.js");
 
 // Generate Files //
 lib.loadStack();
@@ -87,6 +87,7 @@ client.on("message", message => {
 				common: common,
 				guild: message.guild,
 				lib: lib,
+				member: message.member,
 				message: message,
 				stonks: stonks
 			});

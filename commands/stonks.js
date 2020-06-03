@@ -1,6 +1,5 @@
 module.exports = {
 	description: "Buy, sell, and get info on stonks.",
-	message: "Use subcommands `buy`, `sell`, and `info`!",
 	common:
 	{
 		buy($, m, amount, query = false)
@@ -20,7 +19,7 @@ module.exports = {
 			{
 				$.lib.get(user, 'stonks', {});
 				let userAmount = $.lib.get(user.stonks, m, 0);
-				user.stonks[m] += userAmount + amount;
+				user.stonks[m] += amount;
 				user.money -= value * amount;
 				market.invested += amount;
 				let stockName = $.lib.pluralise(amount, 'stock', 's');
@@ -69,6 +68,33 @@ module.exports = {
 			return isValid;
 		}
 	},
+	run($)
+	{
+		let stonks = $.lib.loadJSON('stonks', true);
+		let user = $.lib.get($.lib.loadJSON('storage', true).users, $.author.id, {});
+		let fields = [];
+		
+		for(let market in user.stonks)
+		{
+			fields.push({
+				name: stonks.markets[market].name,
+				value: $.lib.pluralise(user.stonks[market], 'stock', 's')
+			});
+		}
+		
+		$.channel.send({embed: {
+			author:
+			{
+				name: $.author.username,
+				icon_url: $.author.avatarURL({
+					format: 'png',
+					dynamic: true
+				})
+			},
+			color: "#8000ff",
+			fields: fields
+		}});
+	},
 	subcommands:
 	{
 		buy:
@@ -79,18 +105,18 @@ module.exports = {
 				run($)
 				{
 					// Show the number of stocks you can buy
-					/*if($.common.isValidMarket($, $.args[0]))
+					if($.common.isValidMarket($, $.args[0]))
 					{
 						let stonks = $.lib.loadJSON('stonks', true);
-						let market = Math.round(stonks.markets[$.args[0]]);
+						let market = stonks.markets[$.args[0]];
 						let user = $.lib.get($.lib.loadJSON('storage', true).users, $.author.id, {});
-						let amount = Math.floor(user.money / market.value);
+						let amount = Math.floor(user.money / Math.round(market.value));
 						
 						if(amount === 0 || market.value <= 0)
 							$.channel.send(`You can't buy any stocks from ${market.name}!`);
 						else
 							$.channel.send(`You can buy up to ${amount} stocks from ${market.name}!`);
-					}*/
+					}
 				},
 				number:
 				{
@@ -128,13 +154,13 @@ module.exports = {
 				run($)
 				{
 					// Shows the amount of stocks you have to sell.
-					/*if($.common.isValidMarket($, $.args[0]))
+					if($.common.isValidMarket($, $.args[0]))
 					{
 						let user = $.lib.get($.lib.loadJSON('storage', true).users, $.author.id, {});
 						let stonks = $.lib.get($.lib.get(user, 'stonks', {}), $.args[0], 0);
-						let market = Math.round($.lib.loadJSON('stonks', true).markets[$.args[0]]);
+						let market = $.lib.loadJSON('stonks', true).markets[$.args[0]];
 						$.channel.send(`You have ${$.lib.pluralise(stonks, 'stock', 's')} to sell in ${market.name}.`);
-					}*/
+					}
 				},
 				number:
 				{

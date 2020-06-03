@@ -18,9 +18,19 @@ module.exports = {
 		for(let market in markets)
 		{
 			let selected = markets[market];
+			let influenceValue = totalValue !== 0 ? (selected.value / totalValue) : 0;
+			let influenceInvested = totalInvested !== 0 ? (selected.invested / totalInvested) : 0;
 			
 			// Calculate New Parameters //
-			// Note: I'm probably going to revise these equations later on. From what it looks like, high volatility doesn't make the trend go down. But that's a task for another day.
+			selected.volatility = Math.min(Math.max(lib.randDeviation(selected.volatility, selected.volatility + (Math.random() * Math.random() * Math.random())), 0), 1); // Not the same as Math.pow(Math.random(), 3);
+			selected.amplitude = Math.max((0.4 * influenceValue) + (0.4 * influenceInvested) + (0.2 * lib.randDeviation(selected.amplitude, selected.amplitude + (Math.random() * Math.random()))), 0);
+			selected.trend += Math.random() * selected.amplitude * (Math.random() < selected.volatility ? 2 : 1); // Math.random() < number between 0 and 1 = Has number% chance to be true.
+			selected.trend = selected.trend > 1 ? (selected.trend - 2) : selected.trend;
+			let buffer = 1 - selected.volatility;
+			selected.rate = Math.max(selected.rate, lib.rand(Math.random(), selected.volatility)) * buffer * (Math.sin(selected.trend * Math.PI) + 1);
+			selected.value = Math.max(selected.value + lib.randDeviation(selected.rate, selected.amplitude), 0);
+			
+			/*// Note: I'm probably going to revise these equations later on. From what it looks like, high volatility doesn't make the trend go down. But that's a task for another day.
 			// Actually, let's introduce another variable into the mix. No wait, let's make volatility affect bigger markets. Bigger markets with bigger volatility will have a higher chance of the sign being decreasing.
 			let factor = (Math.random() < selected.volatility) ? 5 : 1; // Math.random() < number between 0 and 1 = Has number% chance to be true.
 			let gain = lib.randDeviation(selected.trend, selected.variance * factor); // If it's a volatile gain, go up to 5x out of bounds.
@@ -47,7 +57,7 @@ module.exports = {
 			selected.deviation = lib.rand(0, selected.volatility);
 			
 			// The volatility has very incremental changes, but overall, doesn't change too much and is based on its own market alone.
-			selected.volatility = lib.randDeviation(selected.volatility, selected.volatility * Math.random() * Math.random() * Math.random()); // Not the same as Math.pow(Math.random(), 3);
+			selected.volatility = lib.randDeviation(selected.volatility, selected.volatility * Math.random() * Math.random() * Math.random()); // Not the same as Math.pow(Math.random(), 3);*/
 			
 			// Also, catalog just the market value. That's all users will see anyway. Invested is a property users can see but it won't be logged, and in that regard, is just another factor.
 			// "catalog" will act like a stack where the top-most value is at the front and the back-most values are at the back. Include the market value and a string of the date. YYYY-MM-DD HH:MM:SS
@@ -58,13 +68,13 @@ module.exports = {
 	display(market)
 	{
 		let embed = {
-			title: market.name + (market.value < 0 ? ' (Bankrupt)' : ''),
+			title: market.name,
 			description: market.description,
 			color: "#008000",
 			fields: []
 		};
 		
-		for(let i = 0, cap = Math.min(10, market.catalog.length); i < cap; i++)
+		for(let i = 0, limit = Math.min(10, market.catalog.length); i < limit; i++)
 		{
 			let log = market.catalog[i];
 			let d = new Date(log[1] * 1000);

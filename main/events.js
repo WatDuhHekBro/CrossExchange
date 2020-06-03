@@ -34,6 +34,8 @@ module.exports = {
 			let user = lib.get(lib.loadJSON('storage').users, message.author.id, {});
 			lib.get(user, 'money', 0);
 			user.money -= 350;
+			lib.get(user, 'penalties', 0);
+			user.penalties++;
 			let amountOfMoney = lib.pluralise(user.money, 'credit', 's');
 			
 			message.channel.send("Don't uwu, 350 credit penalty.", {embed: {
@@ -45,8 +47,18 @@ module.exports = {
 						dynamic: true
 					})
 				},
-				description: `Balance: ${amountOfMoney}`,
-				color: "#ffff00"
+				color: "#ffff00",
+				fields:
+				[
+					{
+						name: "Balance",
+						value: lib.pluralise(user.money, 'credit', 's')
+					},
+					{
+						name: "uwuing Penalties",
+						value: lib.pluralise(user.penalties * 350, 'credit', 's')
+					}
+				]
 			}});
 			
 			lib.writeJSON('storage');
