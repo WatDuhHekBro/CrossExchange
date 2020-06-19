@@ -127,14 +127,16 @@ module.exports = {
 		test:
 		{
 			// Generic test function
-			run($)
+			async run($)
 			{
 				if($.common.authenticate($))
 				{
-					$.message.channel.send($.author.avatarURL({
-						format: 'png',
-						dynamic: true
-					}));
+					let messages = await $.channel.messages.fetch({
+						limit: 100,
+						before: "708715959564763156"
+					});
+					console.log(messages);
+					//messages.each(msg => console.log(msg.content));
 				}
 			},
 			subcommands:
