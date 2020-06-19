@@ -2,6 +2,7 @@ module.exports = {
 	run($)
 	{
 		let stats = {};
+		let statsWithoutBots = {};
 		let allTextChannelsInCurrentGuild = $.guild.channels.cache.filter(channel => channel.type === "text");
 		let channelsSearched = 0;
 		
@@ -36,7 +37,7 @@ module.exports = {
 							// Emotes not within the current guild (or deleted ones) will return null. Select only those from the current guild.
 							if(emoteObject != null)
 							{
-								let stat = emoteObject.toString() + " x " + stats[emote] + "\n";
+								let stat = emoteObject.toString() + " x " + stats[emote] + " (" + (statsWithoutBots[emote] || 0) + " without bots)\n";
 								
 								if(line.length + stat.length > 1900)
 								{
@@ -69,8 +70,14 @@ module.exports = {
 							
 							if(!(emoteID in stats))
 								stats[emoteID] = 0;
-							
 							stats[emoteID]++;
+							
+							if(!msg.author.bot)
+							{
+								if(!(emoteID in statsWithoutBots))
+									statsWithoutBots[emoteID] = 0;
+								statsWithoutBots[emoteID]++;
+							}
 						}
 						
 						for(let emoteID of reactionEmotes)
@@ -81,6 +88,15 @@ module.exports = {
 								if(!(emoteID in stats))
 									stats[emoteID] = 0;
 								stats[emoteID] += reactions.get(emoteID).count;
+								
+								if(!(emoteID in statsWithoutBots))
+									statsWithoutBots[emoteID] = 0;
+								statsWithoutBots[emoteID] += reactions.get(emoteID).count;
+								
+								reactions.get(emoteID).users.fetch().then(user => {
+									if(user.bot)
+										statsWithoutBots[emoteID]--;
+								});
 							}
 						}
 						
