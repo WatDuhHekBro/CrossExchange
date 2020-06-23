@@ -27,11 +27,11 @@ module.exports = {
 		{
 			run($)
 			{
-				if($.common.authenticate($))
-				{
-					console.clear();
-					$.channel.send("Cleared the console.");
-				}
+				if(!$.common.authenticate($))
+					return;
+				
+				console.clear();
+				$.channel.send("Cleared the console.");
 			},
 			subcommands:
 			{
@@ -39,18 +39,18 @@ module.exports = {
 				{
 					run($)
 					{
-						if($.common.authenticate($))
+						if(!$.common.authenticate($))
+							return;
+						
+						let stonks = $.lib.loadJSON('stonks');
+						
+						for(let tag in stonks.markets)
 						{
-							let stonks = $.lib.loadJSON('stonks');
-							
-							for(let tag in stonks.markets)
-							{
-								let market = stonks.markets[tag];
-								market.catalog = [];
-							}
-							
-							$.channel.send("Cleared the market catalog.");
+							let market = stonks.markets[tag];
+							market.catalog = [];
 						}
+						
+						$.channel.send("Cleared the market catalog.");
 					}
 				}
 			}
@@ -64,32 +64,30 @@ module.exports = {
 				{
 					async run($)
 					{
-						if($.common.authenticate($))
+						if(!$.common.authenticate($))
+							return;
+						
+						$.channel.bulkDelete(6);
+						let stonks = $.lib.loadJSON('stonks');
+						stonks.channelMarket = $.channel.id;
+						
+						for(let tag in stonks.markets)
 						{
-							$.channel.bulkDelete(6);
-							let stonks = $.lib.loadJSON('stonks');
-							stonks.channelMarket = $.channel.id;
-							
-							for(let tag in stonks.markets)
-							{
-								let market = stonks.markets[tag];
-								let message = await $.channel.send(`Market values for ${market.name || ""}...`, {embed: $.stonks.display(market)})
-								market.message = message.id;
-							}
-							
-							// Still isn't auto-writing after the command for some reason.
-							$.lib.writeJSON('stonks', stonks);
+							let market = stonks.markets[tag];
+							let message = await $.channel.send(`Market values for ${market.name || ""}...`, {embed: $.stonks.display(market)})
+							market.message = message.id;
 						}
+						
+						// Still isn't auto-writing after the command for some reason.
+						$.lib.writeJSON('stonks', stonks);
 					}
 				},
 				events:
 				{
 					run($)
 					{
-						if($.common.authenticate($))
-						{
-							
-						}
+						if(!$.common.authenticate($))
+							return;
 					}
 				}
 			}
@@ -103,23 +101,23 @@ module.exports = {
 				{
 					run($)
 					{
-						if($.common.authenticate($))
-						{
-							$.lib.loadStack();
-							$.channel.send("Reloaded the cache to match manual edits.");
-						}
+						if(!$.common.authenticate($))
+							return;
+						
+						$.lib.loadStack();
+						$.channel.send("Reloaded the cache to match manual edits.");
 					}
 				},
 				commands:
 				{
 					run($)
 					{
-						if($.common.authenticate($))
-						{
-							let storage = $.lib.loadJSON('config');
-							storage.reload = !storage.reload;
-							$.channel.send(storage.reload ? "Now reloading after every command." : "No longer reloading after every command.");
-						}
+						if(!$.common.authenticate($))
+							return;
+						
+						let storage = $.lib.loadJSON('config');
+						storage.reload = !storage.reload;
+						$.channel.send(storage.reload ? "Now reloading after every command." : "No longer reloading after every command.");
 					}
 				}
 			}
@@ -129,15 +127,18 @@ module.exports = {
 			// Generic test function
 			async run($)
 			{
-				if($.common.authenticate($))
-				{
-					let messages = await $.channel.messages.fetch({
-						limit: 100,
-						before: "708715959564763156"
-					});
-					console.log(messages);
-					//messages.each(msg => console.log(msg.content));
-				}
+				if(!$.common.authenticate($))
+					return;
+				
+				/*let messages = await $.channel.messages.fetch({
+					limit: 100,
+					before: "708715959564763156"
+				});
+				console.log(messages);*/
+				//messages.each(msg => console.log(msg.content));
+				setTimeout(() => $.channel.send({embed: {
+					description: $.message.author.toString()
+				}}), 5000);
 			},
 			subcommands:
 			{
@@ -145,22 +146,22 @@ module.exports = {
 				{
 					run($)
 					{
-						if($.common.authenticate($))
-						{
-							setInterval(() => {$.stonks.iterate($.guild)}, 5000);
-							$.channel.send("Every 5 seconds, the market will update.");
-						}
+						if(!$.common.authenticate($))
+							return;
+						
+						setInterval(() => {$.stonks.iterate($.guild)}, 5000);
+						$.channel.send("Every 5 seconds, the market will update.");
 					}
 				},
 				event:
 				{
 					run($)
 					{
-						if($.common.authenticate($))
-						{
-							$.stonks.event();
-							$.channel.send("Manually activated one event.");
-						}
+						if(!$.common.authenticate($))
+							return;
+						
+						$.stonks.event();
+						$.channel.send("Manually activated one event.");
 					}
 				}
 			}

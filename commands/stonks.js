@@ -15,19 +15,20 @@ module.exports = {
 			if(amount === -1)
 				amount = Math.floor(money / value);
 			
-			if(money >= (value * amount))
+			if(money < (value * amount))
 			{
-				$.lib.get(user, 'stonks', {});
-				let userAmount = $.lib.get(user.stonks, m, 0);
-				user.stonks[m] += amount;
-				user.money -= value * amount;
-				market.invested += amount;
-				let stockName = $.lib.pluralise(amount, 'stock', 's');
-				let stockNameInvested = $.lib.pluralise(market.invested, 'stock', 's');
-				$.channel.send(`You invested in and bought ${stockName} from ${market.name}. That market now has ${stockNameInvested} invested in it.`); // You now have x stonks in y.
-			}
-			else
 				$.channel.send("You don't have enough money!");
+				return;
+			}
+			
+			$.lib.get(user, 'stonks', {});
+			let userAmount = $.lib.get(user.stonks, m, 0);
+			user.stonks[m] += amount;
+			user.money -= value * amount;
+			market.invested += amount;
+			let stockName = $.lib.pluralise(amount, 'stock', 's');
+			let stockNameInvested = $.lib.pluralise(market.invested, 'stock', 's');
+			$.channel.send(`You invested in and bought ${stockName} from ${market.name}. That market now has ${stockNameInvested} invested in it.`); // You now have x stonks in y.
 		},
 		// Also keep track of how much value the stock had when the user had it to tell them whether it was a gain or a loss. It'll just tell the user the net effect so don't worry about keeping track of each individual stock.
 		sell($, m, amount, query = false)
@@ -43,19 +44,20 @@ module.exports = {
 			if(amount === -1)
 				amount = stocks;
 			
-			if(stocks > 0)
+			if(stocks <= 0)
 			{
-				user.stonks[m] -= amount;
-				let userMoney = $.lib.get(user, 'money', 0);
-				user.money += userMoney + (value * amount);
-				market.invested -= amount; // It's the value of the current market value because you're taking out that amount of money you invested, so that much money goes out of the invested amount. No wait... The invested amount should show the amount of stocks rather than being tied to a value at one point in time. And calculations involving the market investments should multiply that by its value.
-				let stockName = $.lib.pluralise(amount, 'stock', 's');
-				let stockNameInvested = $.lib.pluralise(market.invested, 'stock', 's');
-				let creditName = $.lib.pluralise(value * amount, 'credit', 's');
-				$.channel.send(`You sold ${stockName} from ${market.name} for ${creditName}! That market now has ${stockNameInvested} invested in it.`);
-			}
-			else
 				$.channel.send(`You don't have any stocks in ${market.name}!`);
+				return;
+			}
+			
+			user.stonks[m] -= amount;
+			let userMoney = $.lib.get(user, 'money', 0);
+			user.money += userMoney + (value * amount);
+			market.invested -= amount; // It's the value of the current market value because you're taking out that amount of money you invested, so that much money goes out of the invested amount. No wait... The invested amount should show the amount of stocks rather than being tied to a value at one point in time. And calculations involving the market investments should multiply that by its value.
+			let stockName = $.lib.pluralise(amount, 'stock', 's');
+			let stockNameInvested = $.lib.pluralise(market.invested, 'stock', 's');
+			let creditName = $.lib.pluralise(value * amount, 'credit', 's');
+			$.channel.send(`You sold ${stockName} from ${market.name} for ${creditName}! That market now has ${stockNameInvested} invested in it.`);
 		},
 		isValidMarket($, m)
 		{

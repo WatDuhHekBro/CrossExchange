@@ -52,79 +52,84 @@ module.exports = {
 						let senderData = $.lib.get(storage.users, $.author.id, {});
 						let senderMoney = $.lib.get(senderData, 'money', 0);
 						
-						if(senderMoney < amount)
-							$.channel.send("You don't have enough money to do that!", {embed: $.common.balance($)});
-						else if(amount > 0)
+						if(amount <= 0)
 						{
-							if(/<@!\d+>/.test($.args[1]))
+							$.channel.send("You must send at least one credit!");
+							return;
+						}
+						else if(senderMoney < amount)
+						{
+							$.channel.send("You don't have enough money to do that!", {embed: $.common.balance($)});
+							return;
+						}
+						
+						if(/<@!\d+>/.test($.args[1]))
+						{
+							let receiverID = $.args[1].substring(3, $.args[1].length-1);
+							let receiver = $.guild.members.cache.get(receiverID).user;
+							let receiverData = $.lib.get(storage.users, receiverID, {});
+							let receiverMoney = $.lib.get(receiverData, 'money', 0);
+							senderData.money -= amount;
+							receiverData.money += amount;
+							$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${receiver.toString()}!`);
+						}
+						else
+						{
+							let username = $.args.slice(1).join(' ');
+							let members = await $.guild.members.fetch({
+								query: username,
+								limit: 1
+							});
+							
+							if(!members.first())
 							{
-								let receiverID = $.args[1].substring(3, $.args[1].length-1);
-								let receiver = $.guild.members.cache.get(receiverID).user;
-								let receiverData = $.lib.get(storage.users, receiverID, {});
+								$.channel.send(`Couldn't find a user by the name of "${username}"!`);
+								return;
+							}
+							
+							let receiver = members.first().user;
+							let message = await $.channel.send("Is this the person you're looking for?", {embed: {
+								author:
+								{
+									name: `${receiver.username}#${receiver.discriminator}`,
+									icon_url: receiver.avatarURL({
+										format: 'png',
+										dynamic: true
+									})
+								},
+								color: "#ffff00"
+							}});
+							await message.react('✅');
+							await message.react('❌');
+							
+							// Put this after the bot reacts because there's a timeout (in milliseconds) for awaitReactions where there won't be any commands executed until then.
+							let isCorrect = false;
+							let isDeleted = false;
+							// Because of that though, you also need to edit the message to let the user know when they can react.
+							await message.edit(message.content + " You can now react to this message.");
+							await message.awaitReactions((reaction, user) => {
+								if(user.id === $.author.id)
+								{
+									if(reaction.emoji.name === '✅')
+										isCorrect = true;
+									isDeleted = true;
+									message.delete();
+								}
+							}, {time: 10000});
+							
+							if(!isDeleted)
+								message.delete();
+							
+							if(isCorrect)
+							{
+								let receiverData = $.lib.get(storage.users, receiver.id, {});
 								let receiverMoney = $.lib.get(receiverData, 'money', 0);
 								senderData.money -= amount;
 								receiverData.money += amount;
 								$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${receiver.toString()}!`);
-							}
-							else
-							{
-								let username = $.args.slice(1).join(' ');
-								let members = await $.guild.members.fetch({
-									query: username,
-									limit: 1
-								});
-								
-								if(members.first())
-								{
-									let receiver = members.first().user;
-									let message = await $.channel.send("Is this the person you're looking for?", {embed: {
-										author:
-										{
-											name: receiver.username + '#' + receiver.discriminator,
-											icon_url: receiver.avatarURL({
-												format: 'png',
-												dynamic: true
-											})
-										},
-										color: "#ffff00"
-									}});
-									await message.react('✅');
-									await message.react('❌');
-									
-									// Put this after the bot reacts because there's a timeout (in milliseconds) for awaitReactions where there won't be any commands executed until then.
-									let isCorrect = false;
-									let isDeleted = false;
-									// Because of that though, you also need to edit the message to let the user know when they can react.
-									await message.edit(message.content + " You can now react to this message.");
-									await message.awaitReactions((reaction, user) => {
-										if(user.id === $.author.id)
-										{
-											if(reaction.emoji.name === '✅')
-												isCorrect = true;
-											isDeleted = true;
-											message.delete();
-										}
-									}, {time: 10000});
-									
-									if(!isDeleted)
-										message.delete();
-									
-									if(isCorrect)
-									{
-										let receiverData = $.lib.get(storage.users, receiver.id, {});
-										let receiverMoney = $.lib.get(receiverData, 'money', 0);
-										senderData.money -= amount;
-										receiverData.money += amount;
-										$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${receiver.toString()}!`);
-										$.lib.writeJSON('storage'); // It seems that after any async operation, you can't rely on auto-write anymore.
-									}
-								}
-								else
-									$.channel.send(`Couldn't find a user by the name of "${username}"!`);
+								$.lib.writeJSON('storage'); // It seems that after any async operation, you can't rely on auto-write anymore.
 							}
 						}
-						else
-							$.channel.send("You must send at least one credit!");
 					}
 				}
 			}
@@ -148,18 +153,18 @@ module.exports = {
 				}
 				else
 				{
-					if(
-						user.lastReceived.year !== date.getUTCFullYear() ||
-						user.lastReceived.month !== (date.getUTCMonth()+1) ||
-						user.lastReceived.day !== date.getUTCDate()
-					)
+					// If today's date is the same as lastReceived, exit.
+					if(user.lastReceived.year === date.getUTCFullYear() &&
+						user.lastReceived.month === (date.getUTCMonth()+1) &&
+						user.lastReceived.day === date.getUTCDate())
 					{
-						$.lib.get(user, 'money', 0);
-						user.money += 100;
-						$.channel.send("Here's your daily 100 credits.", {embed: $.common.balance($)});
-					}
-					else
 						$.channel.send("It's too soon to pick up your daily credits.");
+						return;
+					}
+					
+					$.lib.get(user, 'money', 0);
+					user.money += 100;
+					$.channel.send("Here's your daily 100 credits.", {embed: $.common.balance($)});
 				}
 			}
 		},
