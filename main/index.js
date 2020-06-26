@@ -46,7 +46,6 @@ client.on("message", message => {
 		}
 		
 		let cmd = commands.get(action);
-		let common = cmd.common; // You can add some common functions or properties that you can access from any function, since each individual run command is sandboxed due to how its scope.
 		let level = 0;
 		let isNumber = false;
 		
@@ -84,7 +83,6 @@ client.on("message", message => {
 				author: message.author,
 				channel: message.channel,
 				client: client,
-				common: common,
 				guild: message.guild,
 				lib: lib,
 				member: message.member,

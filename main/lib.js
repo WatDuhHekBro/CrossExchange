@@ -2,6 +2,7 @@ const fs = require('fs');
 const init = require('./init.json');
 
 // It might actually be a good idea to make a loader function for lib.js then go from there as if you loaded the code. Currently, it's quite messy, especially with += and such.
+let a = 0;
 
 // In a command file...
 // Call into your script: let stonks = lib.loadJSON('stonks'); // do not use lib.stack.stonks, it won't auto-write
@@ -118,13 +119,6 @@ module.exports = {
 			this.writeJSON(header, this.stack[header]);
 		this.write = []; // Potential memory leak?
 	},
-	// Gets an object and initializes it to something if it doesn't exist.
-	get(object, key, template)
-	{
-		if(!(key in object))
-			object[key] = template;
-		return object[key];
-	},
 	// Create directory only if it doesn't exist.
 	createDirectory(path)
 	{
@@ -164,14 +158,34 @@ module.exports = {
 	{
 		return this.rand(base - deviation, base + deviation);
 	},
-	// e.g. pluralise(5, 'credit', 's') and pluralise(5, 'part', 'ies', 'y'). You can just have two fields as well if you're entering something like pluralise(5, 'sheep') while looping through the data.
-	pluraliseOnly(number, word, plural = '', singular = '')
+	test()
 	{
-		return number === 1 ? word + singular : word + plural;
-	},
-	// A separate function to include the number with pluralization to avoid redundancy.
-	pluralise(number, word, plural = '', singular = '')
-	{
-		return number + ' ' + this.pluraliseOnly(number, word, plural, singular);
+		return a++;
 	}
 };
+
+// e.g. amount.pluralise("credit", "s"), amount.pluralise("part", "ies", "y"), amount.pluralise("sheep")
+Number.prototype.pluralise = function(word, plural = "", singular = "", excludeNumber = false) {
+	let result = excludeNumber ? "" : `${this} `;
+	
+	if(this.valueOf() === 1)
+		result += word + singular;
+	else
+		result += word + plural;
+	
+	return result;
+};
+
+// Gets an object and initializes it to something if it doesn't exist.
+Object.prototype.access = function(key, template) {
+	if(!(key in this))
+		this[key] = template;
+	return this[key];
+};
+
+global.Random = {
+	test: 2
+};
+
+//global.Discord --> getUser(id) getUser(name)
+//global.Storage or global.Data

@@ -1,39 +1,8 @@
 module.exports = {
 	description: "Handle your money.",
-	common:
-	{
-		// Returns an embed object
-		balance($, author = $.author)
-		{
-			let user = $.lib.get($.lib.loadJSON('storage').users, author.id, {});
-			
-			return {
-				author:
-				{
-					name: author.username,
-					icon_url: author.avatarURL({
-						format: 'png',
-						dynamic: true
-					})
-				},
-				color: "#ffff00",
-				fields:
-				[
-					{
-						name: "Balance",
-						value: $.lib.pluralise($.lib.get(user, 'money', 0), 'credit', 's')
-					},
-					{
-						name: "uwuing Penalties",
-						value: $.lib.pluralise($.lib.get(user, 'penalties', 0) * 350, 'credit', 's')
-					}
-				]
-			};
-		}
-	},
 	run($)
 	{
-		$.channel.send({embed: $.common.balance($)});
+		$.channel.send({embed: balance($)});
 	},
 	subcommands:
 	{
@@ -49,8 +18,8 @@ module.exports = {
 					{
 						let amount = Math.floor($.args[0]);
 						let storage = $.lib.loadJSON('storage');
-						let senderData = $.lib.get(storage.users, $.author.id, {});
-						let senderMoney = $.lib.get(senderData, 'money', 0);
+						let senderData = storage.users.access($.author.id, {});
+						let senderMoney = senderData.access('money', 0);
 						
 						if(amount <= 0)
 						{
@@ -59,19 +28,19 @@ module.exports = {
 						}
 						else if(senderMoney < amount)
 						{
-							$.channel.send("You don't have enough money to do that!", {embed: $.common.balance($)});
+							$.channel.send("You don't have enough money to do that!", {embed: balance($)});
 							return;
 						}
 						
 						if(/<@!\d+>/.test($.args[1]))
 						{
 							let receiverID = $.args[1].substring(3, $.args[1].length-1);
-							let receiver = $.guild.members.cache.get(receiverID).user;
-							let receiverData = $.lib.get(storage.users, receiverID, {});
-							let receiverMoney = $.lib.get(receiverData, 'money', 0);
+							let receiver = $.guild.members.cache.access(receiverID).user;
+							let receiverData = storage.users.access(receiverID, {});
+							let receiverMoney = receiverData.access('money', 0);
 							senderData.money -= amount;
 							receiverData.money += amount;
-							$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${receiver.toString()}!`);
+							$.channel.send(`${$.author.toString()} has sent ${amount.pluralise('credit', 's')} to ${receiver.toString()}!`);
 						}
 						else
 						{
@@ -122,11 +91,11 @@ module.exports = {
 							
 							if(isCorrect)
 							{
-								let receiverData = $.lib.get(storage.users, receiver.id, {});
-								let receiverMoney = $.lib.get(receiverData, 'money', 0);
+								let receiverData = storage.users.access(receiver.id, {});
+								let receiverMoney = receiverData.access('money', 0);
 								senderData.money -= amount;
 								receiverData.money += amount;
-								$.channel.send(`${$.author.toString()} has sent ${$.lib.pluralise(amount, 'credit', 's')} to ${receiver.toString()}!`);
+								$.channel.send(`${$.author.toString()} has sent ${amount.pluralise('credit', 's')} to ${receiver.toString()}!`);
 								$.lib.writeJSON('storage'); // It seems that after any async operation, you can't rely on auto-write anymore.
 							}
 						}
@@ -138,7 +107,7 @@ module.exports = {
 		{
 			run($)
 			{
-				let user = $.lib.get($.lib.loadJSON('storage').users, $.author.id, {});
+				let user = $.lib.loadJSON('storage').users.access($.author.id, {});
 				let date = new Date();
 				
 				if(!user.lastReceived)
@@ -149,7 +118,7 @@ module.exports = {
 						month: date.getUTCMonth()+1,
 						day: date.getUTCDate()
 					};
-					$.channel.send("Here's 500 credits to get started.", {embed: $.common.balance($)});
+					$.channel.send("Here's 500 credits to get started.", {embed: balance($)});
 				}
 				else
 				{
@@ -162,9 +131,9 @@ module.exports = {
 						return;
 					}
 					
-					$.lib.get(user, 'money', 0);
+					user.access('money', 0);
 					user.money += 100;
-					$.channel.send("Here's your daily 100 credits.", {embed: $.common.balance($)});
+					$.channel.send("Here's your daily 100 credits.", {embed: balance($)});
 				}
 			}
 		},
@@ -185,8 +154,8 @@ module.exports = {
 						let id = tags[i];
 						
 						fields.push({
-							name: $.guild.members.cache.get(id).user.username,
-							value: $.lib.pluralise(users[id].money, 'credit', 's')
+							name: $.guild.members.cache.access(id).user.username,
+							value: users[id].money.pluralise('credit', 's')
 						});
 					}
 					
@@ -214,8 +183,8 @@ module.exports = {
 			if(/<@!\d+>/.test($.args[0]))
 			{
 				let userID = $.args[0].substring(3, $.args[0].length-1);
-				let user = $.guild.members.cache.get(userID).user;
-				$.channel.send({embed: $.common.balance($, user)});
+				let user = $.guild.members.cache.access(userID).user;
+				$.channel.send({embed: balance($, user)});
 			}
 			else
 			{
@@ -226,10 +195,39 @@ module.exports = {
 				});
 				
 				if(members.first())
-					$.channel.send({embed: $.common.balance($, members.first().user)});
+					$.channel.send({embed: balance($, members.first().user)});
 				else
 					$.channel.send(`Couldn't find a user by the name of "${username}"!`);
 			}
 		}
 	}
 };
+
+// Returns an embed object
+function balance($, author = $.author)
+{
+	let user = $.lib.loadJSON('storage').users.access(author.id, {}); 
+	
+	return {
+		author:
+		{
+			name: author.username,
+			icon_url: author.avatarURL({
+				format: 'png',
+				dynamic: true
+			})
+		},
+		color: "#ffff00",
+		fields:
+		[
+			{
+				name: "Balance",
+				value: user.access('money', 0).pluralise('credit', 's')
+			},
+			{
+				name: "uwuing Penalties",
+				value: (user.access('penalties', 0) * 350).pluralise('credit', 's')
+			}
+		]
+	};
+}

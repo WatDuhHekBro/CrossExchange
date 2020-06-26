@@ -2,24 +2,8 @@ module.exports = {
 	description: "A command to toggle system settings and manually test features.",
 	run($)
 	{
-		if($.common.authenticate($))
+		if(isAdmin($))
 			$.message.reply("you are an admin.");
-	},
-	common:
-	{
-		authenticate($)
-		{
-			let config = $.lib.loadJSON('config', true);
-			let isAdmin = config.admins.includes($.author.id);
-			
-			if(!isAdmin)
-			{
-				$.message.reply("you are not an admin. If you have access to the server files, add yourself to it manually in `config.json`. Your user ID should now be logged in the console.");
-				console.log($.author.id);
-			}
-			
-			return isAdmin;
-		}
 	},
 	subcommands:
 	{
@@ -27,7 +11,7 @@ module.exports = {
 		{
 			run($)
 			{
-				if(!$.common.authenticate($))
+				if(!isAdmin($))
 					return;
 				
 				console.clear();
@@ -39,7 +23,7 @@ module.exports = {
 				{
 					run($)
 					{
-						if(!$.common.authenticate($))
+						if(!isAdmin($))
 							return;
 						
 						let stonks = $.lib.loadJSON('stonks');
@@ -64,7 +48,7 @@ module.exports = {
 				{
 					async run($)
 					{
-						if(!$.common.authenticate($))
+						if(!isAdmin($))
 							return;
 						
 						$.channel.bulkDelete(6);
@@ -86,7 +70,7 @@ module.exports = {
 				{
 					run($)
 					{
-						if(!$.common.authenticate($))
+						if(!isAdmin($))
 							return;
 					}
 				}
@@ -101,7 +85,7 @@ module.exports = {
 				{
 					run($)
 					{
-						if(!$.common.authenticate($))
+						if(!isAdmin($))
 							return;
 						
 						$.lib.loadStack();
@@ -112,7 +96,7 @@ module.exports = {
 				{
 					run($)
 					{
-						if(!$.common.authenticate($))
+						if(!isAdmin($))
 							return;
 						
 						let storage = $.lib.loadJSON('config');
@@ -127,7 +111,7 @@ module.exports = {
 			// Generic test function
 			async run($)
 			{
-				if(!$.common.authenticate($))
+				if(!isAdmin($))
 					return;
 				
 				/*let messages = await $.channel.messages.fetch({
@@ -136,9 +120,11 @@ module.exports = {
 				});
 				console.log(messages);*/
 				//messages.each(msg => console.log(msg.content));
-				setTimeout(() => $.channel.send({embed: {
+				/*setTimeout(() => $.channel.send({embed: {
 					description: $.message.author.toString()
-				}}), 5000);
+				}}), 5000);*/
+				//Random.test++;
+				$.channel.send($.lib.test());
 			},
 			subcommands:
 			{
@@ -146,7 +132,7 @@ module.exports = {
 				{
 					run($)
 					{
-						if(!$.common.authenticate($))
+						if(!isAdmin($))
 							return;
 						
 						setInterval(() => {$.stonks.iterate($.guild)}, 5000);
@@ -157,7 +143,7 @@ module.exports = {
 				{
 					run($)
 					{
-						if(!$.common.authenticate($))
+						if(!isAdmin($))
 							return;
 						
 						$.stonks.event();
@@ -168,3 +154,17 @@ module.exports = {
 		}
 	}
 };
+
+function isAdmin($)
+{
+	let config = $.lib.loadJSON('config', true);
+	let isAdmin = config.admins.includes($.author.id);
+	
+	if(!isAdmin)
+	{
+		$.message.reply("you are not an admin. If you have access to the server files, add yourself to it manually in `config.json`. Your user ID should now be logged in the console.");
+		console.log($.author.id);
+	}
+	
+	return isAdmin;
+}
