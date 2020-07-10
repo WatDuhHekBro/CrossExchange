@@ -50,6 +50,7 @@ client.on("message", message => {
 		let isNumber = false;
 		
 		// "subcommands" overrides "number" as it's more specific. Then after that, it's "any".
+		// Create a new array of arguments then push to that, less worrying about indexes.
 		for(let i = 0; i < args.length; i++)
 		{
 			let param = args[i];

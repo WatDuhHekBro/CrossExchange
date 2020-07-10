@@ -2,8 +2,6 @@ const fs = require('fs');
 const init = require('./init.json');
 
 // It might actually be a good idea to make a loader function for lib.js then go from there as if you loaded the code. Currently, it's quite messy, especially with += and such.
-let a = 0;
-
 // In a command file...
 // Call into your script: let stonks = lib.loadJSON('stonks'); // do not use lib.stack.stonks, it won't auto-write
 // Get key and add it if it's missing: let value = lib.get(stonks.markets, 'shadoon', {});
@@ -157,10 +155,6 @@ module.exports = {
 	randDeviation(base, deviation)
 	{
 		return this.rand(base - deviation, base + deviation);
-	},
-	test()
-	{
-		return a++;
 	}
 };
 
@@ -183,8 +177,8 @@ Object.prototype.access = function(key, template) {
 	return this[key];
 };
 
-global.Random = {
-	test: 2
+Array.prototype.random = function() {
+	return this[Math.floor(Math.random() * this.length)];
 };
 
 //global.Discord --> getUser(id) getUser(name)
