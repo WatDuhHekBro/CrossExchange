@@ -11,6 +11,11 @@ module.exports = {
 	// lib.readJSON and lib.writeJSON will be simply that, reading and writing JSON files. Leave the rest to other functions.
 	// Read a JSON file. If it exists, check with the template and add any missing keys. If it doesn't exist, check if there's a template, and if not, write an empty object into it then return that.
 	// Templating only adds keys. If you want to update your values to whatever's in init.json, delete your data.
+	/**
+	 * Test description.
+	 * @param {string} header - Location of the file.
+	 * @returns {void}
+	 */
 	readJSON(header)
 	{
 		const path = `data/${header}.json`;
@@ -58,6 +63,7 @@ module.exports = {
 			else if(value && value.constructor === Object)
 				this.addKeysR(data[key], value);
 			// As for arrays, there's no easy way to clone them as they're based off index rather than key. In that case, deal with it later. :leaSMUG:
+			// For arrays, you'll provide exactly one item which'll denote the format to use. Each individual item in the array you're checking will be checked for the keys from the template you provide.
 			/*else if(value && value.constructor === Array)
 			{
 				
@@ -158,7 +164,17 @@ module.exports = {
 	}
 };
 
-// e.g. amount.pluralise("credit", "s"), amount.pluralise("part", "ies", "y"), amount.pluralise("sheep")
+/**
+ * Pluralises a word.
+ * - amount.pluralise("credit", "s")
+ * - amount.pluralise("part", "ies", "y")
+ * - amount.pluralise("sheep")
+ * @param {string} word - The root of the word to be pluralised.
+ * @param {string} plural - The plural suffix of the word, occurs when the number is anything but 1.
+ * @param {string} singular - The singular suffix of the word, occurs when the number is only 1.
+ * @param {boolean} excludeNumber - Returns just the word if this is set to true.
+ * @returns {string}
+ */
 Number.prototype.pluralise = function(word, plural = "", singular = "", excludeNumber = false) {
 	let result = excludeNumber ? "" : `${this} `;
 	
@@ -183,3 +199,21 @@ Array.prototype.random = function() {
 
 //global.Discord --> getUser(id) getUser(name)
 //global.Storage or global.Data
+
+// Add keys when needed and remove deprecated keys.
+// Also, watch when data files are manually updated? (development)
+
+// The two types you can't use value.constructor on are undefined and null.
+// isType(5, Number) --> true
+// isType(undefined, Array) --> false (and without errors)
+// isType(null, null) --> true
+// isType(undefined, null) --> true
+function isType(value, type)
+{
+	if(value === undefined && type === undefined)
+		return true;
+	else if(value === null && type === null)
+		return true;
+	else
+		return value !== undefined && value !== null && value.constructor === type;
+}
