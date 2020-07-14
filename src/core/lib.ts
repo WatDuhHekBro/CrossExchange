@@ -1,18 +1,17 @@
-import * as wrappers from "./wrappers";
-import {Dictionary} from "./structures";
+import {GenericWrapper, NumberWrapper, ArrayWrapper} from "./wrappers";
 
 /** Wraps the value you enter with an object that provides extra functionality and provides common utility functions. */
-export default function $(value: number): wrappers.NumberWrapper;
-export default function $<T>(value: T[]): wrappers.ArrayWrapper<T>;
-export default function $<T>(value: T): wrappers.GenericWrapper<T>;
+export default function $(value: number): NumberWrapper;
+export default function $<T>(value: T[]): ArrayWrapper<T>;
+export default function $<T>(value: T): GenericWrapper<T>;
 export default function $(value: any)
 {
 	if(isType(value, Number))
-		return new wrappers.NumberWrapper(value);
+		return new NumberWrapper(value);
 	else if(isType(value, Array))
-		return new wrappers.ArrayWrapper(value);
+		return new ArrayWrapper(value);
 	else
-		return new wrappers.GenericWrapper(value);
+		return new GenericWrapper(value);
 }
 
 $.test = function()
@@ -68,7 +67,7 @@ export function parseArgs(line: string): string[]
  * - `%%` = `%`
  * - If the invalid token is null/undefined, nothing is changed.
  */
-export function parseVars(line: string, definitions: Dictionary, invalid: string|null|undefined = ""): string
+export function parseVars(line: string, definitions: {[key: string]: string}, invalid: string|null|undefined = ""): string
 {
 	let result = "";
 	let inVariable = false;
@@ -106,7 +105,7 @@ export function parseVars(line: string, definitions: Dictionary, invalid: string
 	return result;
 }
 
-function isType(value: any, type: Function): boolean
+export function isType(value: any, type: Function): boolean
 {
 	if(value === undefined && type === undefined)
 		return true;

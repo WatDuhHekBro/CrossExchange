@@ -1,11 +1,61 @@
 import fs from "fs";
+import * as templates from "./templates";
 
-export default function()
-{
-	//fs.writeFileSync('test', 'test1234');
-	fs.existsSync('test');
-}
+//const stack: {[key: string]: object} = {};
 
-// Storage = require(../core/storage.js)
-// Storage.read(header)
-// Storage.write(header)
+const Storage = {
+	read(header: string): object
+	{
+		//if(header in stack)
+			//return stack[header];
+		
+		this.open("data");
+		const path = `data/${header}.json`;
+		let data = {};
+		
+		if(fs.existsSync(path))
+		{
+			const file = fs.readFileSync(path, "utf-8");
+			
+			try
+			{
+				data = JSON.parse(file);
+				templates.applyTemplate(data, header);
+			}
+			catch(error)
+			{
+				console.warn(`Malformed JSON data (header: ${header}), backing it up.`);
+				fs.writeFileSync(`${path}.backup`, file);
+			}
+		}
+		
+		//stack[header] = data;
+		return data;
+	},
+	write(header: string, data: object)
+	{
+		this.open("data");
+		const path = `data/${header}.json`;
+		//const result = (header in stack) ? JSON.stringify(stack[header], null, '\t') : "{}";
+		fs.writeFileSync(path, JSON.stringify(data, null, '\t'));
+	},
+	open(path: string, filter?: (value: string, index: number, array: string[]) => unknown): string[]
+	{
+		if(!fs.existsSync(path))
+			fs.mkdirSync(path);
+		
+		let directory = fs.readdirSync(path);
+		
+		if(filter)
+			directory = directory.filter(filter);
+		
+		return directory;
+	},
+	close(path: string)
+	{
+		if(fs.existsSync(path) && fs.readdirSync(path).length === 0)
+			fs.rmdirSync(path);
+	}
+};
+
+export default Storage;
