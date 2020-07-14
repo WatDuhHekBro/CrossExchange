@@ -42,15 +42,10 @@ export default class Command
 		}
 		else
 		{
-			try
-			{
-				(this.run as Function)($);
-			}
-			catch(error)
-			{
-				console.error('ohno', error);
+			(this.run as Function)($).catch((error: Error) => {
 				$.channel.send(`There was an error while trying to execute that command!\`\`\`${error}\`\`\``);
-			}
+				console.error(error);
+			});
 		}
 	}
 	
@@ -93,7 +88,7 @@ export const template =
 import {CommonLibrary} from "../core/lib";
 
 export default new Command({
-	description: "This is a template/testing command providing common functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command. The \\"endpoint\\" parameter (boolean) prevents further arguments from being passed.",
+	description: "This is a template/testing command providing common functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command. The \\"endpoint\\" parameter (boolean) prevents further arguments from being passed. Also, as long as you keep the run function async, it'll return a promise allowing the program to automatically catch any synchronous errors. However, you'll have to do manual error handling if you go the then and catch route.",
 	async run($: CommonLibrary)
 	{
 		

@@ -4,13 +4,14 @@ import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, Guild
 /** A type that describes what the library module does. */
 export interface CommonLibrary
 {
-	// Common Library Functions //
+	// Wrapper Object //
 	/** Wraps the value you enter with an object that provides extra functionality and provides common utility functions. */
 	(value: number): NumberWrapper;
 	<T>(value: T[]): ArrayWrapper<T>;
 	<T>(value: T): GenericWrapper<T>;
-	/** test doc interface */
-	test: (a: any) => void;
+	
+	// Common Library Functions //
+	//test: (a: any) => void;
 	
 	// Dynamic Properties //
 	args: any[];
@@ -36,10 +37,10 @@ export default function $(value: any)
 }
 
 /** test doc function */
-$.test = function(a: any)
+/*$.test = function(a: any)
 {
 	console.log("test", a);
-}
+}*/
 
 /**
  * Splits a command by spaces while accounting for quotes which capture string arguments.
