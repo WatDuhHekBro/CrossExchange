@@ -1,5 +1,5 @@
-import {Client, Collection} from "discord.js";
-import {existsSync, writeFileSync, fstat, write} from "fs";
+import {Client, Collection, MessageMentions} from "discord.js";
+import {existsSync, writeFileSync} from "fs";
 import Storage from "./core/storage";
 import lib from "./core/lib";
 import setup from "./setup";
@@ -26,15 +26,20 @@ import Command, {template} from "./core/command";
 		commands.set(header, command);
 	}
 	
-	client.on("message", message => {
-		// Checks //
+	client.on("message", async message => {
+		// Message Setup //
 		if(message.author.bot)
 			return;
 		
 		// uwu-ing penalties, etc.
 		
 		if(!message.content.startsWith(config.prefix))
-			return;
+		{
+			if(message.mentions.members?.has(client.user?.id || ""))
+				message.channel.send(`My prefix is \`${config.prefix}\`.`);
+			else
+				return;
+		}
 		
 		const [header, ...args] = message.content.substring(config.prefix.length).split(/ +/);
 		
@@ -44,11 +49,26 @@ import Command, {template} from "./core/command";
 		// Subcommand Recursion //
 		let command = commands.get(header) as Command;
 		const params: any[] = [];
+		let argsLeft = args.length;
 		
 		for(let param of args)
 		{
+			if(command.endpoint)
+			{
+				if(command.subcommands || command.user || command.number || command.any)
+					console.warn(`An endpoint cannot have subcommands! Check ${config.prefix}${header} again.`);
+				break;
+			}
+			
 			if(command.subcommands && (param in command.subcommands))
 				command = command.subcommands[param];
+			else if(command.user && (/\d{17,19}/.test(param) || MessageMentions.USERS_PATTERN.test(param)))
+			{
+				const id = param.match(/\d+/g)![0];
+				command = command.user;
+				try {params.push(await client.users.fetch(id))}
+				catch(error) {params.push(null)}
+			}
 			else if(command.number && Number(param))
 			{
 				command = command.number;
@@ -61,6 +81,14 @@ import Command, {template} from "./core/command";
 			}
 			else
 				params.push(param);
+			
+			argsLeft--;
+		}
+		
+		if(argsLeft > 0)
+		{
+			message.channel.send("`Too many arguments!`");
+			return;
 		}
 		
 		// Execute with dynamic library attached. //
@@ -77,5 +105,9 @@ import Command, {template} from "./core/command";
 	
 	client.once("ready", () => {
 		console.log("Ready!");
+		client.user?.setActivity({
+			type: "LISTENING",
+			name: `${config.prefix}help`
+		});
 	});
 })()

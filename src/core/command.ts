@@ -3,8 +3,10 @@ import {isType, parseVars, CommonLibrary} from "./lib";
 interface CommandOptions
 {
 	description?: string;
-	action?: Function|string;
+	endpoint?: boolean;
+	run?: Function|string;
 	subcommands?: {[key: string]: Command};
+	user?: Command;
 	number?: Command;
 	any?: Command;
 }
@@ -12,25 +14,29 @@ interface CommandOptions
 export default class Command
 {
 	public readonly description: string;
-	private action: Function|string;
+	public readonly endpoint: boolean;
+	private run: Function|string;
 	public subcommands: {[key: string]: Command}|null;
+	public user: Command|null;
 	public number: Command|null;
 	public any: Command|null;
 	
 	constructor(options?: CommandOptions)
 	{
 		this.description = options?.description || "No description.";
-		this.action = options?.action || "No action was set on this command!";
+		this.endpoint = options?.endpoint || false;
+		this.run = options?.run || "No action was set on this command!";
 		this.subcommands = options?.subcommands || null;
+		this.user = options?.user || null;
 		this.number = options?.number || null;
 		this.any = options?.any || null;
 	}
 	
 	public async execute($: CommonLibrary)
 	{
-		if(isType(this.action, String))
+		if(isType(this.run, String))
 		{
-			$.channel.send(parseVars(this.action as string, {
+			$.channel.send(parseVars(this.run as string, {
 				author: $.author.toString()
 			}, "???"));
 		}
@@ -38,7 +44,7 @@ export default class Command
 		{
 			try
 			{
-				(this.action as Function)($);
+				(this.run as Function)($);
 			}
 			catch(error)
 			{
@@ -48,27 +54,35 @@ export default class Command
 		}
 	}
 	
-	public setAction(action: Function|string)
+	/**
+	 * Set what happens when the command is called.
+	 * - If the command is a function, run it with one argument (the common library).
+	 * - If the command is a string, it'll be sent as a message with %variables% replaced.
+	 */
+	public set(run: Function|string)
 	{
-		this.action = action;
+		this.run = run;
 	}
 	
-	public setSubcommand(key: string, command: Command)
+	/** The safe way to attach a named subcommand. */
+	public attach(key: string, command: Command)
 	{
 		if(!this.subcommands)
 			this.subcommands = {};
 		this.subcommands[key] = command;
 	}
 	
-	public setNumber(command: Command)
+	/** See if a subcommand exists for the command. */
+	/*public has(type: string): boolean
 	{
-		this.number = command;
-	}
+		return this.subcommands && (type in this.subcommands) || false;
+	}*/
 	
-	public setAny(command: Command)
+	/** Get the requested subcommand if it exists. */
+	/*public get(type: string): Command|null
 	{
-		this.any = command;
-	}
+		return this.subcommands && this.subcommands[type] || null;
+	}*/
 }
 
 // The template should be built with a reductionist mentality.
@@ -79,8 +93,8 @@ export const template =
 import {CommonLibrary} from "../core/lib";
 
 export default new Command({
-	description: "This is a template/testing command providing all possible functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command.",
-	action($: CommonLibrary)
+	description: "This is a template/testing command providing common functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command. The \\"endpoint\\" parameter (boolean) prevents further arguments from being passed.",
+	async run($: CommonLibrary)
 	{
 		
 	},
@@ -88,22 +102,29 @@ export default new Command({
 	{
 		layer: new Command({
 			description: "This is a named subcommand, meaning that the key name is what determines the keyword to use. With default settings for example, \\"$test layer\\".",
-			action($: CommonLibrary)
+			async run($: CommonLibrary)
 			{
 				
 			}
 		})
 	},
+	user: new Command({
+		description: "This is the subcommand for getting users by pinging them or copying their ID. The argument will either be a user object or null if no user is found.",
+		async run($: CommonLibrary)
+		{
+			
+		}
+	}),
 	number: new Command({
 		description: "This is a numeric subcommand, meaning that any type of number (excluding Infinity/NaN) will route to this command if present. With default settings for example, \\"$test -5.2\\". The argument with the number is already parsed so you can just use it without converting it.",
-		action($: CommonLibrary)
+		async run($: CommonLibrary)
 		{
 			
 		}
 	}),
 	any: new Command({
 		description: "This is a generic subcommand, meaning that if there isn't a more specific subcommand that's called, it falls to this. With default settings for example, \\"$test reeee\\".",
-		action($: CommonLibrary)
+		async run($: CommonLibrary)
 		{
 			
 		}
