@@ -1,6 +1,27 @@
 import {GenericWrapper, NumberWrapper, ArrayWrapper} from "./wrappers";
+import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember} from "discord.js";
 
-/** Wraps the value you enter with an object that provides extra functionality and provides common utility functions. */
+/** A type that describes what the library module does. */
+export interface CommonLibrary
+{
+	// Common Library Functions //
+	/** Wraps the value you enter with an object that provides extra functionality and provides common utility functions. */
+	(value: number): NumberWrapper;
+	<T>(value: T[]): ArrayWrapper<T>;
+	<T>(value: T): GenericWrapper<T>;
+	/** test doc interface */
+	test: (a: any) => void;
+	
+	// Dynamic Properties //
+	args: any[];
+	client: Client;
+	message: Message;
+	channel: TextChannel|DMChannel|NewsChannel;
+	guild: Guild|null;
+	author: User;
+	member: GuildMember|null;
+}
+
 export default function $(value: number): NumberWrapper;
 export default function $<T>(value: T[]): ArrayWrapper<T>;
 export default function $<T>(value: T): GenericWrapper<T>;
@@ -14,9 +35,10 @@ export default function $(value: any)
 		return new GenericWrapper(value);
 }
 
-$.test = function()
+/** test doc function */
+$.test = function(a: any)
 {
-	console.log("test");
+	console.log("test", a);
 }
 
 /**

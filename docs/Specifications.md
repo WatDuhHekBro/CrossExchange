@@ -4,7 +4,6 @@ The top-level directory is reserved for files that have to be there for it to wo
 	- `core`: This is where core structures and critical functions for the bot go.
 	- `modules`: This is where modules go that accomplish one specific purpose but isn't so necessary for the bot to function.
 	- `commands`: Here's the place to store commands. The file name determines the command name.
-	- `events`: Here's the place to store events. The file name determines the event type.
 - `dist`: This is where the runnable code in `src` compiles to. (The directory structure mirrors `src`.)
 - `data`: Holds all the dynamic data used by the bot. This is what you modify if you want to change stuff for just your instance of the bot.
 - `assets`: Contains all the binary files.
@@ -17,13 +16,11 @@ This list starts from `src`/`dist`.
 - `setup`: Used for the first time the bot is loaded, walking the user through setting up the bot.
 - `core/lib`: Exports a function object which lets you wrap values letting you call special functions as well as calling utility functions common to all commands.
 - `core/storage`: Exports an object which handles everything related to files and templates.
-- `core/command`: Contains the class used to instantiate commands. Also contains a function which handles command recursion.
-- `core/event`: Contains the class used to instantiate events.
+- `core/command`: Contains the class used to instantiate commands.
 - `core/wrappers`: Contains classes that wrap around values and provide extra functionality.
 - `core/templates`: Contains all the structures that the dynamic data read from JSON files should follow.
 - `modules/stonks`: Manages all the calculations for the stonks feature.
 - `modules/scheduler`: A custom scheduler managing random events with a semi-predictable time.
-- `events/message`: Initializes commands since all commands are based on a message's prefix.
 
 # Design Decisions
 - All top-level files (relative to `src`/`dist`) should ideally be independent, one-time use scripts. This helps separate code that just initializes once and reusable code that forms the bulk of the main program itself. That's why all the file searching and loading commands/events will be done in `index.ts`.
@@ -31,6 +28,9 @@ This list starts from `src`/`dist`.
 - `test` should be a keyword for any file not tracked by git and generally be more flexible to play around with. It should also be automatically generated during initialization in `commands` so you can have templates ready for new commands.
 - The storage module should not provide an auto-write feature. This would actually end up overcomplicating things especially when code isn't fully blocking.
 - I think it's much easier to make a template system within the code itself. After all, the templates only change when the code changes to use new keys or remove old ones. You'll also be able to dedicate specific classes for the task rather than attaching meta tags to arrays and objects.
+- I decided to forget about implementing dynamic events. I don't think it'll work with this setup. After all, there are only so many events you can use, whereas commands can have any number of ones, more suitable for dynamic loading. The main reasons were unsecure types and no easy way to access variables like the config or client.
+- I want to make attaching subcommands more flexible, so you can either add subcommands in the constructor or by using a method. However, you have to add all other properties when instantiating a command.
+- All commands should have only one parameter. This parameter is meant to be flexible so you can add properties without making a laundry list of parameters. It also has convenience functions too so you don't have to import the library for each command.
 
 # The Storage Module
 The storage module should have four public functions: `read`, `write`, `open`, and `close`, managing files and directories respectively.
