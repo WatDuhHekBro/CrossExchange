@@ -26,6 +26,13 @@ import Command, {template} from "./core/command";
 		commands.set(header, command);
 	}
 	
+	// Special case for the help command.
+	if(commands.has("help"))
+	{
+		(commands.get("help") as Command).special = commands;
+		(commands.get("help") as Command).any!.special = commands;
+	}
+	
 	client.on("message", async message => {
 		// Message Setup //
 		if(message.author.bot)
@@ -49,7 +56,7 @@ import Command, {template} from "./core/command";
 		// Subcommand Recursion //
 		let command = commands.get(header) as Command;
 		const params: any[] = [];
-		let argsLeft = args.length;
+		let isEndpoint = false;
 		
 		for(let param of args)
 		{
@@ -57,6 +64,7 @@ import Command, {template} from "./core/command";
 			{
 				if(command.subcommands || command.user || command.number || command.any)
 					console.warn(`An endpoint cannot have subcommands! Check ${config.prefix}${header} again.`);
+				isEndpoint = true;
 				break;
 			}
 			
@@ -81,11 +89,9 @@ import Command, {template} from "./core/command";
 			}
 			else
 				params.push(param);
-			
-			argsLeft--;
 		}
 		
-		if(argsLeft > 0)
+		if(isEndpoint)
 		{
 			message.channel.send("`Too many arguments!`");
 			return;

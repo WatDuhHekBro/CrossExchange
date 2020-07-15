@@ -4,6 +4,7 @@ interface CommandOptions
 {
 	description?: string;
 	endpoint?: boolean;
+	usage?: string;
 	run?: Function|string;
 	subcommands?: {[key: string]: Command};
 	user?: Command;
@@ -15,16 +16,19 @@ export default class Command
 {
 	public readonly description: string;
 	public readonly endpoint: boolean;
+	public readonly usage: string;
 	private run: Function|string;
 	public subcommands: {[key: string]: Command}|null;
 	public user: Command|null;
 	public number: Command|null;
 	public any: Command|null;
+	public special: any; // Only used for special cases like passing the command list reference to the help command. This is to avoid attaching one-time use objects into the common library.
 	
 	constructor(options?: CommandOptions)
 	{
 		this.description = options?.description || "No description.";
 		this.endpoint = options?.endpoint || false;
+		this.usage = options?.usage || "";
 		this.run = options?.run || "No action was set on this command!";
 		this.subcommands = options?.subcommands || null;
 		this.user = options?.user || null;
@@ -88,7 +92,7 @@ export const template =
 import {CommonLibrary} from "../core/lib";
 
 export default new Command({
-	description: "This is a template/testing command providing common functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command. The \\"endpoint\\" parameter (boolean) prevents further arguments from being passed. Also, as long as you keep the run function async, it'll return a promise allowing the program to automatically catch any synchronous errors. However, you'll have to do manual error handling if you go the then and catch route.",
+	description: "This is a template/testing command providing common functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command. The \\"usage\\" parameter (string) overrides the default usage for the help command. The \\"endpoint\\" parameter (boolean) prevents further arguments from being passed. Also, as long as you keep the run function async, it'll return a promise allowing the program to automatically catch any synchronous errors. However, you'll have to do manual error handling if you go the then and catch route.",
 	async run($: CommonLibrary)
 	{
 		
