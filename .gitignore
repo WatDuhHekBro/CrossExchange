@@ -1,7 +1,10 @@
 # Specific to this repository
+dist/
 data/
 tmp/
-run.bat
+test*
+*.bat
+desktop.ini
 
 # Logs
 logs

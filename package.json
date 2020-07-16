@@ -1,6 +1,33 @@
 {
-	"main": "index.js",
-	"dependencies": {
-		"discord.js": "^11.5.1"
-	}
+  "name": "crossexchange",
+  "version": "0.6.9",
+  "description": "Yet another Discord bot.",
+  "main": "dist/index.js",
+  "dependencies": {
+    "@types/inquirer": "^6.5.0",
+    "discord.js": "^12.2.0",
+    "inquirer": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.22",
+    "@types/ws": "^7.2.6",
+    "tsc-watch": "^4.2.9",
+    "typescript": "^3.9.6"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "tsc-watch --onSuccess \"node dist/index.js\""
+  },
+  "author": "WatDuhHekBro",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WatDuhHekBro/CrossExchange.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WatDuhHekBro/CrossExchange/issues"
+  },
+  "homepage": "https://github.com/WatDuhHekBro/CrossExchange#readme"
 }
