@@ -4,11 +4,12 @@
   "description": "Yet another Discord bot.",
   "main": "dist/index.js",
   "dependencies": {
-    "@types/inquirer": "^6.5.0",
+    "chalk": "^4.1.0",
     "discord.js": "^12.2.0",
     "inquirer": "^7.3.1"
   },
   "devDependencies": {
+    "@types/inquirer": "^6.5.0",
     "@types/node": "^14.0.22",
     "@types/ws": "^7.2.6",
     "tsc-watch": "^4.2.9",

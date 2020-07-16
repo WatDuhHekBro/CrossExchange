@@ -28,8 +28,9 @@ import Command, {template} from "./core/command";
 	// Special case for the help command.
 	if(commands.has("help"))
 	{
-		(commands.get("help") as Command).special = commands;
-		(commands.get("help") as Command).any!.special = commands;
+		const help = commands.get("help") as Command;
+		help.special = commands;
+		help.any!.special = commands;
 	}
 	
 	client.on("message", async message => {
@@ -62,7 +63,7 @@ import Command, {template} from "./core/command";
 			if(command.endpoint)
 			{
 				if(command.subcommands || command.user || command.number || command.any)
-					console.warn(`An endpoint cannot have subcommands! Check ${Config.prefix}${header} again.`);
+					lib.warn(`An endpoint cannot have subcommands! Check ${Config.prefix}${header} again.`);
 				isEndpoint = true;
 				break;
 			}
@@ -108,11 +109,14 @@ import Command, {template} from "./core/command";
 		}, lib));
 	});
 	
-	client.once("ready", () => {
-		console.log("Ready!");
-		client.user?.setActivity({
-			type: "LISTENING",
-			name: `${Config.prefix}help`
-		});
+	client.once("ready", async() => {
+		if(client.user)
+		{
+			lib.ready(`Logged in as ${client.user.username}#${client.user.discriminator}.`);
+			client.user.setActivity({
+				type: "LISTENING",
+				name: `${Config.prefix}help`
+			});
+		}
 	});
 })()

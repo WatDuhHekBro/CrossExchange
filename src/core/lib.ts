@@ -1,5 +1,6 @@
 import {GenericWrapper, NumberWrapper, ArrayWrapper} from "./wrappers";
 import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember} from "discord.js";
+import chalk from "chalk";
 
 /** A type that describes what the library module does. */
 export interface CommonLibrary
@@ -11,8 +12,13 @@ export interface CommonLibrary
 	<T>(value: T): GenericWrapper<T>;
 	
 	// Common Library Functions //
-	/** <Promise>.catch($.error.bind($)) */
-	error: (error: Error) => void;
+	/** <Promise>.catch($.handler.bind($)) */
+	handler: (error: Error) => void;
+	log: (...args: any[]) => void;
+	warn: (...args: any[]) => void;
+	error: (...args: any[]) => void;
+	debug: (...args: any[]) => void;
+	ready: (...args: any[]) => void;
 	
 	// Dynamic Properties //
 	args: any[];
@@ -39,16 +45,23 @@ export default function $(value: any)
 
 // If you use promises, use this function to display the error in chat.
 // Case #1: await $.channel.send(""); --> Automatically caught by Command.execute().
-// Case #2: $.channel.send("").catch($.error.bind($)); --> Manually caught by the user.
-$.error = function(this: CommonLibrary, error: Error)
+// Case #2: $.channel.send("").catch($.handler.bind($)); --> Manually caught by the user.
+$.handler = function(this: CommonLibrary, error: Error)
 {
 	if(this)
 		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error}\`\`\``);
 	else
-		console.warn("Warning: No context was attached to $.error! Make sure to use $.error.bind($) instead!");
+		$.warn("No context was attached to $.handler! Make sure to use $.handler.bind($) instead!");
 	
-	console.error(error);
-}
+	$.error(error);
+};
+
+// The custom console. In order of verbosity, error, warn, log, and debug. Ready is a variation of log.
+$.log = function(...args: any[]) {console.log(chalk.black.bgWhite("INFO"), ...args)};
+$.warn = function(...args: any[]) {console.warn(chalk.black.bgYellow("WARN"), ...args)};
+$.error = function(...args: any[]) {console.error(chalk.white.bgRed("ERROR"), ...args)};
+$.debug = function(...args: any[]) {console.debug(chalk.white.bgBlue("DEBUG"), ...args)};
+$.ready = function(...args: any[]) {console.log(chalk.black.bgGreen("READY"), ...args)};
 
 /**
  * Splits a command by spaces while accounting for quotes which capture string arguments.

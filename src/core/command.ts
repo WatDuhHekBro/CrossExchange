@@ -1,10 +1,14 @@
 import {isType, parseVars, CommonLibrary} from "./lib";
 
+// Permission levels starting from zero then increasing, allowing for numerical comparisons.
+//enum PERMISSIONS {NONE, ADMIN, MECHANIC}
+
 interface CommandOptions
 {
 	description?: string;
 	endpoint?: boolean;
 	usage?: string;
+	//permissions?: number;
 	run?: Function|string;
 	subcommands?: {[key: string]: Command};
 	user?: Command;
@@ -17,18 +21,21 @@ export default class Command
 	public readonly description: string;
 	public readonly endpoint: boolean;
 	public readonly usage: string;
+	//public readonly permissions: number;
 	private run: Function|string;
 	public subcommands: {[key: string]: Command}|null;
 	public user: Command|null;
 	public number: Command|null;
 	public any: Command|null;
 	public special: any; // Only used for special cases like passing the command list reference to the help command. This is to avoid attaching one-time use objects into the common library.
+	//public static readonly PERMISSIONS = PERMISSIONS;
 	
 	constructor(options?: CommandOptions)
 	{
 		this.description = options?.description || "No description.";
 		this.endpoint = options?.endpoint || false;
 		this.usage = options?.usage || "";
+		//this.permissions = options?.permissions || Command.PERMISSIONS.NONE;
 		this.run = options?.run || "No action was set on this command!";
 		this.subcommands = options?.subcommands || null;
 		this.user = options?.user || null;
@@ -45,7 +52,7 @@ export default class Command
 			}, "???"));
 		}
 		else
-			(this.run as Function)($).catch($.error.bind($));
+			(this.run as Function)($).catch($.handler.bind($));
 	}
 	
 	/**
@@ -78,6 +85,13 @@ export default class Command
 		return this.subcommands && this.subcommands[type] || null;
 	}*/
 }
+
+/*export function hasPermission(member: GuildMember, permission: number): boolean
+{
+	const length = Object.keys(PERMISSIONS).length / 2;
+	console.log(member, permission, length);
+	return true;
+}*/
 
 // The template should be built with a reductionist mentality.
 // Provide everything the user needs and then let them remove whatever they want.

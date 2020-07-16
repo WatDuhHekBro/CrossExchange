@@ -1,4 +1,5 @@
 import fs from "fs";
+import lib from "./lib";
 
 //const stack: {[key: string]: object} = {};
 
@@ -22,7 +23,7 @@ const Storage = {
 			}
 			catch(error)
 			{
-				console.warn(`Malformed JSON data (header: ${header}), backing it up.`);
+				lib.warn(`Malformed JSON data (header: ${header}), backing it up.`);
 				fs.writeFileSync(`${path}.backup`, file);
 			}
 		}
