@@ -1,10 +1,11 @@
 import {Client, Collection, MessageMentions} from "discord.js";
 import {existsSync, writeFileSync} from "fs";
-import Storage from "./core/storage";
+import FileManager from "./core/storage";
 import lib from "./core/lib";
 import setup from "./setup";
-import {Config} from "./core/structures";
+import {Config, Storage} from "./core/structures";
 import Command, {template} from "./core/command";
+import intercept from "./modules/intercept";
 
 (async() => {
 	// Setup //
@@ -18,7 +19,7 @@ import Command, {template} from "./core/command";
 	if(!existsSync("src/commands/test.ts"))
 		writeFileSync("src/commands/test.ts", template);
 	
-	for(const file of Storage.open("dist/commands", file => file.endsWith(".js")))
+	for(const file of FileManager.open("dist/commands", file => file.endsWith(".js")))
 	{
 		const header = file.substring(0, file.indexOf(".js"));
 		const command = (await import(`./commands/${header}`)).default;
@@ -35,23 +36,11 @@ import Command, {template} from "./core/command";
 	
 	client.on("message", async message => {
 		// Message Setup //
-		if(message.author.bot)
-			return;
-		
-		// uwu-ing penalties, etc.
-		
-		if(!message.content.startsWith(Config.prefix))
-		{
-			if(message.mentions.members?.has(client.user?.id || ""))
-				message.channel.send(`My prefix is \`${Config.prefix}\`.`);
-			else
-				return;
-		}
-		
-		const [header, ...args] = message.content.substring(Config.prefix.length).split(/ +/);
-		
-		if(!commands.has(header))
-			return;
+		if(message.author.bot) return;
+		const prefix = Storage.getGuild(message.guild?.id || "N/A").prefix || Config.prefix;
+		if(!message.content.startsWith(prefix)) return intercept(message);
+		const [header, ...args] = message.content.substring(prefix.length).split(/ +/);
+		if(!commands.has(header)) return;
 		
 		// Subcommand Recursion //
 		let command = commands.get(header) as Command;
@@ -63,7 +52,7 @@ import Command, {template} from "./core/command";
 			if(command.endpoint)
 			{
 				if(command.subcommands || command.user || command.number || command.any)
-					lib.warn(`An endpoint cannot have subcommands! Check ${Config.prefix}${header} again.`);
+					lib.warn(`An endpoint cannot have subcommands! Check ${prefix}${header} again.`);
 				isEndpoint = true;
 				break;
 			}

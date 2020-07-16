@@ -18,8 +18,8 @@ const prompts = [{
 	default: "$"
 }, {
 	type: "input",
-	name: "admins",
-	message: "Enter a list of bot admins (by their IDs) separated by spaces."
+	name: "mechanics",
+	message: "Enter a list of bot mechanics (by their IDs) separated by spaces."
 }];
 
 export default {
@@ -31,7 +31,8 @@ export default {
 			Storage.open("data");
 			Config.token = answers.token as string;
 			Config.prefix = answers.prefix as string;
-			Config.admins = (answers.admins as string).split(" ");
+			const mechanics = (answers.mechanics as string);
+			Config.mechanics = mechanics !== "" ? mechanics.split(" ") : [];
 			Config.save();
 		}
 	},
