@@ -11,7 +11,8 @@ export interface CommonLibrary
 	<T>(value: T): GenericWrapper<T>;
 	
 	// Common Library Functions //
-	//test: (a: any) => void;
+	/** <Promise>.catch($.error.bind($)) */
+	error: (error: Error) => void;
 	
 	// Dynamic Properties //
 	args: any[];
@@ -36,11 +37,18 @@ export default function $(value: any)
 		return new GenericWrapper(value);
 }
 
-/** test doc function */
-/*$.test = function(a: any)
+// If you use promises, use this function to display the error in chat.
+// Case #1: await $.channel.send(""); --> Automatically caught by Command.execute().
+// Case #2: $.channel.send("").catch($.error.bind($)); --> Manually caught by the user.
+$.error = function(this: CommonLibrary, error: Error)
 {
-	console.log("test", a);
-}*/
+	if(this)
+		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error}\`\`\``);
+	else
+		console.warn("Warning: No context was attached to $.error! Make sure to use $.error.bind($) instead!");
+	
+	console.error(error);
+}
 
 /**
  * Splits a command by spaces while accounting for quotes which capture string arguments.

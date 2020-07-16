@@ -36,7 +36,7 @@ export default class Command
 		this.any = options?.any || null;
 	}
 	
-	public async execute($: CommonLibrary)
+	public execute($: CommonLibrary)
 	{
 		if(isType(this.run, String))
 		{
@@ -45,12 +45,7 @@ export default class Command
 			}, "???"));
 		}
 		else
-		{
-			(this.run as Function)($).catch((error: Error) => {
-				$.channel.send(`There was an error while trying to execute that command!\`\`\`${error}\`\`\``);
-				console.error(error);
-			});
-		}
+			(this.run as Function)($).catch($.error.bind($));
 	}
 	
 	/**
@@ -108,7 +103,7 @@ export default new Command({
 		})
 	},
 	user: new Command({
-		description: "This is the subcommand for getting users by pinging them or copying their ID. The argument will either be a user object or null if no user is found.",
+		description: "This is the subcommand for getting users by pinging them or copying their ID. With default settings for example, \\"$test 237359961842253835\\". The argument will either be a user object or null if no user is found.",
 		async run($: CommonLibrary)
 		{
 			
