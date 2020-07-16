@@ -18,7 +18,7 @@ This list starts from `src`/`dist`.
 - `core/storage`: Exports an object which handles everything related to files and templates.
 - `core/command`: Contains the class used to instantiate commands.
 - `core/wrappers`: Contains classes that wrap around values and provide extra functionality.
-- `core/templates`: Contains all the structures that the dynamic data read from JSON files should follow.
+- `core/structures`: Contains all the structures that the dynamic data read from JSON files should follow. This exports an instance of a class since the class is just a specification as you instantiate it only duration loading of the JSON object.
 - `modules/stonks`: Manages all the calculations for the stonks feature.
 - `modules/scheduler`: A custom scheduler managing random events with a semi-predictable time.
 
@@ -31,6 +31,7 @@ This list starts from `src`/`dist`.
 - I decided to forget about implementing dynamic events. I don't think it'll work with this setup. After all, there are only so many events you can use, whereas commands can have any number of ones, more suitable for dynamic loading. The main reasons were unsecure types and no easy way to access variables like the config or client.
 - I want to make attaching subcommands more flexible, so you can either add subcommands in the constructor or by using a method. However, you have to add all other properties when instantiating a command.
 - All commands should have only one parameter. This parameter is meant to be flexible so you can add properties without making a laundry list of parameters. It also has convenience functions too so you don't have to import the library for each command.
+- The files in `structures` are initialized into a special object once and then cached into memory automatically due to an import system. This means you don't have to keep loading JSON files over and over again even without the stack storage system. Because a JSON file resolves into an object, any extra keys are removed automatically (as it isn't initialized into the data) and any property that doesn't yet exist on the JSON object will be initialized into something. You can then have specific functions like `addUser` onto objects with a specific structure.
 
 # The Storage Module
 The storage module should have four public functions: `read`, `write`, `open`, and `close`, managing files and directories respectively.

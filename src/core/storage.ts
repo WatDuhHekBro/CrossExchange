@@ -1,5 +1,4 @@
 import fs from "fs";
-import {applyTemplate} from "./templates";
 
 //const stack: {[key: string]: object} = {};
 
@@ -20,7 +19,6 @@ const Storage = {
 			try
 			{
 				data = JSON.parse(file);
-				applyTemplate(data, header);
 			}
 			catch(error)
 			{

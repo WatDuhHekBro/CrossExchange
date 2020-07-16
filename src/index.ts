@@ -3,15 +3,14 @@ import {existsSync, writeFileSync} from "fs";
 import Storage from "./core/storage";
 import lib from "./core/lib";
 import setup from "./setup";
-import {Config} from "./core/templates";
+import {Config} from "./core/structures";
 import Command, {template} from "./core/command";
 
 (async() => {
 	// Setup //
 	await setup.init();
-	const config = Storage.read("config") as Config;
 	const client = new Client();
-	client.login(config.token).catch(setup.again);
+	client.login(Config.token).catch(setup.again);
 	
 	// Load Commands //
 	const commands = new Collection();
@@ -40,15 +39,15 @@ import Command, {template} from "./core/command";
 		
 		// uwu-ing penalties, etc.
 		
-		if(!message.content.startsWith(config.prefix))
+		if(!message.content.startsWith(Config.prefix))
 		{
 			if(message.mentions.members?.has(client.user?.id || ""))
-				message.channel.send(`My prefix is \`${config.prefix}\`.`);
+				message.channel.send(`My prefix is \`${Config.prefix}\`.`);
 			else
 				return;
 		}
 		
-		const [header, ...args] = message.content.substring(config.prefix.length).split(/ +/);
+		const [header, ...args] = message.content.substring(Config.prefix.length).split(/ +/);
 		
 		if(!commands.has(header))
 			return;
@@ -63,7 +62,7 @@ import Command, {template} from "./core/command";
 			if(command.endpoint)
 			{
 				if(command.subcommands || command.user || command.number || command.any)
-					console.warn(`An endpoint cannot have subcommands! Check ${config.prefix}${header} again.`);
+					console.warn(`An endpoint cannot have subcommands! Check ${Config.prefix}${header} again.`);
 				isEndpoint = true;
 				break;
 			}
@@ -113,7 +112,7 @@ import Command, {template} from "./core/command";
 		console.log("Ready!");
 		client.user?.setActivity({
 			type: "LISTENING",
-			name: `${config.prefix}help`
+			name: `${Config.prefix}help`
 		});
 	});
 })()

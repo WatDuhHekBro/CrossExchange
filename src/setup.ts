@@ -1,7 +1,7 @@
 import {existsSync as exists} from "fs";
 import inquirer from "inquirer";
 import Storage from "./core/storage";
-import {Config} from "./core/templates";
+import {Config} from "./core/structures";
 
 // This file is called (or at least should be called) automatically as long as a config file doesn't exist yet.
 // And that file won't be written until the data is successfully initialized.
@@ -28,26 +28,19 @@ export default {
 		{
 			const answers = await inquirer.prompt(prompts);
 			Storage.open("data");
-			Storage.write("config", {
-				token: answers.token,
-				prefix: answers.prefix,
-				admins: (answers.admins as string).split(" ")
-			});
+			Config.token = answers.token as string;
+			Config.prefix = answers.prefix as string;
+			Config.admins = (answers.admins as string).split(" ");
+			Config.save();
 		}
 	},
 	/** Prompt the user to set their token again. */
 	async again()
 	{
 		console.error("It seems that the token you provided is invalid.");
-		const answers = await inquirer.prompt([{
-			type: "password",
-			name: "token",
-			message: "What's your bot's token?",
-			mask: true
-		}]);
-		const config = Storage.read("config") as Config;
-		config.token = answers.token;
-		Storage.write("config", config);
+		const answers = await inquirer.prompt(prompts.slice(0, 1));
+		Config.token = answers.token as string;
+		Config.save();
 		process.exit();
 	}
 };
