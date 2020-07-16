@@ -1,5 +1,0 @@
-# The List of Dead Ideas
-- The more profit you have, the more influence you have in the government ruled by the bot, and it spews forth random policies/laws which can be voted on by everyone in the server. These policies are generated from a list, some examples are "You are not allowed to say _____ or else you will be jailed for 5 minutes.", and an opposite effect repealing an existing law. Stonks are not random themselves, but the individual companies that make up macrotrends are. And of course, there'll be a constitution that anyone can read which shows the list of all laws, repealed or not. Or maybe have users propose laws based on a template like the above. But of course, if I crown myself as the Supreme Leader, I can overrule anything and any law must go through me.
-- Says happy birthdays and holidays.
-- Analytics for emoji usage.
-- `$obliterate` stops a user's ability to trade stonks for an hour. `$s has lost their ability to even.`, `お前はもう死んでいる､ $s！`, `And thus, it was foretold that $s shall be obliterated!`.
