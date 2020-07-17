@@ -1,14 +1,9 @@
 import fs from "fs";
 import lib from "./lib";
 
-//const stack: {[key: string]: object} = {};
-
 const Storage = {
 	read(header: string): object
 	{
-		//if(header in stack)
-			//return stack[header];
-		
 		this.open("data");
 		const path = `data/${header}.json`;
 		let data = {};
@@ -28,14 +23,12 @@ const Storage = {
 			}
 		}
 		
-		//stack[header] = data;
 		return data;
 	},
 	write(header: string, data: object)
 	{
 		this.open("data");
 		const path = `data/${header}.json`;
-		//const result = (header in stack) ? JSON.stringify(stack[header], null, '\t') : "{}";
 		fs.writeFileSync(path, JSON.stringify(data, null, '\t'));
 	},
 	open(path: string, filter?: (value: string, index: number, array: string[]) => unknown): string[]

@@ -12,7 +12,7 @@ export interface CommonLibrary
 	<T>(value: T): GenericWrapper<T>;
 	
 	// Common Library Functions //
-	/** <Promise>.catch($.handler.bind($)) */
+	/** <Promise>.catch($.handler.bind($)) or <Promise>.catch(error => $.handler(error)) */
 	handler: (error: Error) => void;
 	log: (...args: any[]) => void;
 	warn: (...args: any[]) => void;
@@ -51,7 +51,7 @@ $.handler = function(this: CommonLibrary, error: Error)
 	if(this)
 		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error}\`\`\``);
 	else
-		$.warn("No context was attached to $.handler! Make sure to use $.handler.bind($) instead!");
+		$.warn("No context was attached to $.handler! Make sure to use .catch($.handler.bind($)) or .catch(error => $.handler(error)) instead!");
 	
 	$.error(error);
 };

@@ -64,7 +64,7 @@ import intercept from "./modules/intercept";
 				const id = param.match(/\d+/g)![0];
 				command = command.user;
 				try {params.push(await client.users.fetch(id))}
-				catch(error) {params.push(null)}
+				catch(error) {return message.channel.send(`No user found by the ID \`${id}\`!`)}
 			}
 			else if(command.number && Number(param))
 			{
@@ -81,13 +81,10 @@ import intercept from "./modules/intercept";
 		}
 		
 		if(isEndpoint)
-		{
-			message.channel.send("`Too many arguments!`");
-			return;
-		}
+			return message.channel.send("Too many arguments!");
 		
 		// Execute with dynamic library attached. //
-		command.execute(Object.assign({
+		command.execute(Object.assign(lib, {
 			args: params,
 			author: message.author,
 			channel: message.channel,
@@ -95,7 +92,7 @@ import intercept from "./modules/intercept";
 			guild: message.guild,
 			member: message.member,
 			message: message
-		}, lib));
+		}));
 	});
 	
 	client.once("ready", async() => {

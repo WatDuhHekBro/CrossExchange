@@ -6,7 +6,7 @@ const types = ["user", "number", "any"];
 export default new Command({
 	description: "Lists all commands. If a command is specified, their arguments are listed as well.",
 	usage: "([command, [subcommand/type], ...])",
-	async run($: CommonLibrary)
+	async run($: CommonLibrary): Promise<any>
 	{
 		const list: string[] = [];
 		
@@ -18,7 +18,7 @@ export default new Command({
 		$.channel.send(`Legend: \`<type>\`, \`[list/of/subcommands]\`, \`(optional)\`, \`(<optional type>)\`, \`([optional/list/...])\`\nCommands:${outList}`, {split: true});
 	},
 	any: new Command({
-		async run($: CommonLibrary)
+		async run($: CommonLibrary): Promise<any>
 		{
 			let header = $.args.shift();
 			let command = this.special.get(header);
@@ -65,10 +65,7 @@ export default new Command({
 				}
 				
 				if(!command)
-				{
-					$.channel.send(`No command found by the name \`${header}\`!`);
-					return;
-				}
+					return $.channel.send(`No command found by the name \`${header}\`!`);
 				
 				let append = "";
 				

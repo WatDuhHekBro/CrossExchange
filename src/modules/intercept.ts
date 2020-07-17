@@ -1,6 +1,7 @@
 import {Message} from "discord.js";
 import $ from "../core/lib";
 import {Storage} from "../core/structures";
+import {getMoneyEmbed} from "../commands/money";
 
 const duolingo = [
 	"Spanish or vanish.",
@@ -43,8 +44,6 @@ const leFrench = [
 	"monsieur"
 ];
 
-// I should probably add an option to toggle this off per guild. Can be turned off by guild admins.
-// else "You can't tell me what to do!"
 export default async function intercept(message: Message)
 {
 	if(!Storage.getGuild(message.guild?.id || "N/A").intercept) return;
@@ -52,8 +51,13 @@ export default async function intercept(message: Message)
 	
 	if(msg.includes("uwu") || msg.includes("owo"))
 	{
-		const user = Storage.getUser(message.author.id);
-		$.debug(user);
+		const victim = Storage.getUser(message.author.id);
+		const collector = Storage.getUser(message.client.user?.id || "N/A");
+		victim.money -= 350;
+		collector.money += 350;
+		victim.penalties++;
+		Storage.save();
+		message.channel.send("Don't uwu, 350 credit penalty.", getMoneyEmbed(message.author));
 	}
 	if(msg.includes("duolingo"))
 		message.channel.send(`${$(duolingo).random()}\n${$(duo).random()}`);
