@@ -36,14 +36,10 @@ export default new Command({
 					if(/<\w+>/g.test(param))
 					{
 						const type = param.match(/\w+/g)[0];
+						command = command[type];
 						
-						if(types.includes(type))
-						{
-							command = command[type];
-							
-							if(command.usage !== "")
-								usage = command.usage;
-						}
+						if(types.includes(type) && command?.usage)
+							usage = command.usage;
 						else
 						{
 							command = null;

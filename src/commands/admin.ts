@@ -1,5 +1,5 @@
 import Command from "../core/command";
-import {CommonLibrary} from "../core/lib";
+import {CommonLibrary, logs} from "../core/lib";
 import {Config, Storage} from "../core/structures";
 import {Permissions} from "discord.js";
 
@@ -30,6 +30,14 @@ function getInterceptMessage(activated: boolean)
 }
 
 const interceptBlock = "You can't tell me what to do!";
+
+function getLogBuffer(type: string)
+{
+	return {files: [{
+		attachment: Buffer.alloc(logs[type].length, logs[type]),
+		name: `${Date.now()}.${type}.log`
+	}]};
+}
 
 export default new Command({
 	description: "An all-in-one command to do admin stuff. You need to be either an admin of the server or one of the bot's mechanics to use this command.",
@@ -132,6 +140,25 @@ export default new Command({
 					}
 				})
 			}
+		}),
+		diag: new Command({
+			description: "Requests a debug log with the \"info\" verbosity level. Anyone can request a log from the bot.",
+			async run($: CommonLibrary): Promise<any>
+			{
+				$.channel.send(getLogBuffer("info"));
+			},
+			any: new Command({
+				description: `Select a verbosity to listen to. Available levels: \`[${Object.keys(logs)}]\``,
+				async run($: CommonLibrary): Promise<any>
+				{
+					const type = $.args[0];
+					
+					if(type in logs)
+						$.channel.send(getLogBuffer(type));
+					else
+						$.channel.send(`Couldn't find a verbosity level named \`${type}\`! The available types are \`[${Object.keys(logs)}]\`.`);
+				}
+			})
 		})
 	}
 });

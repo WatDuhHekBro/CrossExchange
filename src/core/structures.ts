@@ -1,6 +1,7 @@
 import FileManager from "./storage";
 import lib, {isType} from "./lib";
 import {watch} from "fs";
+import $ from "./lib";
 
 interface GenericJSON
 {
@@ -37,11 +38,11 @@ class ConfigStructure
 	public prefix: string;
 	public mechanics: string[];
 	
-	constructor(data?: GenericJSON)
+	constructor(data: GenericJSON)
 	{
-		this.token = select(data?.token, "<ENTER YOUR TOKEN HERE>", String);
-		this.prefix = select(data?.prefix, "$", String);
-		this.mechanics = select(data?.mechanics, [], String, true);
+		this.token = select(data.token, "<ENTER YOUR TOKEN HERE>", String);
+		this.prefix = select(data.prefix, "$", String);
+		this.mechanics = select(data.mechanics, [], String, true);
 	}
 	
 	public save()
@@ -55,12 +56,14 @@ class User
 	public money: number;
 	public penalties: number;
 	public lastReceived: number;
+	public net: number;
 	
 	constructor(data?: GenericJSON)
 	{
 		this.money = select(data?.money, 0, Number);
 		this.penalties = select(data?.penalties, 0, Number);
 		this.lastReceived = select(data?.lastReceived, -1, Number);
+		this.net = select(data?.net, 0, Number);
 	}
 }
 
@@ -133,17 +136,50 @@ class StorageStructure
 	}
 }
 
+class Market
+{
+	
+}
+
+class Event
+{
+	
+}
+
+/*const DefaultMarkets = {
+	rookie:
+	{
+		"title": "",
+		"description": ""
+	},
+};
+
+const DefaultEvents = {
+	
+};*/
+
+class StonksStructure
+{
+	constructor(data: GenericJSON)
+	{
+		//console.log(DefaultMarkets);
+	}
+}
+
 // Exports instances. Don't worry, importing it from different files will load the same instance.
 export let Config = new ConfigStructure(FileManager.read("config"));
 export let Storage = new StorageStructure(FileManager.read("storage"));
+export let Stonks = new StonksStructure(FileManager.read("stonks"));
 
 // This part will allow the user to manually edit any JSON files they want while the program is running which'll update the program's cache.
 watch("data", (event, filename) => {
+	$.debug("File Watcher:", event, filename);
 	const header = filename.substring(0, filename.indexOf(".json"));
 	
 	switch(header)
 	{
 		case "config": Config = new ConfigStructure(FileManager.read("config")); break;
 		case "storage": Storage = new StorageStructure(FileManager.read("storage")); break;
+		case "stonks": Stonks = new StonksStructure(FileManager.read("stonks")); break;
 	}
 });

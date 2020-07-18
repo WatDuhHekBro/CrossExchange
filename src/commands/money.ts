@@ -8,14 +8,14 @@ export function getMoneyEmbed(user: User): object
 	const profile = Storage.getUser(user.id);
 	
 	return {embed: {
-		color: "#ffff00",
+		color: 0xFFFF00,
 		author:
 		{
 			name: user.username,
 			icon_url: user.avatarURL({
 				format: "png",
 				dynamic: true
-			})
+			}) || user.defaultAvatarURL
 		},
 		fields:
 		[
@@ -28,6 +28,43 @@ export function getMoneyEmbed(user: User): object
 				value: $(profile.penalties * 350).pluralise("credit", "s")
 			}
 		]
+	}};
+}
+
+// Make sure to call this BEFORE you make any changes!
+function getSendEmbed(sender: User, receiver: User, amount: number): object
+{
+	return {embed: {
+		color: 0xFFFF00,
+		author:
+		{
+			name: sender.username,
+			icon_url: sender.avatarURL({
+				format: "png",
+				dynamic: true
+			})
+		},
+		title: "Transaction",
+		description: `${sender.toString()} has sent ${$(amount).pluralise("credit", "s")} to ${receiver.toString()}!`,
+		fields:
+		[
+			{
+				name: `Sender: ${sender.username}#${sender.discriminator}`,
+				value: `${$(Storage.getUser(sender.id).money).pluralise("credit", "s")} (${$(-amount).pluraliseSigned("credit", "s")})`
+			},
+			{
+				name: `Receiver: ${receiver.username}#${receiver.discriminator}`,
+				value: `${$(Storage.getUser(receiver.id).money).pluralise("credit", "s")} (${$(amount).pluraliseSigned("credit", "s")})`
+			}
+		],
+		footer:
+		{
+			text: receiver.username,
+			icon_url: receiver.avatarURL({
+				format: "png",
+				dynamic: true
+			})
+		}
 	}};
 }
 
@@ -85,11 +122,13 @@ export default new Command({
 							return $.channel.send("You don't have enough money to do that!", getMoneyEmbed(author));
 						else if(target.id === author.id)
 							return $.channel.send("You can't send money to yourself!");
+						else if(target.bot)
+							return $.channel.send("You can't send money to a bot!");
 						
+						$.channel.send(getSendEmbed(author, target, amount));
 						sender.money -= amount;
 						receiver.money += amount;
 						Storage.save();
-						$.channel.send(`${author.toString()} has sent ${$(amount).pluralise("credit", "s")} to ${target.toString()}!`);
 					}
 				})
 			}),
@@ -125,9 +164,13 @@ export default new Command({
 						return $.channel.send(`Couldn't find a user by the name of \`${username}\`! If you want to send money to someone in a different server, you have to use their user ID!`);
 					else if(member.user.id === author.id)
 						return $.channel.send("You can't send money to yourself!");
+					else if(member.user.bot)
+						return $.channel.send("You can't send money to a bot!");
 					
 					const target = member.user;
-					const message = await $.channel.send(`Are you sure you want to send ${$(amount).pluralise("credit", "s")} to this person?`, {embed: {
+					let isCorrect = false;
+					let isDeleted = false;
+					const message = await $.channel.send(`Are you sure you want to send ${$(amount).pluralise("credit", "s")} to this person?\n*(This message will automatically be deleted after 10 seconds.)*`, {embed: {
 						color: "#ffff00",
 						author:
 						{
@@ -138,15 +181,7 @@ export default new Command({
 							}) || ""
 						}
 					}});
-					await message.react('✅');
-					await message.react('❌');
-					
-					// Put this after the bot reacts because there's a timeout (in milliseconds) for awaitReactions where there won't be any commands executed until then.
-					let isCorrect = false;
-					let isDeleted = false;
-					
-					// Because of that though, you also need to edit the message to let the user know when they can react.
-					await message.edit(`${message.content} You can now react to this message.`);
+					message.react('✅');
 					await message.awaitReactions((reaction, user) => {
 						if(user.id === $.author.id)
 						{
@@ -169,10 +204,10 @@ export default new Command({
 					if(isCorrect)
 					{
 						const receiver = Storage.getUser(target.id);
+						$.channel.send(getSendEmbed(author, target, amount));
 						sender.money -= amount;
 						receiver.money += amount;
 						Storage.save();
-						$.channel.send(`${author.toString()} has sent ${$(amount).pluralise("credit", "s")} to ${target.toString()}!`);
 					}
 				}
 			})

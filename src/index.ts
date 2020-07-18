@@ -24,6 +24,7 @@ import intercept from "./modules/intercept";
 		const header = file.substring(0, file.indexOf(".js"));
 		const command = (await import(`./commands/${header}`)).default;
 		commands.set(header, command);
+		lib.log("Loading Command:", header);
 	}
 	
 	// Special case for the help command.
@@ -41,6 +42,7 @@ import intercept from "./modules/intercept";
 		if(!message.content.startsWith(prefix)) return intercept(message);
 		const [header, ...args] = message.content.substring(prefix.length).split(/ +/);
 		if(!commands.has(header)) return;
+		lib.log(`${message.author.username}#${message.author.discriminator} executed the command "${header}".`);
 		
 		// Subcommand Recursion //
 		let command = commands.get(header) as Command;

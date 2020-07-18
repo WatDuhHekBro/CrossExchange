@@ -49,19 +49,71 @@ export default function $(value: any)
 $.handler = function(this: CommonLibrary, error: Error)
 {
 	if(this)
-		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error}\`\`\``);
+		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error.stack || error}\`\`\``);
 	else
 		$.warn("No context was attached to $.handler! Make sure to use .catch($.handler.bind($)) or .catch(error => $.handler(error)) instead!");
 	
 	$.error(error);
 };
 
+// Logs with different levels of verbosity.
+export const logs: {[type: string]: string} = {
+	error: "",
+	warn: "",
+	info: "",
+	verbose: ""
+};
+
 // The custom console. In order of verbosity, error, warn, log, and debug. Ready is a variation of log.
-$.log = function(...args: any[]) {console.log(chalk.black.bgWhite("INFO"), ...args)};
-$.warn = function(...args: any[]) {console.warn(chalk.black.bgYellow("WARN"), ...args)};
-$.error = function(...args: any[]) {console.error(chalk.white.bgRed("ERROR"), ...args)};
-$.debug = function(...args: any[]) {console.debug(chalk.white.bgBlue("DEBUG"), ...args)};
-$.ready = function(...args: any[]) {console.log(chalk.black.bgGreen("READY"), ...args)};
+$.log = (...args: any[]) => {
+	const time = getFormattedTimestamp();
+	console.log(chalk.white.bgGray(time), chalk.black.bgWhite("INFO"), ...args);
+	const text = `[${time}] [INFO] ${args.join(" ")}\n`;
+	logs.info += text;
+	logs.verbose += text;
+};
+$.warn = (...args: any[]) => {
+	const time = getFormattedTimestamp();
+	console.warn(chalk.white.bgGray(time), chalk.black.bgYellow("WARN"), ...args);
+	const text = `[${time}] [WARN] ${args.join(" ")}\n`;
+	logs.warn += text;
+	logs.info += text;
+	logs.verbose += text;
+};
+$.error = (...args: any[]) => {
+	const time = getFormattedTimestamp();
+	console.error(chalk.white.bgGray(time), chalk.white.bgRed("ERROR"), ...args);
+	const text = `[${time}] [ERROR] ${args.join(" ")}\n`;
+	logs.error += text;
+	logs.warn += text;
+	logs.info += text;
+	logs.verbose += text;
+};
+$.debug = (...args: any[]) => {
+	const time = getFormattedTimestamp();
+	console.debug(chalk.white.bgGray(time), chalk.white.bgBlue("DEBUG"), ...args);
+	const text = `[${time}] [DEBUG] ${args.join(" ")}\n`;
+	logs.verbose += text;
+};
+$.ready = (...args: any[]) => {
+	const time = getFormattedTimestamp();
+	console.log(chalk.white.bgGray(time), chalk.black.bgGreen("READY"), ...args);
+	const text = `[${time}] [READY] ${args.join(" ")}\n`;
+	logs.info += text;
+	logs.verbose += text;
+};
+
+function getFormattedTimestamp()
+{
+	const now = new Date();
+	const year = now.getUTCFullYear();
+	const month = (now.getUTCMonth() + 1).toString().padStart(2, '0');
+	const day = now.getUTCDate().toString().padStart(2, '0');
+	const hour = now.getUTCHours().toString().padStart(2, '0');
+	const minute = now.getUTCMinutes().toString().padStart(2, '0');
+	const second = now.getUTCSeconds().toString().padStart(2, '0');
+	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
 
 /**
  * Splits a command by spaces while accounting for quotes which capture string arguments.
@@ -158,3 +210,13 @@ export function isType(value: any, type: Function): boolean
 	else
 		return value !== undefined && value !== null && value.constructor === type;
 }
+
+// A 50% chance would be "Math.random() < 0.5" because Math.random() can be [0, 1), so to make two equal ranges, you'd need [0, 0.5)U[0.5, 1).
+// Similar logic would follow for any other percentage. Math.random() < 1 is always true (100% chance) and Math.random() < 0 is always false (0% chance).
+export const Random = {
+	num: (min: number, max: number) => (Math.random() * (max - min)) + min,
+	int: (min: number, max: number) => Math.floor(Random.num(min, max)),
+	chance: (decimal: number) => Math.random() < decimal,
+	sign: (number: number) => number * (Random.chance(0.5) ? -1 : 1),
+	deviation: (base: number, deviation: number) => Random.num(base - deviation, base + deviation)
+};
