@@ -65,45 +65,58 @@ export const logs: {[type: string]: string} = {
 };
 
 // The custom console. In order of verbosity, error, warn, log, and debug. Ready is a variation of log.
+// General Purpose Logger
 $.log = (...args: any[]) => {
-	const time = getFormattedTimestamp();
-	console.log(chalk.white.bgGray(time), chalk.black.bgWhite("INFO"), ...args);
-	const text = `[${time}] [INFO] ${args.join(" ")}\n`;
+	console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgWhite("INFO"), ...args);
+	const text = `[${formatUTCTimestamp()}] [INFO] ${args.join(" ")}\n`;
 	logs.info += text;
 	logs.verbose += text;
 };
+// "It'll still work, but you should really check up on this."
 $.warn = (...args: any[]) => {
-	const time = getFormattedTimestamp();
-	console.warn(chalk.white.bgGray(time), chalk.black.bgYellow("WARN"), ...args);
-	const text = `[${time}] [WARN] ${args.join(" ")}\n`;
+	console.warn(chalk.white.bgGray(formatTimestamp()), chalk.black.bgYellow("WARN"), ...args);
+	const text = `[${formatUTCTimestamp()}] [WARN] ${args.join(" ")}\n`;
 	logs.warn += text;
 	logs.info += text;
 	logs.verbose += text;
 };
+// Used for anything which prevents the program from actually running.
 $.error = (...args: any[]) => {
-	const time = getFormattedTimestamp();
-	console.error(chalk.white.bgGray(time), chalk.white.bgRed("ERROR"), ...args);
-	const text = `[${time}] [ERROR] ${args.join(" ")}\n`;
+	console.error(chalk.white.bgGray(formatTimestamp()), chalk.white.bgRed("ERROR"), ...args);
+	const text = `[${formatUTCTimestamp()}] [ERROR] ${args.join(" ")}\n`;
 	logs.error += text;
 	logs.warn += text;
 	logs.info += text;
 	logs.verbose += text;
 };
+// Be as verbose as possible. If anything might help when debugging an error, then include it. This only shows in your console if you run this with "dev", but you can still get it from "logs.verbose".
 $.debug = (...args: any[]) => {
-	const time = getFormattedTimestamp();
-	console.debug(chalk.white.bgGray(time), chalk.white.bgBlue("DEBUG"), ...args);
-	const text = `[${time}] [DEBUG] ${args.join(" ")}\n`;
+	if(process.argv[2] === "dev")
+		console.debug(chalk.white.bgGray(formatTimestamp()), chalk.white.bgBlue("DEBUG"), ...args);
+	const text = `[${formatUTCTimestamp()}] [DEBUG] ${args.join(" ")}\n`;
 	logs.verbose += text;
 };
+// Used once at the start of the program when the bot loads.
 $.ready = (...args: any[]) => {
-	const time = getFormattedTimestamp();
-	console.log(chalk.white.bgGray(time), chalk.black.bgGreen("READY"), ...args);
-	const text = `[${time}] [READY] ${args.join(" ")}\n`;
+	console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgGreen("READY"), ...args);
+	const text = `[${formatUTCTimestamp()}] [READY] ${args.join(" ")}\n`;
 	logs.info += text;
 	logs.verbose += text;
 };
 
-function getFormattedTimestamp()
+function formatTimestamp()
+{
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = (now.getMonth() + 1).toString().padStart(2, '0');
+	const day = now.getDate().toString().padStart(2, '0');
+	const hour = now.getHours().toString().padStart(2, '0');
+	const minute = now.getMinutes().toString().padStart(2, '0');
+	const second = now.getSeconds().toString().padStart(2, '0');
+	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
+function formatUTCTimestamp()
 {
 	const now = new Date();
 	const year = now.getUTCFullYear();

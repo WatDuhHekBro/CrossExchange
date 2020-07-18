@@ -121,7 +121,7 @@ export default new Command({
 							return $.channel.send("You don't have enough money to do that!", getMoneyEmbed(author));
 						else if(target.id === author.id)
 							return $.channel.send("You can't send money to yourself!");
-						else if(target.bot)
+						else if(target.bot && process.argv[2] !== "dev")
 							return $.channel.send("You can't send money to a bot!");
 						
 						sender.money -= amount;
@@ -163,7 +163,7 @@ export default new Command({
 						return $.channel.send(`Couldn't find a user by the name of \`${username}\`! If you want to send money to someone in a different server, you have to use their user ID!`);
 					else if(member.user.id === author.id)
 						return $.channel.send("You can't send money to yourself!");
-					else if(member.user.bot)
+					else if(member.user.bot && process.argv[2] !== "dev")
 						return $.channel.send("You can't send money to a bot!");
 					
 					const target = member.user;

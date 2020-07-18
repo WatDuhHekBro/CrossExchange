@@ -19,7 +19,7 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
-    "dev": "tsc-watch --onSuccess \"node dist/index.js\""
+    "dev": "tsc-watch --onSuccess \"node dist/index.js dev\""
   },
   "author": "WatDuhHekBro",
   "license": "ISC",
