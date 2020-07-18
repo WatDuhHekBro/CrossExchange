@@ -1,15 +1,15 @@
 import {Client, MessageMentions} from "discord.js";
 import lib from "./core/lib";
 import setup from "./setup";
-import {commandListPromise} from "./core/storage";
+import FileManager from "./core/storage";
 import {Config, Storage} from "./core/structures";
 import intercept from "./modules/intercept";
 
 (async() => {
 	// Setup //
-	const client = new Client();
-	const commands = await commandListPromise;
 	await setup.init();
+	const client = new Client();
+	const commands = await FileManager.loadCommands();
 	client.login(Config.token).catch(setup.again);
 	
 	client.on("message", async message => {
