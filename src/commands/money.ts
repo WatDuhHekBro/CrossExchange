@@ -31,7 +31,6 @@ export function getMoneyEmbed(user: User): object
 	}};
 }
 
-// Make sure to call this BEFORE you make any changes!
 function getSendEmbed(sender: User, receiver: User, amount: number): object
 {
 	return {embed: {
@@ -42,7 +41,7 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object
 			icon_url: sender.avatarURL({
 				format: "png",
 				dynamic: true
-			})
+			}) || sender.defaultAvatarURL
 		},
 		title: "Transaction",
 		description: `${sender.toString()} has sent ${$(amount).pluralise("credit", "s")} to ${receiver.toString()}!`,
@@ -50,11 +49,11 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object
 		[
 			{
 				name: `Sender: ${sender.username}#${sender.discriminator}`,
-				value: `${$(Storage.getUser(sender.id).money).pluralise("credit", "s")} (${$(-amount).pluraliseSigned("credit", "s")})`
+				value: $(Storage.getUser(sender.id).money).pluralise("credit", "s")
 			},
 			{
 				name: `Receiver: ${receiver.username}#${receiver.discriminator}`,
-				value: `${$(Storage.getUser(receiver.id).money).pluralise("credit", "s")} (${$(amount).pluraliseSigned("credit", "s")})`
+				value: $(Storage.getUser(receiver.id).money).pluralise("credit", "s")
 			}
 		],
 		footer:
@@ -63,7 +62,7 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object
 			icon_url: receiver.avatarURL({
 				format: "png",
 				dynamic: true
-			})
+			}) || receiver.defaultAvatarURL
 		}
 	}};
 }
@@ -125,10 +124,10 @@ export default new Command({
 						else if(target.bot)
 							return $.channel.send("You can't send money to a bot!");
 						
-						$.channel.send(getSendEmbed(author, target, amount));
 						sender.money -= amount;
 						receiver.money += amount;
 						Storage.save();
+						$.channel.send(getSendEmbed(author, target, amount));
 					}
 				})
 			}),
@@ -204,10 +203,10 @@ export default new Command({
 					if(isCorrect)
 					{
 						const receiver = Storage.getUser(target.id);
-						$.channel.send(getSendEmbed(author, target, amount));
 						sender.money -= amount;
 						receiver.money += amount;
 						Storage.save();
+						$.channel.send(getSendEmbed(author, target, amount));
 					}
 				}
 			})
