@@ -72,12 +72,20 @@ export default new Command({
 					for(const subtag in command.subcommands)
 					{
 						const subcmd = command.subcommands[subtag] as Command;
-						list.push(`- \`${header} ${subtag}\` - ${subcmd.description}`);
+						const customUsage = subcmd.usage ? ` ${subcmd.usage}` : "";
+						list.push(`- \`${header} ${subtag}${customUsage}\` - ${subcmd.description}`);
 					}
 					
 					for(const type of types)
+					{
 						if(command[type])
-							list.push(`- \`${header} <${type}>\` - ${command[type].description}`);
+						{
+							const cmd = command[type] as Command;
+							const customUsage = cmd.usage ? ` ${cmd.usage}` : "";
+							list.push(`- \`${header} <${type}>${customUsage}\` - ${cmd.description}`);
+						}
+					}
+						
 					
 					append = "Usages:" + (list.length > 0 ? `\n${list.join('\n')}` : " None.");
 				}
