@@ -28,8 +28,8 @@ export default class Command
 	public user: Command|null;
 	public number: Command|null;
 	public any: Command|null;
-	public special: any; // Only used for special cases like passing the command list reference to the help command. This is to avoid attaching one-time use objects into the common library.
 	//public static readonly PERMISSIONS = PERMISSIONS;
+	[key: string]: any; // Allow for dynamic indexing. The CommandOptions interface will still prevent users from adding unused properties though.
 	
 	constructor(options?: CommandOptions)
 	{

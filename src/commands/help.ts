@@ -1,5 +1,6 @@
 import Command from "../core/command";
 import {CommonLibrary} from "../core/lib";
+import {commandListPromise} from "../core/storage";
 
 const types = ["user", "number", "any"];
 
@@ -8,9 +9,10 @@ export default new Command({
 	usage: "([command, [subcommand/type], ...])",
 	async run($: CommonLibrary): Promise<any>
 	{
+		const commands = await commandListPromise;
 		const list: string[] = [];
 		
-		for(const [header, command] of this.special)
+		for(const [header, command] of commands)
 			if(header !== "test")
 				list.push(`- \`${header}\` - ${command.description}`);
 		
@@ -20,8 +22,9 @@ export default new Command({
 	any: new Command({
 		async run($: CommonLibrary): Promise<any>
 		{
+			const commands = await commandListPromise;
 			let header = $.args.shift();
-			let command = this.special.get(header);
+			let command = commands.get(header);
 			
 			if(!command || header === "test")
 				$.channel.send(`No command found by the name \`${header}\`!`);
@@ -42,7 +45,7 @@ export default new Command({
 							usage = command.usage;
 						else
 						{
-							command = null;
+							command = undefined;
 							break;
 						}
 					}
@@ -55,7 +58,7 @@ export default new Command({
 					}
 					else
 					{
-						command = null;
+						command = undefined;
 						break;
 					}
 				}
@@ -71,7 +74,7 @@ export default new Command({
 					
 					for(const subtag in command.subcommands)
 					{
-						const subcmd = command.subcommands[subtag] as Command;
+						const subcmd = command.subcommands[subtag];
 						const customUsage = subcmd.usage ? ` ${subcmd.usage}` : "";
 						list.push(`- \`${header} ${subtag}${customUsage}\` - ${subcmd.description}`);
 					}
@@ -80,7 +83,7 @@ export default new Command({
 					{
 						if(command[type])
 						{
-							const cmd = command[type] as Command;
+							const cmd = command[type];
 							const customUsage = cmd.usage ? ` ${cmd.usage}` : "";
 							list.push(`- \`${header} <${type}>${customUsage}\` - ${cmd.description}`);
 						}

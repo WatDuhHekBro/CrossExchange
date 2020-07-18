@@ -1,39 +1,16 @@
-import {Client, Collection, MessageMentions} from "discord.js";
-import {existsSync, writeFileSync} from "fs";
-import FileManager from "./core/storage";
+import {Client, MessageMentions} from "discord.js";
 import lib from "./core/lib";
 import setup from "./setup";
+import {commandListPromise} from "./core/storage";
 import {Config, Storage} from "./core/structures";
-import Command, {template} from "./core/command";
 import intercept from "./modules/intercept";
 
 (async() => {
 	// Setup //
-	await setup.init();
 	const client = new Client();
+	const commands = await commandListPromise;
+	await setup.init();
 	client.login(Config.token).catch(setup.again);
-	
-	// Load Commands //
-	const commands = new Collection();
-	
-	if(!existsSync("src/commands/test.ts"))
-		writeFileSync("src/commands/test.ts", template);
-	
-	for(const file of FileManager.open("dist/commands", file => file.endsWith(".js")))
-	{
-		const header = file.substring(0, file.indexOf(".js"));
-		const command = (await import(`./commands/${header}`)).default;
-		commands.set(header, command);
-		lib.log("Loading Command:", header);
-	}
-	
-	// Special case for the help command.
-	if(commands.has("help"))
-	{
-		const help = commands.get("help") as Command;
-		help.special = commands;
-		help.any!.special = commands;
-	}
 	
 	client.on("message", async message => {
 		// Message Setup //
@@ -42,10 +19,11 @@ import intercept from "./modules/intercept";
 		if(!message.content.startsWith(prefix)) return intercept(message);
 		const [header, ...args] = message.content.substring(prefix.length).split(/ +/);
 		if(!commands.has(header)) return;
-		lib.log(`${message.author.username}#${message.author.discriminator} executed the command "${header}".`);
+		lib.log(`${message.author.username}#${message.author.discriminator} executed the command "${header}" with arguments "${args}".`);
 		
 		// Subcommand Recursion //
-		let command = commands.get(header) as Command;
+		let command = commands.get(header);
+		if(!command) return lib.warn(`Command "${header}" was called but for some reason it's still undefined!`);
 		const params: any[] = [];
 		let isEndpoint = false;
 		

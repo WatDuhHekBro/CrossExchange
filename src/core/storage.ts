@@ -1,5 +1,7 @@
 import fs from "fs";
 import lib from "./lib";
+import {Collection} from "discord.js";
+import Command, {template} from "../core/command";
 
 const Storage = {
 	read(header: string): object
@@ -50,4 +52,23 @@ const Storage = {
 	}
 };
 
+async function loadCommands(): Promise<Collection<string, Command>>
+{
+	const commands: Collection<string, Command> = new Collection();
+	
+	if(!fs.existsSync("src/commands/test.ts"))
+		fs.writeFileSync("src/commands/test.ts", template);
+	
+	for(const file of Storage.open("dist/commands", (filename: string) => filename.endsWith(".js")))
+	{
+		const header = file.substring(0, file.indexOf(".js"));
+		const command = (await import(`../commands/${header}`)).default;
+		commands.set(header, command);
+		lib.log("Loading Command:", header);
+	}
+	
+	return commands;
+}
+
 export default Storage;
+export const commandListPromise = loadCommands();
