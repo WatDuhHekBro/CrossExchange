@@ -230,6 +230,6 @@ export const Random = {
 	num: (min: number, max: number) => (Math.random() * (max - min)) + min,
 	int: (min: number, max: number) => Math.floor(Random.num(min, max)),
 	chance: (decimal: number) => Math.random() < decimal,
-	sign: (number: number) => number * (Random.chance(0.5) ? -1 : 1),
+	sign: (number = 1) => number * (Random.chance(0.5) ? -1 : 1),
 	deviation: (base: number, deviation: number) => Random.num(base - deviation, base + deviation)
 };

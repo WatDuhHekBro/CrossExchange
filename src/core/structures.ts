@@ -2,8 +2,9 @@ import FileManager from "./storage";
 import lib, {isType} from "./lib";
 import {watch} from "fs";
 import $ from "./lib";
+import {Market, Event} from "../modules/stonks";
 
-interface GenericJSON
+export interface GenericJSON
 {
 	[key: string]: any;
 }
@@ -14,7 +15,7 @@ interface GenericJSON
  * If at any point the value doesn't match the data structure provided, the fallback is returned.
  * Warning: Type checking is based on the fallback's type. Be sure that the "type" parameter is accurate to this!
  */
-function select<T>(value: any, fallback: T, type: Function, isArray = false): T
+export function select<T>(value: any, fallback: T, type: Function, isArray = false): T
 {
 	if(isArray && isType(value, Array))
 	{
@@ -57,6 +58,7 @@ class User
 	public penalties: number;
 	public lastReceived: number;
 	public net: number;
+	public invested: {[market: string]: number};
 	
 	constructor(data?: GenericJSON)
 	{
@@ -64,6 +66,12 @@ class User
 		this.penalties = select(data?.penalties, 0, Number);
 		this.lastReceived = select(data?.lastReceived, -1, Number);
 		this.net = select(data?.net, 0, Number);
+		this.invested = {};
+		
+		if(data?.invested)
+			for(const tag in data.invested)
+				if(isType(data.invested[tag], Number))
+					this.invested[tag] = data.invested[tag];
 	}
 }
 
@@ -136,33 +144,29 @@ class StorageStructure
 	}
 }
 
-class Market
-{
-	
-}
-
-class Event
-{
-	
-}
-
-/*const DefaultMarkets = {
-	rookie:
-	{
-		"title": "",
-		"description": ""
-	},
-};
-
-const DefaultEvents = {
-	
-};*/
-
 class StonksStructure
 {
+	public markets: {[tag: string]: Market};
+	public events: Event[];
+	public channel: string|null; // The ID of the channel to post updates to.
+	public messages: string[]; // The IDs of the market value messages in order. The last one is the latest event message.
+	public scheduled: number[]; // The list of timestamps used so that restarting the bot does not 
+	
 	constructor(data: GenericJSON)
 	{
-		//console.log(DefaultMarkets);
+		this.markets = {};
+		this.events = [];
+		this.channel = select(data.channel, null, String);
+		this.messages = select(data.messages, [], String, true);
+		this.scheduled = [];
+	}
+	
+	getMarket(tag: string): Market|null
+	{
+		if(tag in this.markets)
+			return this.markets[tag];
+		else
+			return null;
 	}
 }
 
