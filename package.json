@@ -22,7 +22,7 @@
     "dev": "tsc-watch --onSuccess \"node dist/index.js dev\""
   },
   "author": "WatDuhHekBro",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WatDuhHekBro/CrossExchange.git"
