@@ -1,9 +1,10 @@
 import {Client, MessageMentions} from "discord.js";
-import lib from "./core/lib";
+import $ from "./core/lib";
 import setup from "./setup";
 import FileManager from "./core/storage";
 import {Config, Storage} from "./core/structures";
 import intercept from "./modules/intercept";
+import {initializeSchedulers} from "./modules/scheduler";
 
 (async() => {
 	// Setup //
@@ -11,6 +12,7 @@ import intercept from "./modules/intercept";
 	const client = new Client();
 	const commands = await FileManager.loadCommands();
 	client.login(Config.token).catch(setup.again);
+	initializeSchedulers();
 	
 	client.on("message", async message => {
 		// Message Setup //
@@ -19,11 +21,11 @@ import intercept from "./modules/intercept";
 		if(!message.content.startsWith(prefix)) return intercept(message);
 		const [header, ...args] = message.content.substring(prefix.length).split(/ +/);
 		if(!commands.has(header)) return;
-		lib.log(`${message.author.username}#${message.author.discriminator} executed the command "${header}" with arguments "${args}".`);
+		$.log(`${message.author.username}#${message.author.discriminator} executed the command "${header}" with arguments "${args}".`);
 		
 		// Subcommand Recursion //
 		let command = commands.get(header);
-		if(!command) return lib.warn(`Command "${header}" was called but for some reason it's still undefined!`);
+		if(!command) return $.warn(`Command "${header}" was called but for some reason it's still undefined!`);
 		const params: any[] = [];
 		let isEndpoint = false;
 		
@@ -32,7 +34,7 @@ import intercept from "./modules/intercept";
 			if(command.endpoint)
 			{
 				if(command.subcommands || command.user || command.number || command.any)
-					lib.warn(`An endpoint cannot have subcommands! Check ${prefix}${header} again.`);
+					$.warn(`An endpoint cannot have subcommands! Check ${prefix}${header} again.`);
 				isEndpoint = true;
 				break;
 			}
@@ -64,7 +66,7 @@ import intercept from "./modules/intercept";
 			return message.channel.send("Too many arguments!");
 		
 		// Execute with dynamic library attached. //
-		command.execute(Object.assign(lib, {
+		command.execute(Object.assign($, {
 			args: params,
 			author: message.author,
 			channel: message.channel,
@@ -78,7 +80,7 @@ import intercept from "./modules/intercept";
 	client.once("ready", async() => {
 		if(client.user)
 		{
-			lib.ready(`Logged in as ${client.user.username}#${client.user.discriminator}.`);
+			$.ready(`Logged in as ${client.user.username}#${client.user.discriminator}.`);
 			client.user.setActivity({
 				type: "LISTENING",
 				name: `${Config.prefix}help`

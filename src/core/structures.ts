@@ -1,7 +1,6 @@
 import FileManager from "./storage";
-import lib, {isType} from "./lib";
+import $, {isType} from "./lib";
 import {watch} from "fs";
-import $ from "./lib";
 import {Market, Event} from "../modules/stonks";
 
 export interface GenericJSON
@@ -110,7 +109,7 @@ class StorageStructure
 	public getUser(id: string): User
 	{
 		if(!/\d{17,19}/g.test(id))
-			lib.warn(`"${id}" is not a valid user ID! It will be erased when the data loads again.`);
+			$.warn(`"${id}" is not a valid user ID! It will be erased when the data loads again.`);
 		
 		if(id in this.users)
 			return this.users[id];
@@ -126,7 +125,7 @@ class StorageStructure
 	public getGuild(id: string): Guild
 	{
 		if(!/\d{17,19}/g.test(id))
-			lib.warn(`"${id}" is not a valid guild ID! It will be erased when the data loads again.`);
+			$.warn(`"${id}" is not a valid guild ID! It will be erased when the data loads again.`);
 		
 		if(id in this.guilds)
 			return this.guilds[id];
@@ -150,7 +149,8 @@ class StonksStructure
 	public events: Event[];
 	public channel: string|null; // The ID of the channel to post updates to.
 	public messages: string[]; // The IDs of the market value messages in order. The last one is the latest event message.
-	public scheduled: number[]; // The list of timestamps used so that restarting the bot does not 
+	public stonksScheduler: number;
+	public eventScheduler: number;
 	
 	constructor(data: GenericJSON)
 	{
@@ -158,7 +158,8 @@ class StonksStructure
 		this.events = [];
 		this.channel = select(data.channel, null, String);
 		this.messages = select(data.messages, [], String, true);
-		this.scheduled = [];
+		this.stonksScheduler = select(data.stonksScheduler, 0, Number);
+		this.eventScheduler = select(data.eventScheduler, 0, Number);
 	}
 	
 	getMarket(tag: string): Market|null
@@ -167,6 +168,21 @@ class StonksStructure
 			return this.markets[tag];
 		else
 			return null;
+	}
+	
+	triggerStonks()
+	{
+		$.debug(`Triggered stonks at ${new Date().toString()}.`);
+	}
+	
+	triggerEvent()
+	{
+		$.debug(`Triggered event at ${new Date().toString()}.`);
+	}
+	
+	save()
+	{
+		FileManager.write("stonks", this);
 	}
 }
 

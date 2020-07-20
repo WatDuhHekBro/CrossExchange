@@ -1,5 +1,5 @@
 import fs from "fs";
-import lib from "./lib";
+import $ from "./lib";
 import {Collection} from "discord.js";
 import Command, {template} from "../core/command";
 
@@ -22,7 +22,7 @@ const Storage = {
 			}
 			catch(error)
 			{
-				lib.warn(`Malformed JSON data (header: ${header}), backing it up.`);
+				$.warn(`Malformed JSON data (header: ${header}), backing it up.`);
 				fs.writeFileSync(`${path}.backup`, file);
 			}
 		}
@@ -68,7 +68,7 @@ const Storage = {
 			const header = file.substring(0, file.indexOf(".js"));
 			const command = (await import(`../commands/${header}`)).default;
 			commands.set(header, command);
-			lib.log("Loading Command:", header);
+			$.log("Loading Command:", header);
 		}
 		
 		return commands;
