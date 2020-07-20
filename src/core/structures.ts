@@ -1,38 +1,9 @@
 import FileManager from "./storage";
-import $, {isType} from "./lib";
+import $, {isType, select, GenericJSON, GenericStructure} from "./lib";
 import {watch} from "fs";
-import {Market, Event} from "../modules/stonks";
+import {StonksStructure} from "../modules/stonks";
 
-export interface GenericJSON
-{
-	[key: string]: any;
-}
-
-/**
- * Checks a value to see if it matches the fallback's type, otherwise returns the fallback.
- * For the purposes of the templates system, this function will only check array types, objects should be checked under their own type (as you'd do anyway with something like a User object).
- * If at any point the value doesn't match the data structure provided, the fallback is returned.
- * Warning: Type checking is based on the fallback's type. Be sure that the "type" parameter is accurate to this!
- */
-export function select<T>(value: any, fallback: T, type: Function, isArray = false): T
-{
-	if(isArray && isType(value, Array))
-	{
-		for(let item of value)
-			if(!isType(item, type))
-				return fallback;
-		return value;
-	}
-	else
-	{
-		if(isType(value, type))
-			return value;
-		else
-			return fallback;
-	}
-}
-
-class ConfigStructure
+class ConfigStructure extends GenericStructure
 {
 	public token: string;
 	public prefix: string;
@@ -40,14 +11,10 @@ class ConfigStructure
 	
 	constructor(data: GenericJSON)
 	{
+		super("config");
 		this.token = select(data.token, "<ENTER YOUR TOKEN HERE>", String);
 		this.prefix = select(data.prefix, "$", String);
 		this.mechanics = select(data.mechanics, [], String, true);
-	}
-	
-	public save()
-	{
-		FileManager.write("config", this);
 	}
 }
 
@@ -86,13 +53,14 @@ class Guild
 	}
 }
 
-class StorageStructure
+class StorageStructure extends GenericStructure
 {
 	public users: {[id: string]: User};
 	public guilds: {[id: string]: Guild};
 	
 	constructor(data: GenericJSON)
 	{
+		super("storage");
 		this.users = {};
 		this.guilds = {};
 		
@@ -135,54 +103,6 @@ class StorageStructure
 			this.guilds[id] = guild;
 			return guild;
 		}
-	}
-	
-	public save()
-	{
-		FileManager.write("storage", this);
-	}
-}
-
-class StonksStructure
-{
-	public markets: {[tag: string]: Market};
-	public events: Event[];
-	public channel: string|null; // The ID of the channel to post updates to.
-	public messages: string[]; // The IDs of the market value messages in order. The last one is the latest event message.
-	public stonksScheduler: number;
-	public eventScheduler: number;
-	
-	constructor(data: GenericJSON)
-	{
-		this.markets = {};
-		this.events = [];
-		this.channel = select(data.channel, null, String);
-		this.messages = select(data.messages, [], String, true);
-		this.stonksScheduler = select(data.stonksScheduler, 0, Number);
-		this.eventScheduler = select(data.eventScheduler, 0, Number);
-	}
-	
-	getMarket(tag: string): Market|null
-	{
-		if(tag in this.markets)
-			return this.markets[tag];
-		else
-			return null;
-	}
-	
-	triggerStonks()
-	{
-		$.debug(`Triggered stonks at ${new Date().toString()}.`);
-	}
-	
-	triggerEvent()
-	{
-		$.debug(`Triggered event at ${new Date().toString()}.`);
-	}
-	
-	save()
-	{
-		FileManager.write("stonks", this);
 	}
 }
 

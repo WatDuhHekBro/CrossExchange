@@ -18,6 +18,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
+    "autobuild": "tsc && npm start",
     "start": "node dist/index.js",
     "dev": "tsc-watch --onSuccess \"node dist/index.js dev\""
   },

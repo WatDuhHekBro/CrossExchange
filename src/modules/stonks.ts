@@ -1,5 +1,4 @@
-import {Random} from "../core/lib";
-import {select, GenericJSON} from "../core/structures";
+import $, {Random, isType, select, GenericJSON, GenericStructure} from "../core/lib";
 
 // Stonks Board Embeds //
 // split by 24 fields each because it's divisible by 3, good for symmetry
@@ -13,7 +12,7 @@ export function getEventEmbed(): object
 	return {};
 }
 
-export class Market
+class Market
 {
 	public title: string;
 	public description: string;
@@ -22,7 +21,7 @@ export class Market
 	public invested: number;
 	public volatility: number;
 	public event: number;
-	public catalog: number[][];
+	public catalog: [number, number][];
 	
 	constructor(data?: GenericJSON)
 	{
@@ -33,7 +32,12 @@ export class Market
 		this.invested = select(data?.invested, 0, Number);
 		this.volatility = Math.min(Math.max(select(data?.volatility, 0, Number), 0), 1);
 		this.event = select(data?.event, 1, Number);
-		this.catalog = select(data?.catalog, [], Object, true); // ohno
+		this.catalog = [];
+		
+		if(data?.catalog && isType(data.catalog, Array))
+			for(const entry of data.catalog)
+				if(entry.length === 2 && isType(entry[0], Number) && isType(entry[1], Number))
+					this.catalog.push(entry);
 	}
 	
 	/** Do the calculations on a market for one round. */
@@ -51,23 +55,17 @@ export class Market
 	}
 }
 
-export class Event
+class Event
 {
 	public headline: string;
 	public description: string;
-	public effects: any[];
+	public effects: {[market: string]: ["ADD"|"MUL"|"SET", number, number]};
 	
 	constructor(data?: GenericJSON)
 	{
 		this.headline = select(data?.headline, "", String);
 		this.description = select(data?.description, "", String);
-		this.effects = [];
-	}
-	
-	/**  */
-	execute()
-	{
-		
+		this.effects = {};
 	}
 }
 
@@ -83,3 +81,42 @@ export class Event
 const DefaultEvents = {
 	
 };*/
+
+export class StonksStructure extends GenericStructure
+{
+	public markets: {[tag: string]: Market};
+	public events: Event[];
+	public channel: string|null; // The ID of the channel to post updates to.
+	public messages: string[]; // The IDs of the market value messages in order. The last one is the latest event message.
+	public stonksScheduler: number;
+	public eventScheduler: number;
+	
+	constructor(data: GenericJSON)
+	{
+		super("stonks");
+		this.markets = {};
+		this.events = [];
+		this.channel = select(data.channel, null, String);
+		this.messages = select(data.messages, [], String, true);
+		this.stonksScheduler = select(data.stonksScheduler, 0, Number);
+		this.eventScheduler = select(data.eventScheduler, 0, Number);
+	}
+	
+	public getMarket(tag: string): Market|null
+	{
+		if(tag in this.markets)
+			return this.markets[tag];
+		else
+			return null;
+	}
+	
+	public triggerStonks()
+	{
+		$.debug(`Triggered stonks at ${new Date().toString()}.`);
+	}
+	
+	public triggerEvent()
+	{
+		$.debug(`Triggered event at ${new Date().toString()}.`);
+	}
+}

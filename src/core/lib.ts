@@ -1,6 +1,7 @@
 import {GenericWrapper, NumberWrapper, ArrayWrapper} from "./wrappers";
 import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember} from "discord.js";
 import chalk from "chalk";
+import FileManager from "./storage";
 
 /** A type that describes what the library module does. */
 export interface CommonLibrary
@@ -222,6 +223,53 @@ export function isType(value: any, type: Function): boolean
 		return true;
 	else
 		return value !== undefined && value !== null && value.constructor === type;
+}
+
+/**
+ * Checks a value to see if it matches the fallback's type, otherwise returns the fallback.
+ * For the purposes of the templates system, this function will only check array types, objects should be checked under their own type (as you'd do anyway with something like a User object).
+ * If at any point the value doesn't match the data structure provided, the fallback is returned.
+ * Warning: Type checking is based on the fallback's type. Be sure that the "type" parameter is accurate to this!
+ */
+export function select<T>(value: any, fallback: T, type: Function, isArray = false): T
+{
+	if(isArray && isType(value, Array))
+	{
+		for(let item of value)
+			if(!isType(item, type))
+				return fallback;
+		return value;
+	}
+	else
+	{
+		if(isType(value, type))
+			return value;
+		else
+			return fallback;
+	}
+}
+
+export interface GenericJSON
+{
+	[key: string]: any;
+}
+
+export abstract class GenericStructure
+{
+	protected __meta__ = "generic";
+	
+	constructor(tag?: string)
+	{
+		this.__meta__ = tag || this.__meta__;
+	}
+	
+	public save()
+	{
+		const tag = this.__meta__;
+		delete this.__meta__;
+		FileManager.write(tag, this);
+		this.__meta__ = tag;
+	}
 }
 
 // A 50% chance would be "Math.random() < 0.5" because Math.random() can be [0, 1), so to make two equal ranges, you'd need [0, 0.5)U[0.5, 1).

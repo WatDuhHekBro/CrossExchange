@@ -16,7 +16,7 @@ const duo = [
 	"https://i.ytimg.com/vi/u6PZZn3SiVo/maxresdefault.jpg",
 	"https://pbs.twimg.com/profile_images/1124422826188914688/4hhTG737_400x400.jpg",
 	"https://i.ytimg.com/vi/M0Ncawy2LJc/hqdefault.jpg",
-	"https://cdn141.picsart.com/322696516272211.png?type=webp&to=min&r=1280",
+	"https://cdn141.picsart.com/322696516272211.png",
 	"https://pbs.twimg.com/media/D2l_pmiXQAQdOCc.jpg:large",
 	"https://i.ytimg.com/vi/VKbteJ7C4pA/maxresdefault.jpg",
 	"https://i.redd.it/y0jvi57jxqs21.png"
