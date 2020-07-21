@@ -1,5 +1,5 @@
 import Command from "../core/command";
-import $, {CommonLibrary} from "../core/lib";
+import $, {CommonLibrary, perforate, formatUTCTimestamp} from "../core/lib";
 import {Storage, Stonks} from "../core/structures";
 import {User} from "discord.js";
 
@@ -51,6 +51,27 @@ function verifyMarket($: CommonLibrary, tag: string): boolean
 		$.channel.send(`\`${tag}\` is not a valid market! Make sure you use the market's tag instead of its name, such as \`rookie\` instead of \`Rookie Harbor\`. To see a list of valid tags, use \`stonks info\`.`);
 	
 	return isValidMarket;
+}
+
+function getConvertedCatalog(catalog: [number, number][]): object[]
+{
+	const fields: object[] = new Array(catalog.length);
+	
+	for(let i = 0; i < catalog.length; i++)
+	{
+		const entry = catalog[i];
+		const previousEntry = catalog[i+1];
+		const currentValue = entry[0];
+		const timestamp = entry[1];
+		const delta = previousEntry ? `, ${$(currentValue - previousEntry[0]).pluraliseSigned("credit", "s")}` : "";
+		
+		fields[i] = {
+			name: formatUTCTimestamp(new Date(timestamp)),
+			value: `${$(currentValue).pluralise("credit", "s")}${delta}`
+		};
+	}
+	
+	return fields;
 }
 
 export default new Command({
@@ -168,11 +189,27 @@ export default new Command({
 						if(!market)
 							return $.error(`${$.args[0]} unexpectedly returned a null market!`);
 						
-						$.channel.send({embed: {
-							color: 0x8000FF,
+						const catalogs = perforate(getConvertedCatalog(market.catalog), 10);
+						const embed = {embed: {
+							color: 0x008000,
 							title: market.title,
-							description: market.description
-						}});
+							description: market.description,
+							fields: catalogs[0]
+						}} as any;
+						const total = catalogs.length;
+						const hasMultiplePages = total > 1;
+						const getPageHeader = (page: number) => `Page ${page+1} of ${total}`;
+						
+						if(hasMultiplePages)
+						{
+							const msg = await $.channel.send(getPageHeader(0), embed);
+							$.paginate(msg, $.author.id, total, page => {
+								embed.embed.fields = catalogs[page];
+								msg.edit(getPageHeader(page), embed);
+							}, 300000);
+						}
+						else
+							$.channel.send(embed);
 					}
 				}
 			})

@@ -20,7 +20,7 @@ export interface CommonLibrary
 	error: (...args: any[]) => void;
 	debug: (...args: any[]) => void;
 	ready: (...args: any[]) => void;
-	paginate: (message: Message, senderID: string, total: number, callback: (page: number) => void) => void;
+	paginate: (message: Message, senderID: string, total: number, callback: (page: number) => void, duration?: number) => void;
 	
 	// Dynamic Properties //
 	args: any[];
@@ -106,9 +106,8 @@ $.ready = (...args: any[]) => {
 	logs.verbose += text;
 };
 
-function formatTimestamp()
+export function formatTimestamp(now = new Date())
 {
-	const now = new Date();
 	const year = now.getFullYear();
 	const month = (now.getMonth() + 1).toString().padStart(2, '0');
 	const day = now.getDate().toString().padStart(2, '0');
@@ -118,9 +117,8 @@ function formatTimestamp()
 	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
 
-function formatUTCTimestamp()
+export function formatUTCTimestamp(now = new Date())
 {
-	const now = new Date();
 	const year = now.getUTCFullYear();
 	const month = (now.getUTCMonth() + 1).toString().padStart(2, '0');
 	const day = now.getUTCDate().toString().padStart(2, '0');
@@ -135,51 +133,43 @@ const eventListeners: Map<string, (emote: string, id: string) => void> = new Map
 
 // Pagination function that allows for customization via a callback.
 // Define your own pages outside the function because this only manages the actual turning of pages.
-$.paginate = async(message: Message, senderID: string, total: number, callback: (page: number) => void) => {
+$.paginate = async(message: Message, senderID: string, total: number, callback: (page: number) => void, duration = 60000) => {
 	let page = 0;
 	
-	const backwards = () => {
-		page--;
+	const turn = (amount: number) => {
+		page += amount;
 		
 		if(page < 0)
 			page += total;
-		
-		callback(page);
-	}
-	const forwards = () => {
-		page++;
-		
-		if(page >= total)
+		else if(page >= total)
 			page -= total;
 		
 		callback(page);
 	}
-	eventListeners.set(message.id, (emote, id) => {
-		if(id === senderID)
+	const handle = (emote: string, reacterID: string) => {
+		if(reacterID === senderID)
 		{
-			if(emote === '⬅️')
-				backwards();
-			else if(emote === '➡️')
-				forwards();
+			switch(emote)
+			{
+				case '⬅️': turn(-1); break;
+				case '➡️': turn(1); break;
+			}
 		}
-	});
+	};
 	
+	// Listen for reactions and call the handler.
 	await message.react('⬅️');
 	await message.react('➡️');
+	eventListeners.set(message.id, handle);
 	await message.awaitReactions((reaction, user) => {
-		if(user.id === senderID)
-		{
-			if(reaction.emoji.name === '⬅️')
-				backwards();
-			else if(reaction.emoji.name === '➡️')
-				forwards();
-		}
-
+		handle(reaction.emoji.name, user.id);
 		return false;
-	}, {time: 60000});
+	}, {time: duration});
 	
+	// When time's up, remove the bot's own reactions.
 	eventListeners.delete(message.id);
-	message.delete();
+	message.reactions.cache.get('⬅️')?.users.remove(message.author);
+	message.reactions.cache.get('➡️')?.users.remove(message.author);
 };
 
 // Attached to the client, there can be one event listener attached to a message ID which is executed if present.
@@ -273,6 +263,21 @@ export function parseVars(line: string, definitions: {[key: string]: string}, in
 	}
 	
 	return result;
+}
+
+/**
+ * Split up an array into a specified length.
+ * [1,2,3,4,5,6,7,8,9,10] split by 3 = [[1,2,3],[4,5,6],[7,8,9],[10]]
+ */
+export function perforate<T>(list: T[], lengthOfEachSection: number): T[][]
+{
+	const sections: T[][] = [];
+	const amountOfSections = Math.ceil(list.length / lengthOfEachSection);
+	
+	for(let index = 0; index < amountOfSections; index++)
+		sections.push(list.slice(index * lengthOfEachSection, (index + 1) * lengthOfEachSection));
+	
+	return sections;
 }
 
 export function isType(value: any, type: Function): boolean

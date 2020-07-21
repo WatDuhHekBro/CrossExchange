@@ -1,19 +1,15 @@
-import $, {Random, isType, select, GenericJSON, GenericStructure} from "../core/lib";
+import $, {Random, isType, select, GenericJSON, GenericStructure, perforate} from "../core/lib";
 import {Stonks} from "../core/structures";
-
-// For the stonks board, the maximum allowed fields for embeds is 25, but 24 looks much nicer when it's inline.
-const SPLIT = 24;
 
 // Stonks Board Embeds //
 export function getStonksEmbedArray(markets: {[tag: string]: Market}): object[]
 {
 	const sections: object[] = [];
-	const tags = Object.keys(markets);
-	const amountOfSections = Math.ceil(tags.length / SPLIT);
+	// For the stonks board, the maximum allowed fields for embeds is 25, but 24 looks much nicer when it's inline.
+	const tags = perforate(Object.keys(markets), 24);
 	
-	for(let index = 0; index < amountOfSections; index++)
+	for(const list of tags)
 	{
-		const list = tags.slice(index * SPLIT, (index + 1) * SPLIT);
 		const fields: {name: string, value: string, inline: boolean}[] = [];
 		
 		for(const tag of list)
@@ -116,7 +112,7 @@ export class Market
 		const sign = Random.chance(this.volatility) ? Random.sign(3) : 1;
 		this.value += sign * amplitude * gain * this.event;
 		this.value = Math.max(this.value, 0.001);
-		this.catalog.push([Math.round(this.value), Date.now()]);
+		this.catalog.unshift([Math.round(this.value), Date.now()]);
 	}
 }
 
