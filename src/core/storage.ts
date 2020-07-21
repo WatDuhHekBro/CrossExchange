@@ -33,7 +33,11 @@ const Storage = {
 	{
 		this.open("data");
 		const path = `data/${header}.json`;
-		fs.writeFileSync(path, JSON.stringify(data, null, '\t'));
+		
+		if(process.argv[2] === "dev" || header === "config")
+			fs.writeFileSync(path, JSON.stringify(data, null, '\t'));
+		else
+			fs.writeFileSync(path, JSON.stringify(data));
 	},
 	open(path: string, filter?: (value: string, index: number, array: string[]) => unknown): string[]
 	{

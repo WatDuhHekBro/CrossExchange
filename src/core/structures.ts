@@ -1,7 +1,7 @@
 import FileManager from "./storage";
 import $, {isType, select, GenericJSON, GenericStructure} from "./lib";
 import {watch} from "fs";
-import {StonksStructure} from "../modules/stonks";
+import {StonksStructure, StandardMarkets} from "../modules/stonks";
 
 class ConfigStructure extends GenericStructure
 {
@@ -36,7 +36,7 @@ class User
 		
 		if(data?.invested)
 			for(const tag in data.invested)
-				if(isType(data.invested[tag], Number))
+				if(tag in StandardMarkets && isType(data.invested[tag], Number))
 					this.invested[tag] = data.invested[tag];
 	}
 }

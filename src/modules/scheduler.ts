@@ -38,8 +38,8 @@ class StonksScheduler
 			if(Stonks.stonksScheduler >= this.lower)
 				Stonks.triggerStonks();
 			Stonks.stonksScheduler = this.upper + Random.int(0, 300000);
-			$.debug(`Scheduling next iteration for... ${new Date(Stonks.stonksScheduler).toString()}`);
-			$.debug(`Lower Bound: ${new Date(this.lower).toString()}, Upper Bound: ${new Date(this.upper).toString()}`);
+			$.debug(`Scheduling next iteration for... ${new Date(Stonks.stonksScheduler).toUTCString()}`);
+			$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
 			Stonks.save();
 			this.activate();
 		}, Stonks.stonksScheduler - Date.now());
@@ -75,8 +75,8 @@ class EventScheduler
 			if(Stonks.eventScheduler >= this.lower)
 				Stonks.triggerEvent();
 			Stonks.eventScheduler = this.upper + Random.int(0, 3600000);
-			$.debug(`Scheduling next event for... ${new Date(Stonks.eventScheduler).toString()}`);
-			$.debug(`Lower Bound: ${new Date(this.lower).toString()}, Upper Bound: ${new Date(this.upper).toString()}`);
+			$.debug(`Scheduling next event for... ${new Date(Stonks.eventScheduler).toUTCString()}`);
+			$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
 			Stonks.save();
 			this.activate();
 		}, Stonks.eventScheduler - Date.now());

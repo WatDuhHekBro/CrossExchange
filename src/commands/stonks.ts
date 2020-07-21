@@ -43,6 +43,16 @@ function getProfileEmbed(user: User): object
 	}};
 }
 
+function verifyMarket($: CommonLibrary, tag: string): boolean
+{
+	const isValidMarket = !!Stonks.getMarket(tag);
+	
+	if(!isValidMarket)
+		$.channel.send(`\`${tag}\` is not a valid market! Make sure you use the market's tag instead of its name, such as \`rookie\` instead of \`Rookie Harbor\`. To see a list of valid tags, use \`stonks info\`.`);
+	
+	return isValidMarket;
+}
+
 export default new Command({
 	description: "Check your profile related to stonks. Also provides other commands related to stonks.",
 	async run($: CommonLibrary): Promise<any>
@@ -58,12 +68,18 @@ export default new Command({
 			any: new Command({
 				async run($: CommonLibrary): Promise<any>
 				{
-					
+					if(verifyMarket($, $.args[0]))
+					{
+						$.debug($.args[0]);
+					}
 				},
 				number: new Command({
 					async run($: CommonLibrary): Promise<any>
 					{
-						
+						if(verifyMarket($, $.args[0]))
+						{
+							$.debug($.args[0]);
+						}
 					}
 				}),
 				subcommands:
@@ -71,14 +87,17 @@ export default new Command({
 					all: new Command({
 						async run($: CommonLibrary): Promise<any>
 						{
-							
+							if(verifyMarket($, $.args[0]))
+							{
+								$.debug($.args[0]);
+							}
 						}
 					})
 				},
 				any: new Command({
 					async run($: CommonLibrary): Promise<any>
 					{
-						// x isn't a valid amount
+						$.channel.send(`\`${$.args[1]}\` isn't a valid amount!`);
 					}
 				})
 			})
@@ -90,12 +109,18 @@ export default new Command({
 			any: new Command({
 				async run($: CommonLibrary): Promise<any>
 				{
-					
+					if(verifyMarket($, $.args[0]))
+					{
+						
+					}
 				},
 				number: new Command({
 					async run($: CommonLibrary): Promise<any>
 					{
-						
+						if(verifyMarket($, $.args[0]))
+						{
+							
+						}
 					}
 				}),
 				subcommands:
@@ -103,14 +128,17 @@ export default new Command({
 					all: new Command({
 						async run($: CommonLibrary): Promise<any>
 						{
-							
+							if(verifyMarket($, $.args[0]))
+							{
+								
+							}
 						}
 					})
 				},
 				any: new Command({
 					async run($: CommonLibrary): Promise<any>
 					{
-						// x isn't a valid amount
+						$.channel.send(`\`${$.args[1]}\` isn't a valid amount!`);
 					}
 				})
 			})
@@ -120,12 +148,32 @@ export default new Command({
 			usage: "(<market>)",
 			async run($: CommonLibrary): Promise<any>
 			{
+				let output = "";
 				
+				for(const tag in Stonks.markets)
+				{
+					const market = Stonks.markets[tag];
+					output += `\`${tag}\` - ${market.title}\n`;
+				}
+				
+				$.channel.send(output, {split: true});
 			},
 			any: new Command({
 				async run($: CommonLibrary): Promise<any>
 				{
-					
+					if(verifyMarket($, $.args[0]))
+					{
+						const market = Stonks.getMarket($.args[0]);
+						
+						if(!market)
+							return $.error(`${$.args[0]} unexpectedly returned a null market!`);
+						
+						$.channel.send({embed: {
+							color: 0x8000FF,
+							title: market.title,
+							description: market.description
+						}});
+					}
 				}
 			})
 		}),
