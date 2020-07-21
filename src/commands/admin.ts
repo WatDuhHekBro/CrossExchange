@@ -61,7 +61,6 @@ export default new Command({
 	{
 		init: new Command({
 			description: "Initializes messages for market values and random events. (MAKE SURE TO DO THIS IN A DEDICATED CHANNEL!)",
-			usage: "(in a channel dedicated for the bot)",
 			async run($: CommonLibrary): Promise<any>
 			{
 				if(authenticate($))
@@ -77,8 +76,8 @@ export default new Command({
 			subcommands:
 			{
 				prefix: new Command({
-					description: "Set a custom prefix for your guild.",
-					usage: "(<prefix>) (removes your custom prefix if none is provided)",
+					description: "Set a custom prefix for your guild. Removes your custom prefix if none is provided.",
+					usage: "(<prefix>)",
 					async run($: CommonLibrary): Promise<any>
 					{
 						if(authenticate($))
@@ -101,8 +100,8 @@ export default new Command({
 					})
 				}),
 				intercept: new Command({
-					description: "Disable the bot from doing stuff when non-command messages are sent. This is stuff like if you say \"oil\" or \"duolingo\" in chat.",
-					usage: "(<on/off>) (toggles if none is selected)",
+					description: "Disable the bot from doing stuff when non-command messages are sent. This is stuff like if you say \"oil\" or \"duolingo\" in chat. Toggles the option if none is selected.",
+					usage: "(<on/off>)",
 					async run($: CommonLibrary): Promise<any>
 					{
 						if(authenticate($, interceptBlock))

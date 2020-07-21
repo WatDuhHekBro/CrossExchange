@@ -1,15 +1,79 @@
 import $, {Random, isType, select, GenericJSON, GenericStructure} from "../core/lib";
+import {Stonks} from "../core/structures";
+
+// For the stonks board, the maximum allowed fields for embeds is 25, but 24 looks much nicer when it's inline.
+const SPLIT = 24;
 
 // Stonks Board Embeds //
-// split by 24 fields each because it's divisible by 3, good for symmetry
-export function getStonksEmbedArray(): object[]
+export function getStonksEmbedArray(markets: {[tag: string]: Market}): object[]
 {
-	return [];
+	const sections: object[] = [];
+	const tags = Object.keys(markets);
+	const amountOfSections = Math.ceil(tags.length / SPLIT);
+	
+	for(let index = 0; index < amountOfSections; index++)
+	{
+		const list = tags.slice(index * SPLIT, (index + 1) * SPLIT);
+		const fields: {name: string, value: string, inline: boolean}[] = [];
+		
+		for(const tag of list)
+		{
+			const market = markets[tag];
+			const current = market.catalog[0];
+			const previous = market.catalog[1];
+			let display = "N/A";
+			
+			if(current)
+			{
+				display = $(current[0]).pluralise("credit", "s");
+				
+				if(previous)
+				{
+					const change = current[0] - previous[0];
+					display += ` (${$(change).pluraliseSigned("credit", "s")})`;
+				}
+			}
+			
+			fields.push({
+				name: market.title || "N/A",
+				value: display,
+				inline: true
+			});
+		}
+		
+		sections.push({embed: {
+			color: 0x008000,
+			fields: fields,
+			footer: {text: "Last Updated"},
+			timestamp: Date.now()
+		}});
+	}
+	
+	return sections;
 }
 
-export function getEventEmbed(): object
+export function getEventEmbed(headline: string, description: string, changes: {[market: string]: number}): object
 {
-	return {};
+	const effects: object[] = [];
+	
+	for(const tag in changes)
+	{
+		const delta = changes[tag];
+		const decimal = (delta * 100).toFixed(2);
+		
+		effects.push({
+			name: `${Stonks.getMarket(tag)?.title || tag || "N/A"} Stocks`,
+			value: delta !== 1 ? `Now ${decimal}% as valuable as before.` : "No changes took place.",
+			inline: true
+		});
+	}
+	
+	return {embed: {
+		color: 0xFF0000,
+		title: headline,
+		description: description,
+		fields: effects
+	}};
 }
 
 export class Market
@@ -25,8 +89,8 @@ export class Market
 	
 	constructor(data?: GenericJSON)
 	{
-		this.title = select(data?.title, "", String);
-		this.description = select(data?.description, "", String);
+		this.title = select(data?.title, "N/A", String);
+		this.description = select(data?.description, "N/A", String);
 		this.value = select(data?.value, 0, Number);
 		this.cycle = select(data?.cycle, Random.num(-1, 1), Number);
 		this.invested = select(data?.invested, 0, Number);
@@ -52,11 +116,11 @@ export class Market
 		const sign = Random.chance(this.volatility) ? Random.sign(3) : 1;
 		this.value += sign * amplitude * gain * this.event;
 		this.value = Math.max(this.value, 0.001);
-		this.catalog.push([Date.now(), Math.round(this.value)]);
+		this.catalog.push([Math.round(this.value), Date.now()]);
 	}
 }
 
-class Event
+export class Event
 {
 	public headline: string;
 	public description: string;
@@ -64,9 +128,28 @@ class Event
 	
 	constructor(data?: GenericJSON)
 	{
-		this.headline = select(data?.headline, "", String);
-		this.description = select(data?.description, "", String);
+		this.headline = select(data?.headline, "N/A", String);
+		this.description = select(data?.description, "N/A", String);
 		this.effects = {};
+		
+		if(data && isType(data.effects, Object))
+		{
+			for(const tag in data.effects)
+			{
+				const market = data.effects[tag];
+				
+				if(isType(market, Array))
+				{
+					const isValidOperation = ["ADD", "MUL", "SET"].includes(market[0]);
+					const isValidRange = isType(market[1], Number) && isType(market[2], Number);
+					
+					if(isValidOperation && isValidRange)
+						this.effects = data.effects;
+					else
+						$.warn(`Tag "${tag}" of the selected effect is invalid!`, data.effects);
+				}
+			}
+		}
 	}
 }
 
@@ -90,7 +173,7 @@ export class StonksStructure extends GenericStructure
 		// Initialize only the values that aren't part of the default market so descriptions can update if any of them change.
 		if(isType(data.markets, Object))
 			for(const tag in StandardMarkets)
-				this.markets[tag] = data.markets[tag] ? Object.assign(new Market(data.markets[tag]), StandardMarkets[tag]) : StandardMarkets[tag];
+				this.markets[tag] = new Market(data.markets[tag] ? Object.assign(data.markets[tag], StandardMarkets[tag]) : StandardMarkets[tag]);
 	}
 	
 	public getMarket(tag: string): Market|null
@@ -110,112 +193,134 @@ export class StonksStructure extends GenericStructure
 	public triggerEvent()
 	{
 		$.debug(`Triggered event at ${new Date().toUTCString()}.`);
+		// delta or % increase = new / old <-- (1.5 / 0.5 = 3x or 300% more valuable)
 	}
 }
 
 // Standard city equipment shops and standard traders are implicitly integrated with the city they're in.
 // For example, Rookie Sandwiches are part of Rookie Harbor's market.
-export const StandardMarkets: {[tag: string]: Market} = {
-	rookie: new Market({
+// Do not use Market objects for this. This will be used to override values to update existing storage data, but if you instantiate a Market object, it'll overwrite all values.
+export const StandardMarkets: {[tag: string]: object} = {
+	rookie:
+	{
 		title: "Rookie Harbor",
 		description: "",
 		volatility: 0
-	}),
-	bergen: new Market({
+	},
+	bergen:
+	{
 		title: "Bergen Village",
 		description: "",
 		volatility: 0
-	}),
-	bakii: new Market({
+	},
+	bakii:
+	{
 		title: "Ba'kii Kum",
 		description: "",
 		volatility: 0
-	}),
-	basin: new Market({
+	},
+	basin:
+	{
 		title: "Basin Keep",
 		description: "",
 		volatility: 0
-	}),
-	sapphire: new Market({
+	},
+	sapphire:
+	{
 		title: "Sapphire Ridge",
 		description: "",
 		volatility: 0
-	}),
-	rhombus: new Market({
+	},
+	rhombus:
+	{
 		title: "Rhombus Square",
 		description: "",
 		volatility: 0
-	}),
-	teak: new Market({
+	},
+	teak:
+	{
 		title: "Ms. Teak's Steaks",
 		description: "",
 		volatility: 0
-	}),
-	icecream: new Market({
+	},
+	icecream:
+	{
 		title: "Frosty Arnold's Ice Cream Stand",
 		description: "",
 		volatility: 0
-	}),
-	plants: new Market({
+	},
+	plants:
+	{
 		title: "Talatu Lips' Botantical Garden",
 		description: "",
 		volatility: 0
-	}),
-	tara: new Market({
+	},
+	tara:
+	{
 		title: "Tara's Sandwich Shop",
 		description: "",
 		volatility: 0
-	}),
-	hermit: new Market({
+	},
+	hermit:
+	{
 		title: "Hermit's Pub",
 		description: "bergen",
 		volatility: 0
-	}),
-	tophat: new Market({
+	},
+	tophat:
+	{
 		title: "Bergen Hatmaker",
 		description: "",
 		volatility: 0
-	}),
-	mine: new Market({
+	},
+	mine:
+	{
 		title: "The Bergen Mine",
 		description: "",
 		volatility: 0
-	}),
-	brewery: new Market({
+	},
+	brewery:
+	{
 		title: "The Ba'kii Kum Brewery",
 		description: "",
 		volatility: 0
-	}),
-	bazaar: new Market({
+	},
+	bazaar:
+	{
 		title: "The Baki Bazaar Union",
 		description: "",
 		volatility: 0
-	}),
-	pond: new Market({
+	},
+	pond:
+	{
 		title: "The Pond Slums Traders",
 		description: "",
 		volatility: 0
-	}),
-	zirvitar: new Market({
+	},
+	zirvitar:
+	{
 		title: "Zir'vitar Power Plant",
 		description: "basin",
 		volatility: 0
-	}),
-	booster: new Market({
+	},
+	booster:
+	{
 		title: "Rhombus Booster Shop",
 		description: "",
 		volatility: 0
-	}),
-	chest: new Market({
+	},
+	chest:
+	{
 		title: "Rhombus Chest Detector Shop",
 		description: "",
 		volatility: 0
-	}),
-	arena: new Market({
+	},
+	arena:
+	{
 		title: "The Rhombus Arena",
 		description: "",
 		volatility: 0
-	})
+	}
 };
 
 const StandardEvents: Event[] = [
