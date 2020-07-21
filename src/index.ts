@@ -1,5 +1,5 @@
 import {Client, MessageMentions} from "discord.js";
-import $ from "./core/lib";
+import $, {unreact} from "./core/lib";
 import setup from "./setup";
 import FileManager from "./core/storage";
 import {Config, Storage} from "./core/structures";
@@ -87,4 +87,6 @@ import {initializeSchedulers} from "./modules/scheduler";
 			});
 		}
 	});
+	
+	client.on("messageReactionRemove", unreact);
 })()

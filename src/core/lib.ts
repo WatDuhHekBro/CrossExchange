@@ -1,5 +1,5 @@
 import {GenericWrapper, NumberWrapper, ArrayWrapper} from "./wrappers";
-import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember} from "discord.js";
+import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember, MessageReaction, PartialUser} from "discord.js";
 import chalk from "chalk";
 import FileManager from "./storage";
 
@@ -20,6 +20,7 @@ export interface CommonLibrary
 	error: (...args: any[]) => void;
 	debug: (...args: any[]) => void;
 	ready: (...args: any[]) => void;
+	paginate: (message: Message, senderID: string, total: number, callback: (page: number) => void) => void;
 	
 	// Dynamic Properties //
 	args: any[];
@@ -127,6 +128,65 @@ function formatUTCTimestamp()
 	const minute = now.getUTCMinutes().toString().padStart(2, '0');
 	const second = now.getUTCSeconds().toString().padStart(2, '0');
 	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
+// A list of message ID and callback pairs. You get the emote name and ID of the user reacting.
+const eventListeners: Map<string, (emote: string, id: string) => void> = new Map();
+
+// Pagination function that allows for customization via a callback.
+// Define your own pages outside the function because this only manages the actual turning of pages.
+$.paginate = async(message: Message, senderID: string, total: number, callback: (page: number) => void) => {
+	let page = 0;
+	
+	const backwards = () => {
+		page--;
+		
+		if(page < 0)
+			page += total;
+		
+		callback(page);
+	}
+	const forwards = () => {
+		page++;
+		
+		if(page >= total)
+			page -= total;
+		
+		callback(page);
+	}
+	eventListeners.set(message.id, (emote, id) => {
+		if(id === senderID)
+		{
+			if(emote === '⬅️')
+				backwards();
+			else if(emote === '➡️')
+				forwards();
+		}
+	});
+	
+	await message.react('⬅️');
+	await message.react('➡️');
+	await message.awaitReactions((reaction, user) => {
+		if(user.id === senderID)
+		{
+			if(reaction.emoji.name === '⬅️')
+				backwards();
+			else if(reaction.emoji.name === '➡️')
+				forwards();
+		}
+
+		return false;
+	}, {time: 60000});
+	
+	eventListeners.delete(message.id);
+	message.delete();
+};
+
+// Attached to the client, there can be one event listener attached to a message ID which is executed if present.
+export function unreact(reaction: MessageReaction, user: User|PartialUser)
+{
+	const callback = eventListeners.get(reaction.message.id);
+	callback && callback(reaction.emoji.name, user.id);
 }
 
 /**
