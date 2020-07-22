@@ -264,8 +264,6 @@ export class StonksStructure extends GenericStructure
 {
 	public markets: {[tag: string]: Market};
 	public guilds: {[id: string]: GuildUpdater};
-	public stonksScheduler: number;
-	public eventScheduler: number;
 	public lastUpdatedStonks: number;
 	public lastUpdatedEvent: number;
 	
@@ -274,8 +272,6 @@ export class StonksStructure extends GenericStructure
 		super("stonks");
 		this.markets = {};
 		this.guilds = {};
-		this.stonksScheduler = select(data.stonksScheduler, 0, Number);
-		this.eventScheduler = select(data.eventScheduler, 0, Number);
 		this.lastUpdatedStonks = select(data.lastUpdatedStonks, Date.now(), Number);
 		this.lastUpdatedEvent = select(data.lastUpdatedEvent, Date.now(), Number);
 		
