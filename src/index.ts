@@ -1,8 +1,8 @@
-import {Client, MessageMentions} from "discord.js";
+import {Client, MessageMentions, Permissions} from "discord.js";
 import $, {unreact} from "./core/lib";
 import setup from "./setup";
 import FileManager from "./core/storage";
-import {Config, Storage} from "./core/structures";
+import {Config, Storage, Stonks} from "./core/structures";
 import intercept from "./modules/intercept";
 import {initializeSchedulers} from "./modules/scheduler";
 
@@ -12,15 +12,34 @@ import {initializeSchedulers} from "./modules/scheduler";
 	const client = new Client();
 	const commands = await FileManager.loadCommands();
 	client.login(Config.token).catch(setup.again);
-	initializeSchedulers();
+	initializeSchedulers(client);
 	
 	client.on("message", async message => {
 		// Message Setup //
-		if(message.author.bot) return;
+		if(message.author.bot)
+			return;
+		
 		const prefix = Storage.getGuild(message.guild?.id || "N/A").prefix || Config.prefix;
-		if(!message.content.startsWith(prefix)) return intercept(message);
+		
+		if(!message.content.startsWith(prefix))
+			return intercept(message);
+		
 		const [header, ...args] = message.content.substring(prefix.length).split(/ +/);
-		if(!commands.has(header)) return;
+		
+		if(!commands.has(header))
+			return;
+		if(message.channel.type === "text" && !message.channel.permissionsFor(client.user || "")?.has(Permissions.FLAGS.SEND_MESSAGES))
+		{
+			let status;
+			
+			if(message.member?.hasPermission(Permissions.FLAGS.ADMINISTRATOR))
+				status = "Because you're a server admin, you have the ability to change that channel's permissions to match if that's what you intended.";
+			else
+				status = "Try using a different channel or contacting a server admin to change permissions of that channel if you think something's wrong.";
+			
+			return message.author.send(`I don't have permission to send messages in ${message.channel.toString()}. ${status}`);
+		}
+		
 		$.log(`${message.author.username}#${message.author.discriminator} executed the command "${header}" with arguments "${args}".`);
 		
 		// Subcommand Recursion //

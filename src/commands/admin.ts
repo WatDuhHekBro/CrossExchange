@@ -1,6 +1,6 @@
 import Command from "../core/command";
 import {CommonLibrary, logs} from "../core/lib";
-import {Config, Storage} from "../core/structures";
+import {Config, Storage, Stonks} from "../core/structures";
 import {Permissions} from "discord.js";
 
 function authenticate($: CommonLibrary, customMessage = ""): boolean
@@ -65,8 +65,15 @@ export default new Command({
 			{
 				if(authenticate($))
 				{
-					$.channel.send("Unfortunately, this command has not been implemented yet. :P");
-					//...
+					if($.channel.type !== "text")
+						return $.channel.send("You need to be in a text channel to use this command!");
+					
+					const channel = $.channel;
+					
+					$.prompt(await channel.send(`Are you sure you want to set ${channel.toString()} as the channel dedicated to displaying market values and events for the stonks bot?\n*(This message will automatically be deleted after 10 seconds.)*`), $.author.id, () => {
+						Stonks.addGuild(channel);
+						Stonks.save();
+					});
 				}
 			}
 		}),

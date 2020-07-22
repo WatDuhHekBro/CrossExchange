@@ -1,8 +1,9 @@
 import $, {Random, isType, select, GenericJSON, GenericStructure, perforate} from "../core/lib";
 import {Stonks} from "../core/structures";
+import {Client, Guild, TextChannel} from "discord.js";
 
 // Stonks Board Embeds //
-export function getStonksEmbedArray(markets: {[tag: string]: Market}): object[]
+export function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: number): object[]
 {
 	const sections: object[] = [];
 	// For the stonks board, the maximum allowed fields for embeds is 25, but 24 looks much nicer when it's inline.
@@ -41,14 +42,14 @@ export function getStonksEmbedArray(markets: {[tag: string]: Market}): object[]
 			color: 0x008000,
 			fields: fields,
 			footer: {text: "Last Updated"},
-			timestamp: Date.now()
+			timestamp: latestTimestamp
 		}});
 	}
 	
 	return sections;
 }
 
-export function getEventEmbed(headline: string, description: string, changes: {[market: string]: number}): object
+export function getEventEmbed(headline: string, description: string, changes: {[market: string]: number}, latestTimestamp: number): object
 {
 	const effects: object[] = [];
 	
@@ -68,7 +69,9 @@ export function getEventEmbed(headline: string, description: string, changes: {[
 		color: 0xFF0000,
 		title: headline,
 		description: description,
-		fields: effects
+		fields: effects,
+		footer: {text: "Last Updated"},
+		timestamp: latestTimestamp
 	}};
 }
 
@@ -149,27 +152,47 @@ export class Event
 	}
 }
 
+class GuildUpdater
+{
+	public channel: string; // The ID of the channel to post updates to.
+	public messages: string[]; // The IDs of the market value messages in order.
+	public event: string; // The ID of the last message which displays the latest event.
+	
+	constructor(data?: GenericJSON)
+	{
+		this.channel = select(data?.channel, "", String);
+		this.messages = select(data?.messages, [], String, true);
+		this.event = select(data?.event, "", String);
+	}
+}
+
 export class StonksStructure extends GenericStructure
 {
 	public markets: {[tag: string]: Market};
-	public channel: string|null; // The ID of the channel to post updates to.
-	public messages: string[]; // The IDs of the market value messages in order. The last one is the latest event message.
+	public guilds: {[id: string]: GuildUpdater};
 	public stonksScheduler: number;
 	public eventScheduler: number;
+	public lastUpdatedStonks: number;
+	public lastUpdatedEvent: number;
 	
 	constructor(data: GenericJSON)
 	{
 		super("stonks");
 		this.markets = {};
-		this.channel = select(data.channel, null, String);
-		this.messages = select(data.messages, [], String, true);
+		this.guilds = {};
 		this.stonksScheduler = select(data.stonksScheduler, 0, Number);
 		this.eventScheduler = select(data.eventScheduler, 0, Number);
+		this.lastUpdatedStonks = select(data.lastUpdatedStonks, Date.now(), Number);
+		this.lastUpdatedEvent = select(data.lastUpdatedEvent, Date.now(), Number);
 		
 		// Initialize only the values that aren't part of the default market so descriptions can update if any of them change.
 		if(isType(data.markets, Object))
 			for(const tag in StandardMarkets)
 				this.markets[tag] = new Market(data.markets[tag] ? Object.assign(data.markets[tag], StandardMarkets[tag]) : StandardMarkets[tag]);
+		
+		if(isType(data.guilds, Object))
+			for(const id in data.guilds)
+				this.guilds[id] = new GuildUpdater(data.guilds[id]);
 	}
 	
 	public getMarket(tag: string): Market|null
@@ -180,16 +203,96 @@ export class StonksStructure extends GenericStructure
 			return null;
 	}
 	
-	public triggerStonks()
+	public async triggerStonks(client: Client): Promise<any>
 	{
 		$.debug(`Triggered stonks at ${new Date().toUTCString()}.`);
+		
+		for(const tag in this.markets)
+		{
+			const market = this.markets[tag];
+			market.iterate();
+		}
+		
+		const embeds = getStonksEmbedArray(this.markets, this.lastUpdatedStonks);
+		const total = embeds.length;
+		
+		for(const guildID in this.guilds)
+		{
+			if(!client.guilds.cache.has(guildID))
+				return delete this.guilds[guildID];
+			
+			const guild = client.guilds.cache.get(guildID) as Guild;
+			const container = this.guilds[guildID];
+			const channel = guild.channels.cache.get(container.channel);
+			const stored = container.messages;
+			
+			if(!channel)
+				return $.warn(`Channel "${container.channel}" of guild "${guild.id}" is not a valid channel ID! Ignoring this guild.`);
+			if(channel.type !== "text")
+				return $.warn(`Channel "${channel.id}" of guild "${guild.id}" is not a text channel! Ignoring this guild.`);
+			if(stored.length !== total)
+				$.warn(`The length of the generated embed (${total}) isn't the same as the total amount of messages provided (${stored.length}). Using the amount of messages provided, meaning some data points might be cut off.`);
+			
+			const textChannel = channel as TextChannel;
+			
+			if(stored.length === 1)
+			{
+				const messageID = stored[0];
+				
+				textChannel.messages.fetch(messageID).then(message => {
+					message.edit("Market Values", embeds[0]);
+				}).catch(() => {
+					$.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
+				});
+			}
+			else if(stored.length > 1)
+			{
+				for(let i = 0; i < stored.length; i++)
+				{
+					const messageID = stored[i];
+					
+					textChannel.messages.fetch(messageID).then(message => {
+						message.edit(`Market Values (Page ${i+1} of ${stored.length})`, embeds[i]);
+					}).catch(() => {
+						$.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
+					});
+				}
+			}
+		}
 	}
 	
 	// This will also contain the code that executes an event's instructions because there's no way to keep that contained in the event class itself.
-	public triggerEvent()
+	public async triggerEvent(client: Client): Promise<any>
 	{
 		$.debug(`Triggered event at ${new Date().toUTCString()}.`);
 		// delta or % increase = new / old <-- (1.5 / 0.5 = 3x or 300% more valuable)
+	}
+	
+	/** Initialize a guild to receive updates on market values and events. */
+	public async addGuild(channel: TextChannel)
+	{
+		const embeds = getStonksEmbedArray(this.markets, this.lastUpdatedStonks);
+		const total = embeds.length;
+		const messages: string[] = [];
+		
+		if(total === 1)
+			messages.push((await channel.send("Market Values", embeds[0])).id);
+		else if(total > 1)
+		{
+			for(let i = 0; i < total; i++)
+			{
+				const embed = embeds[i];
+				messages.push((await channel.send(`Market Values (Page ${i+1} of ${total})`, embed)).id);
+			}
+		}
+		
+		const event = (await channel.send("Latest Event", getEventEmbed("There is currently no active headline.", "Events will appear here as time goes on.", {}, this.lastUpdatedEvent))).id;
+		this.guilds[channel.guild.id] = new GuildUpdater({
+			channel: channel.id,
+			messages: messages,
+			event: event
+		});
+		this.save();
 	}
 }
 

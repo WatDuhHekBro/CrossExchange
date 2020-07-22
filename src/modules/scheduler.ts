@@ -1,5 +1,6 @@
 import $, {Random} from "../core/lib";
 import {Stonks} from "../core/structures";
+import {Client} from "discord.js";
 
 // Logic for determining what to do with the stored timestamp:
 // If the scheduled timestamp is before the current time frame, just set it to a random point in the next time frame.
@@ -11,11 +12,13 @@ import {Stonks} from "../core/structures";
 /** Execute at some point in time during every 5 minute time frame. */
 class StonksScheduler
 {
+	private client: Client;
 	private lower = 0;
 	private upper = 0;
 	
-	constructor()
+	constructor(client: Client)
 	{
+		this.client = client;
 		this.activate();
 	}
 	
@@ -36,7 +39,7 @@ class StonksScheduler
 		this.setBounds();
 		setTimeout(() => {
 			if(Stonks.stonksScheduler >= this.lower)
-				Stonks.triggerStonks();
+				Stonks.triggerStonks(this.client);
 			Stonks.stonksScheduler = this.upper + Random.int(0, 300000);
 			$.debug(`Scheduling next iteration for... ${new Date(Stonks.stonksScheduler).toUTCString()}`);
 			$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
@@ -49,11 +52,13 @@ class StonksScheduler
 /** Execute at some point in time during every 1 hour time frame. */
 class EventScheduler
 {
+	private client: Client;
 	private lower = 0;
 	private upper = 0;
 	
-	constructor()
+	constructor(client: Client)
 	{
+		this.client = client;
 		this.activate();
 	}
 	
@@ -73,7 +78,7 @@ class EventScheduler
 		this.setBounds();
 		setTimeout(() => {
 			if(Stonks.eventScheduler >= this.lower)
-				Stonks.triggerEvent();
+				Stonks.triggerEvent(this.client);
 			Stonks.eventScheduler = this.upper + Random.int(0, 3600000);
 			$.debug(`Scheduling next event for... ${new Date(Stonks.eventScheduler).toUTCString()}`);
 			$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
@@ -83,8 +88,8 @@ class EventScheduler
 	}
 }
 
-export function initializeSchedulers()
+export function initializeSchedulers(client: Client)
 {
-	new StonksScheduler();
-	new EventScheduler();
+	new StonksScheduler(client);
+	new EventScheduler(client);
 }

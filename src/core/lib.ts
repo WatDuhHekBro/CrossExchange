@@ -21,6 +21,7 @@ export interface CommonLibrary
 	debug: (...args: any[]) => void;
 	ready: (...args: any[]) => void;
 	paginate: (message: Message, senderID: string, total: number, callback: (page: number) => void, duration?: number) => void;
+	prompt: (message: Message, senderID: string, onConfirm: () => void, duration?: number) => void;
 	
 	// Dynamic Properties //
 	args: any[];
@@ -178,6 +179,31 @@ export function unreact(reaction: MessageReaction, user: User|PartialUser)
 	const callback = eventListeners.get(reaction.message.id);
 	callback && callback(reaction.emoji.name, user.id);
 }
+
+// Waits for the sender to either confirm an action or let it pass (and delete the message).
+$.prompt = async(message: Message, senderID: string, onConfirm: () => void, duration = 10000) => {
+	let isDeleted = false;
+	
+	message.react('✅');
+	await message.awaitReactions((reaction, user) => {
+		if(user.id === senderID)
+		{
+			if(reaction.emoji.name === '✅')
+				onConfirm();
+			isDeleted = true;
+			message.delete();
+		}
+		
+		// CollectorFilter requires a boolean to be returned.
+		// My guess is that the return value of awaitReactions can be altered by making a boolean filter.
+		// However, because that's not my concern with this command, I don't have to worry about it.
+		// May as well just set it to false because I'm not concerned with collecting any reactions.
+		return false;
+	}, {time: duration});
+	
+	if(!isDeleted)
+		message.delete();
+};
 
 /**
  * Splits a command by spaces while accounting for quotes which capture string arguments.

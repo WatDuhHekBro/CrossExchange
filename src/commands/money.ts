@@ -167,9 +167,8 @@ export default new Command({
 						return $.channel.send("You can't send money to a bot!");
 					
 					const target = member.user;
-					let isCorrect = false;
-					let isDeleted = false;
-					const message = await $.channel.send(`Are you sure you want to send ${$(amount).pluralise("credit", "s")} to this person?\n*(This message will automatically be deleted after 10 seconds.)*`, {embed: {
+					
+					$.prompt(await $.channel.send(`Are you sure you want to send ${$(amount).pluralise("credit", "s")} to this person?\n*(This message will automatically be deleted after 10 seconds.)*`, {embed: {
 						color: "#ffff00",
 						author:
 						{
@@ -177,37 +176,15 @@ export default new Command({
 							icon_url: target.avatarURL({
 								format: "png",
 								dynamic: true
-							}) || ""
+							}) || target.defaultAvatarURL
 						}
-					}});
-					message.react('✅');
-					await message.awaitReactions((reaction, user) => {
-						if(user.id === $.author.id)
-						{
-							if(reaction.emoji.name === '✅')
-								isCorrect = true;
-							isDeleted = true;
-							message.delete();
-						}
-						
-						// CollectorFilter requires a boolean to be returned.
-						// My guess is that the return value of awaitReactions can be altered by making a boolean filter.
-						// However, because that's not my concern with this command, I don't have to worry about it.
-						// May as well just set it to false because I'm not concerned with collecting any reactions.
-						return false;
-					}, {time: 10000});
-					
-					if(!isDeleted)
-						message.delete();
-					
-					if(isCorrect)
-					{
+					}}), $.author.id, () => {
 						const receiver = Storage.getUser(target.id);
 						sender.money -= amount;
 						receiver.money += amount;
 						Storage.save();
 						$.channel.send(getSendEmbed(author, target, amount));
-					}
+					});
 				}
 			})
 		}),
