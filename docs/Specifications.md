@@ -2,7 +2,7 @@
 The top-level directory is reserved for files that have to be there for it to work as well as configuration files.
 - `src`: Contains all the code for the bot itself. Code in this directory is for independent tasks keeping the initialization out of the subdirectories.
 	- `core`: This is where core structures and critical functions for the bot go.
-	- `modules`: This is where modules go that accomplish one specific purpose but isn't so necessary for the bot to function.
+	- `modules`: This is where modules go that accomplish one specific purpose but isn't so necessary for the bot to function. The goal is to be able to safely remove these without too much trouble.
 	- `commands`: Here's the place to store commands. The file name determines the command name.
 - `dist`: This is where the runnable code in `src` compiles to. (The directory structure mirrors `src`.)
 - `data`: Holds all the dynamic data used by the bot. This is what you modify if you want to change stuff for just your instance of the bot.
@@ -13,12 +13,12 @@ This list starts from `src`/`dist`.
 - `index`: This is the entry point of the bot. Here is where all the initialization is done, because the idea is to keep repeatable code in separate modules while having code that runs only once here designating this is **the** starting point.
 - `setup`: Used for the first time the bot is loaded, walking the user through setting up the bot.
 - `core/lib`: Exports a function object which lets you wrap values letting you call special functions as well as calling utility functions common to all commands.
-- `core/storage`: Exports an object which handles everything related to files and templates.
+- `core/structures`: Contains all the structures that the dynamic data read from JSON files should follow. This exports instances of these classes.
 - `core/command`: Contains the class used to instantiate commands.
+- `core/storage`: Exports an object which handles everything related to files.
 - `core/wrappers`: Contains classes that wrap around values and provide extra functionality.
-- `core/structures`: Contains all the structures that the dynamic data read from JSON files should follow. This exports an instance of a class since the class is just a specification as you instantiate it only duration loading of the JSON object.
 - `modules/intercept`: A function called whenever a message event occurs letting you add additional events for certain messages in chat while moving this code away from the main file.
-- `modules/stonks`: Manages all the calculations for the stonks feature.
+- `modules/stonks`: Contains all the classes, functions, and mediators related to stonks. Also contains all the standard data.
 - `modules/scheduler`: A custom scheduler managing random events with a semi-predictable time.
 
 # Design Decisions
