@@ -1,5 +1,5 @@
 import $, {Random, isType, select, GenericJSON, GenericStructure, perforate} from "../core/lib";
-import {Stonks} from "../core/structures";
+import {Stonks, Storage} from "../core/structures";
 import {Client, Guild, TextChannel} from "discord.js";
 
 // Stonks Board Embeds //
@@ -75,7 +75,101 @@ export function getEventEmbed(headline: string, description: string, changes: {[
 	}};
 }
 
-export class Market
+/**
+ * Acts as the mediator between the stonks command and the data itself.
+ * 
+ * `Query.buy(market, author.id)` --> How much can I buy from this market?
+ * `Query.buy(market, author.id, amount)` --> Attempt to buy this amount of stocks.
+ * `Query.buy(market, author.id, Infinity)` --> Buy as many stocks as possible.
+ * 
+ * `Query.sell(market, author.id)` --> How much can I sell from this market?
+ * `Query.sell(market, author.id, amount)` --> Attempt to sell this amount of stocks.
+ * `Query.sell(market, author.id, Infinity)` --> Sell as many stocks as possible.
+ */
+export const Query = {
+	buy(tag: string, initiator: string, amount?: number): string
+	{
+		const market = Stonks.getMarket(tag);
+		const user = Storage.getUser(initiator);
+		
+		if(!market)
+			return this.invalid(tag);
+		
+		const value = Math.round(market.value);
+		const capacity = Math.floor(user.money / value);
+		
+		if(value <= 0 || capacity <= 0)
+			return `You can't buy any stocks from ${market.title}!`;
+		else if(amount)
+		{
+			amount = Math.floor(amount);
+			
+			if(amount <= 0)
+				return `You need to enter in a value of 1 or greater!`;
+			
+			if(amount === Infinity)
+				amount = capacity;
+			else if(user.money < value * amount)
+				return "You don't have enough money!";
+			
+			user.initMarket(tag);
+			market.invested += amount;
+			user.invested[tag] += amount;
+			user.money -= value * amount;
+			user.net -= value * amount;
+			Storage.save();
+			Stonks.save();
+			
+			return `You invested in and bought ${$(amount).pluralise("stock", "s")} from ${market.title}. You have now invested ${user.invested[tag]} out of its ${$(market.invested).pluralise("total stock", "s")}.`;
+		}
+		else
+			return `You can buy up to ${capacity} stocks from ${market.title}.`;
+	},
+	sell(tag: string, initiator: string, amount?: number): string
+	{
+		const market = Stonks.getMarket(tag);
+		const user = Storage.getUser(initiator);
+		
+		if(!market)
+			return this.invalid(tag);
+		
+		user.initMarket(tag);
+		const stocks = user.invested[tag];
+		const value = Math.round(market.value);
+		
+		if(stocks <= 0)
+			return `You don't have any stocks in ${market.title}!`;
+		else if(amount)
+		{
+			amount = Math.floor(amount);
+			
+			if(amount <= 0)
+				return `You need to enter in a value of 1 or greater!`;
+			
+			if(amount === Infinity)
+				amount = stocks;
+			else if(amount > stocks)
+				return "You don't have that many stocks!";
+			
+			market.invested -= amount;
+			user.invested[tag] -= amount;
+			user.money += value * amount;
+			user.net += value * amount;
+			Storage.save();
+			Stonks.save();
+			
+			return `You sold ${$(amount).pluralise("stock", "s")} from ${market.title} for ${$(value * amount).pluralise("credit", "s")}!`;
+		}
+		else
+			return `You have ${$(stocks).pluralise("stock", "s")} to sell in ${market.title}.`;
+	},
+	invalid(tag: string): string
+	{
+		return `\`${tag}\` is not a valid market! Make sure you use the market's tag instead of its name, such as \`rookie\` instead of \`Rookie Harbor\`. To see a list of valid tags, use \`stonks info\`.`;
+	}
+};
+
+class Market
 {
 	public title: string;
 	public description: string;
@@ -119,7 +213,7 @@ export class Market
 	}
 }
 
-export class Event
+class Event
 {
 	public headline: string;
 	public description: string;
@@ -220,10 +314,11 @@ export class StonksStructure extends GenericStructure
 		
 		for(const guildID in this.guilds)
 		{
-			if(!client.guilds.cache.has(guildID))
-				return delete this.guilds[guildID];
+			const guild = client.guilds.cache.get(guildID);
 			
-			const guild = client.guilds.cache.get(guildID) as Guild;
+			if(!guild)
+				return $.warn(`Guild "${guildID}" not found! Ignoring this guild.`);
+			
 			const container = this.guilds[guildID];
 			const channel = guild.channels.cache.get(container.channel);
 			const stored = container.messages;

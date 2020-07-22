@@ -2,6 +2,7 @@ import Command from "../core/command";
 import $, {CommonLibrary, perforate, formatUTCTimestamp} from "../core/lib";
 import {Storage, Stonks} from "../core/structures";
 import {User} from "discord.js";
+import {Query} from "../modules/stonks";
 
 function getProfileEmbed(user: User): object
 {
@@ -43,16 +44,6 @@ function getProfileEmbed(user: User): object
 	}};
 }
 
-function verifyMarket($: CommonLibrary, tag: string): boolean
-{
-	const isValidMarket = !!Stonks.getMarket(tag);
-	
-	if(!isValidMarket)
-		$.channel.send(`\`${tag}\` is not a valid market! Make sure you use the market's tag instead of its name, such as \`rookie\` instead of \`Rookie Harbor\`. To see a list of valid tags, use \`stonks info\`.`);
-	
-	return isValidMarket;
-}
-
 function getConvertedCatalog(catalog: [number, number][]): object[]
 {
 	const fields: object[] = new Array(catalog.length);
@@ -89,18 +80,12 @@ export default new Command({
 			any: new Command({
 				async run($: CommonLibrary): Promise<any>
 				{
-					if(verifyMarket($, $.args[0]))
-					{
-						$.debug($.args[0]);
-					}
+					$.channel.send(Query.buy($.args[0], $.author.id));
 				},
 				number: new Command({
 					async run($: CommonLibrary): Promise<any>
 					{
-						if(verifyMarket($, $.args[0]))
-						{
-							$.debug($.args[0]);
-						}
+						$.channel.send(Query.buy($.args[0], $.author.id, $.args[1]));
 					}
 				}),
 				subcommands:
@@ -108,10 +93,7 @@ export default new Command({
 					all: new Command({
 						async run($: CommonLibrary): Promise<any>
 						{
-							if(verifyMarket($, $.args[0]))
-							{
-								$.debug($.args[0]);
-							}
+							$.channel.send(Query.buy($.args[0], $.author.id, Infinity));
 						}
 					})
 				},
@@ -130,18 +112,12 @@ export default new Command({
 			any: new Command({
 				async run($: CommonLibrary): Promise<any>
 				{
-					if(verifyMarket($, $.args[0]))
-					{
-						
-					}
+					$.channel.send(Query.sell($.args[0], $.author.id));
 				},
 				number: new Command({
 					async run($: CommonLibrary): Promise<any>
 					{
-						if(verifyMarket($, $.args[0]))
-						{
-							
-						}
+						$.channel.send(Query.sell($.args[0], $.author.id, $.args[1]));
 					}
 				}),
 				subcommands:
@@ -149,10 +125,7 @@ export default new Command({
 					all: new Command({
 						async run($: CommonLibrary): Promise<any>
 						{
-							if(verifyMarket($, $.args[0]))
-							{
-								
-							}
+							$.channel.send(Query.sell($.args[0], $.author.id, Infinity));
 						}
 					})
 				},
@@ -182,35 +155,32 @@ export default new Command({
 			any: new Command({
 				async run($: CommonLibrary): Promise<any>
 				{
-					if(verifyMarket($, $.args[0]))
+					const market = Stonks.getMarket($.args[0]);
+					
+					if(!market)
+						return $.channel.send(Query.invalid($.args[0]));
+					
+					const catalogs = perforate(getConvertedCatalog(market.catalog), 10);
+					const embed = {embed: {
+						color: 0x008000,
+						title: market.title,
+						description: market.description,
+						fields: catalogs[0]
+					}} as any;
+					const total = catalogs.length;
+					const hasMultiplePages = total > 1;
+					const getPageHeader = (page: number) => `Page ${page+1} of ${total}`;
+					
+					if(hasMultiplePages)
 					{
-						const market = Stonks.getMarket($.args[0]);
-						
-						if(!market)
-							return $.error(`${$.args[0]} unexpectedly returned a null market!`);
-						
-						const catalogs = perforate(getConvertedCatalog(market.catalog), 10);
-						const embed = {embed: {
-							color: 0x008000,
-							title: market.title,
-							description: market.description,
-							fields: catalogs[0]
-						}} as any;
-						const total = catalogs.length;
-						const hasMultiplePages = total > 1;
-						const getPageHeader = (page: number) => `Page ${page+1} of ${total}`;
-						
-						if(hasMultiplePages)
-						{
-							const msg = await $.channel.send(getPageHeader(0), embed);
-							$.paginate(msg, $.author.id, total, page => {
-								embed.embed.fields = catalogs[page];
-								msg.edit(getPageHeader(page), embed);
-							}, 300000);
-						}
-						else
-							$.channel.send(embed);
+						const msg = await $.channel.send(getPageHeader(0), embed);
+						$.paginate(msg, $.author.id, total, page => {
+							embed.embed.fields = catalogs[page];
+							msg.edit(getPageHeader(page), embed);
+						}, 300000);
 					}
+					else
+						$.channel.send(embed);
 				}
 			})
 		}),

@@ -1,4 +1,4 @@
-import {Client, MessageMentions, Permissions} from "discord.js";
+import {Client, Permissions} from "discord.js";
 import $, {unreact} from "./core/lib";
 import setup from "./setup";
 import FileManager from "./core/storage";
@@ -60,14 +60,16 @@ import {initializeSchedulers} from "./modules/scheduler";
 			
 			if(command.subcommands && (param in command.subcommands))
 				command = command.subcommands[param];
-			else if(command.user && (/\d{17,19}/.test(param) || MessageMentions.USERS_PATTERN.test(param)))
+			// Any Discord ID format will automatically format to a user ID.
+			else if(command.user && (/\d{17,19}/.test(param)))
 			{
 				const id = param.match(/\d+/g)![0];
 				command = command.user;
 				try {params.push(await client.users.fetch(id))}
 				catch(error) {return message.channel.send(`No user found by the ID \`${id}\`!`)}
 			}
-			else if(command.number && Number(param))
+			// Disallow infinity and allow for 0.
+			else if(command.number && (Number(param) || param === "0") && !param.includes("Infinity"))
 			{
 				command = command.number;
 				params.push(Number(param));

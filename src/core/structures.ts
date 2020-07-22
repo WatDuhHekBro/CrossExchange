@@ -39,6 +39,12 @@ class User
 				if(tag in StandardMarkets && isType(data.invested[tag], Number))
 					this.invested[tag] = data.invested[tag];
 	}
+	
+	public initMarket(tag: string)
+	{
+		if(!(tag in this.invested))
+			this.invested[tag] = 0;
+	}
 }
 
 class Guild
