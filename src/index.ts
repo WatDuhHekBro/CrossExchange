@@ -2,7 +2,7 @@ import {Client, MessageMentions, Permissions} from "discord.js";
 import $, {unreact} from "./core/lib";
 import setup from "./setup";
 import FileManager from "./core/storage";
-import {Config, Storage, Stonks} from "./core/structures";
+import {Config, Storage} from "./core/structures";
 import intercept from "./modules/intercept";
 import {initializeSchedulers} from "./modules/scheduler";
 

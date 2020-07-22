@@ -60,7 +60,7 @@ export function getEventEmbed(headline: string, description: string, changes: {[
 		
 		effects.push({
 			name: `${Stonks.getMarket(tag)?.title || tag || "N/A"} Stocks`,
-			value: delta !== 1 ? `Now ${decimal}% as valuable as before.` : "No changes took place.",
+			value: delta !== 1 ? `Now headed towards being around ${decimal}% as valuable as before.` : "No changes took place.",
 			inline: true
 		});
 	}
@@ -213,6 +213,8 @@ export class StonksStructure extends GenericStructure
 			market.iterate();
 		}
 		
+		this.lastUpdatedStonks = Date.now();
+		this.save();
 		const embeds = getStonksEmbedArray(this.markets, this.lastUpdatedStonks);
 		const total = embeds.length;
 		
@@ -265,7 +267,58 @@ export class StonksStructure extends GenericStructure
 	public async triggerEvent(client: Client): Promise<any>
 	{
 		$.debug(`Triggered event at ${new Date().toUTCString()}.`);
-		// delta or % increase = new / old <-- (1.5 / 0.5 = 3x or 300% more valuable)
+		const event = $(StandardEvents).random();
+		const changes: {[market: string]: number} = {};
+		
+		// Gather a list of changes and apply them to the market.
+		for(const tag in event.effects)
+		{
+			const effect = event.effects[tag];
+			const market = this.markets[tag];
+			const target = Random.num(effect[1], effect[2]);
+			const oldValue = market.event;
+			
+			switch(effect[0])
+			{
+				case "ADD": market.event += target; break;
+				case "MUL": market.event *= target; break;
+				case "SET": market.event = target; break;
+			}
+			
+			const newValue = market.event;
+			// delta or % increase = new / old <-- (1.5 / 0.5 = 3x or 300% more valuable)
+			const change = newValue / oldValue;
+			changes[tag] = change;
+		}
+		
+		// Display those changes in an embed.
+		this.lastUpdatedEvent = Date.now();
+		this.save();
+		const embed = getEventEmbed(event.headline, event.description, changes, this.lastUpdatedEvent);
+		
+		for(const guildID in this.guilds)
+		{
+			if(!client.guilds.cache.has(guildID))
+				return delete this.guilds[guildID];
+			
+			const guild = client.guilds.cache.get(guildID) as Guild;
+			const container = this.guilds[guildID];
+			const channel = guild.channels.cache.get(container.channel);
+			
+			if(!channel)
+				return $.warn(`Channel "${container.channel}" of guild "${guild.id}" is not a valid channel ID! Ignoring this guild.`);
+			if(channel.type !== "text")
+				return $.warn(`Channel "${channel.id}" of guild "${guild.id}" is not a text channel! Ignoring this guild.`);
+			
+			const textChannel = channel as TextChannel;
+			const messageID = container.event;
+			
+			textChannel.messages.fetch(messageID).then(message => {
+				message.edit("Latest Event", embed);
+			}).catch(() => {
+				$.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
+			});
+		}
 	}
 	
 	/** Initialize a guild to receive updates on market values and events. */
@@ -424,6 +477,13 @@ export const StandardMarkets: {[tag: string]: object} = {
 
 const StandardEvents: Event[] = [
 	new Event({
-		
+		headline: "BREAKING NEWS: Rising sea levels cause expensive damages and disrupt commerce in Rookie Harbor!",
+		description: "Tons of seekers were caught in the disaster as with many shops. Rookie Harbor officials request assistance from nearby areas.",
+		effects:
+		{
+			rookie: ["MUL", 0.4, 0.6],
+			bergen: ["SET", 0.9, 1],
+			sapphire: ["ADD", 0.1, 0.2]
+		}
 	})
 ];
