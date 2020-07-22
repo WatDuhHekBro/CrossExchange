@@ -1,0 +1,123 @@
+{
+	"rookie":
+	{
+		"title": "Rookie Harbor",
+		"description": "A bustling port city where a lot of trade, travel, and tourism takes place. Sells standard bronze and iron equipment.",
+		"volatility": 0.25
+	},
+	"bergen":
+	{
+		"title": "Bergen Village",
+		"description": "A small village situated on top of Mount Bergen, notably for its access to resources which is extracted from the mine there. Sells standard iron equipment.",
+		"volatility": 0.05
+	},
+	"bakii":
+	{
+		"title": "Ba'kii Kum",
+		"description": "An oasis in the midst of a scorching hot desert. It's a hotspot for trading due to its market culture. Sells standard iron and steel equipment.",
+		"volatility": 0.1
+	},
+	"basin":
+	{
+		"title": "Basin Keep",
+		"description": "A technological powerhouse of a city, most of its economic activity comes from its power generator at Zir'vitar Temple with a side of trading and luxury pursuits. Sells standard silver and titan equipment.",
+		"volatility": 0.4
+	},
+	"sapphire":
+	{
+		"title": "Sapphire Ridge",
+		"description": "A place popular due to the cobalt mining operations taking place there. The Cave Inn stands there as an inn and place for trading. Sells standard titan and cobalt equipment.",
+		"volatility": 0.2
+	},
+	"rhombus":
+	{
+		"title": "Rhombus Square",
+		"description": "The capital of human settlements on Shadoon where luxury houses stand and entertainment such as the Rhombus Arena take place. Sells standard cobalt and laser equipment.",
+		"volatility": 0.25
+	},
+	"teak":
+	{
+		"title": "Ms. Teak's Steaks",
+		"description": "A businesswoman whose goal it is to grill and sell the perfect steaks in all of Rookie Harbor.",
+		"volatility": 0.1
+	},
+	"icecream":
+	{
+		"title": "Frosty Arnold's Ice Cream Stand",
+		"description": "A Rookie Harbor vendor selling ice cream all the way from the Bergen Trail.",
+		"volatility": 0.1
+	},
+	"plants":
+	{
+		"title": "Talatu Lips' Botantical Garden",
+		"description": "A collector of plants from all over Shadoon.",
+		"volatility": 0.05
+	},
+	"tara":
+	{
+		"title": "Tara's Sandwich Shop",
+		"description": "A person selling sandwiches for 2,500 credits each. He hopes to make higher profits by selling his wares at a higher price so it'll balance out the customers that don't buy anything, because that's how it works, right?",
+		"volatility": 0.01,
+		"event": 0.01
+	},
+	"hermit":
+	{
+		"title": "Hermit's House",
+		"description": "A small pub located in the middle of the Bergen Trail.",
+		"volatility": 0.3
+	},
+	"tophat":
+	{
+		"title": "Bergen Hatmaker",
+		"description": "An artisan aiming to make the finest tophats in Bergen.",
+		"volatility": 0.5
+	},
+	"mine":
+	{
+		"title": "The Bergen Mine",
+		"description": "A reservoir of minerals overrun by the now-enraged ancient robots and bugs of the slumbering temple below.",
+		"volatility": 0.6
+	},
+	"brewery":
+	{
+		"title": "The Ba'kii Kum Brewery",
+		"description": "A brewery providing drinks to quench the thirst in the heat of the desert.",
+		"volatility": 0.2
+	},
+	"bazaar":
+	{
+		"title": "The Baki Bazaar Union",
+		"description": "An organization dedicated to the traders and merchants of Ba'kii Kum. Occasionally deals in transportation.",
+		"volatility": 0.35
+	},
+	"pond":
+	{
+		"title": "The Calzone Shop",
+		"description": "A business led by Don Vita situated in the rundown section of Basin Keep, the Pond Slums.",
+		"volatility": 0.7
+	},
+	"zirvitar":
+	{
+		"title": "Zir'vitar Power Plant",
+		"description": "The primary source of wealth in Basin Keep, providing power for human settlements. This has led to growing tensions between the Shad and the humans however.",
+		"volatility": 0.75
+	},
+	"booster":
+	{
+		"title": "Boost Lounge",
+		"description": "A shop in Rhombus Square's shopping district providing boosters buffing monsters in other regions for advanced seekers looking for a challenge and extra loot..",
+		"volatility": 0.05
+	},
+	"chest":
+	{
+		"title": "Curios Trinkets",
+		"description": "A shop in Rhombus Square's shopping district selling its prized chest detector for those on the search for treasure.",
+		"volatility": 0.05
+	},
+	"arena":
+	{
+		"title": "The Rhombus Arena",
+		"description": "An arena for seekers looking to test their abilities. Also part of Rhombus Square's entertainment sector.",
+		"volatility": 0.15
+	}
+}

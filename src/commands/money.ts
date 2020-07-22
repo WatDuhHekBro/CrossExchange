@@ -12,10 +12,10 @@ export function getMoneyEmbed(user: User): object
 		author:
 		{
 			name: user.username,
-			icon_url: user.avatarURL({
+			icon_url: user.displayAvatarURL({
 				format: "png",
 				dynamic: true
-			}) || user.defaultAvatarURL
+			})
 		},
 		fields:
 		[
@@ -38,10 +38,10 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object
 		author:
 		{
 			name: sender.username,
-			icon_url: sender.avatarURL({
+			icon_url: sender.displayAvatarURL({
 				format: "png",
 				dynamic: true
-			}) || sender.defaultAvatarURL
+			})
 		},
 		title: "Transaction",
 		description: `${sender.toString()} has sent ${$(amount).pluralise("credit", "s")} to ${receiver.toString()}!`,
@@ -59,10 +59,10 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object
 		footer:
 		{
 			text: receiver.username,
-			icon_url: receiver.avatarURL({
+			icon_url: receiver.displayAvatarURL({
 				format: "png",
 				dynamic: true
-			}) || receiver.defaultAvatarURL
+			})
 		}
 	}};
 }
@@ -173,10 +173,10 @@ export default new Command({
 						author:
 						{
 							name: `${target.username}#${target.discriminator}`,
-							icon_url: target.avatarURL({
+							icon_url: target.displayAvatarURL({
 								format: "png",
 								dynamic: true
-							}) || target.defaultAvatarURL
+							})
 						}
 					}}), $.author.id, () => {
 						const receiver = Storage.getUser(target.id);

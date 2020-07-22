@@ -17,10 +17,10 @@ function getProfileEmbed(user: User): object
 		author:
 		{
 			name: user.username,
-			icon_url: user.avatarURL({
+			icon_url: user.displayAvatarURL({
 				format: "png",
 				dynamic: true
-			}) || user.defaultAvatarURL
+			})
 		},
 		fields:
 		[
@@ -164,7 +164,7 @@ export default new Command({
 					const embed = {embed: {
 						color: 0x008000,
 						title: market.title,
-						description: market.description,
+						description: `${market.description} **(Currently at ${$(Math.round(market.value)).pluralise("credit", "s")} per stock.)**`,
 						fields: catalogs[0]
 					}} as any;
 					const total = catalogs.length;

@@ -14,8 +14,8 @@ At its core, the stock market, at least for this bot, is a series of ups and dow
 
 # Scheduler
 The scheduler is what determines when each event should happen. Instead of just doing `setInterval`, I wanted to make a custom scheduler that would bring more variety while still making updates roughly consistent. It's much easier to talk about examples rather than implementation logic here.
-- The scheduler for market iterations will be activated every 5 minute time frame.
-- The scheduler for events will be activated every 1 hour time frame.
+- The scheduler for market iterations will be activated every 5 minute time frame. This allows for 288 iterations per day, good because I don't want the market to become stale.
+- The scheduler for events will be activated every 1 day time frame. It's not such a bright idea to have an event every hour actually, because not everyone would be able to see it plus that's a lot of events you'd have to do.
 - Let's say you want an event to occur during every 15 minute time frame, but not exactly after every 15 minutes. So instead of 12:00, 12:15, 12:30, 12:45, you get [12:00 to 12:14], [12:15 to 12:29], etc. It won't lose the consistency of having it happen every 15 minutes, but it's also more varied. During the first time frame, the event could happen at 12:03, 12:05, 12:08, 12:13, and so on.
 - I decided to only have the scheduler be active when the bot is online. This is because although you wouldn't be able to be there for every iteration or event, the possibility is still there to act on for those who are active. However, when the bot is offline, there is nothing anyone can do about it, so it'd actually be unfair for stuff to happen while the bot is offline. Conveniently, that also makes the scheduler much easier to make.
 - Whenever you start the bot, it'll set the scheduled timestamp in the next time frame. This is because of a lot of asynchronous empty cache headaches that I'd much rather prefer to avoid entirely. That also works well because it wouldn't make sense for an event to fire off which was supposed to happen a minute ago for example.

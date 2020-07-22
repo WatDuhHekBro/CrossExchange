@@ -42,7 +42,7 @@ class StonksScheduler
 	}
 }
 
-/** Execute at some point in time during every 1 hour time frame. */
+/** Execute at some point in time during every 1 day time frame. */
 class EventScheduler
 {
 	private client: Client;
@@ -59,18 +59,19 @@ class EventScheduler
 	private setBounds()
 	{
 		const now = new Date();
+		now.setUTCHours(0);
 		now.setUTCMinutes(0);
 		now.setUTCSeconds(0);
 		now.setUTCMilliseconds(0);
 		this.lower = now.getTime();
-		now.setUTCHours(now.getUTCHours() + 1);
+		now.setUTCDate(now.getUTCDate() + 1);
 		this.upper = now.getTime();
 	}
 	
 	private activate()
 	{
 		this.setBounds();
-		this.scheduled = this.upper + Random.int(0, 3600000);
+		this.scheduled = this.upper + Random.int(0, 86400000);
 		$.debug(`Scheduling next event for... ${new Date(this.scheduled).toUTCString()}`);
 		$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
 		

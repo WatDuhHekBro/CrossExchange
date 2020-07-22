@@ -6,6 +6,7 @@ The top-level directory is reserved for files that have to be there for it to wo
 	- `commands`: Here's the place to store commands. The file name determines the command name.
 - `dist`: This is where the runnable code in `src` compiles to. (The directory structure mirrors `src`.)
 - `data`: Holds all the dynamic data used by the bot. This is what you modify if you want to change stuff for just your instance of the bot.
+- `standard`: Contains all the standard data to be used with the project itself. It's part of the code and will not be checked for inaccuracies because it's not meant to be easily modified.
 - `docs`: Used for information about the design of the project.
 
 # Specific Files

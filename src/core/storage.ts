@@ -22,7 +22,7 @@ const Storage = {
 			}
 			catch(error)
 			{
-				$.warn(`Malformed JSON data (header: ${header}), backing it up.`);
+				$.warn(`Malformed JSON data (header: ${header}), backing it up.`, file);
 				fs.writeFileSync(`${path}.backup`, file);
 			}
 		}

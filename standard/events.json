@@ -1,0 +1,12 @@
+[
+	{
+		"headline": "BREAKING NEWS: Rising sea levels cause expensive damages and disrupt commerce in Rookie Harbor!",
+		"description": "Tons of seekers were caught in the disaster as with many shops. Rookie Harbor officials request assistance from nearby areas.",
+		"effects":
+		{
+			"rookie": ["MUL", 0.4, 0.6],
+			"bergen": ["SET", 0.9, 1],
+			"sapphire": ["ADD", 0.1, 0.2]
+		}
+	}
+]

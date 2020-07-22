@@ -1,6 +1,7 @@
 import $, {Random, isType, select, GenericJSON, GenericStructure, perforate} from "../core/lib";
 import {Stonks, Storage} from "../core/structures";
 import {Client, Guild, TextChannel} from "discord.js";
+import {readFileSync as read} from "fs";
 
 // Stonks Board Embeds //
 export function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: number): object[]
@@ -161,7 +162,7 @@ export const Query = {
 			return `You sold ${$(amount).pluralise("stock", "s")} from ${market.title} for ${$(value * amount).pluralise("credit", "s")}!`;
 		}
 		else
-			return `You have ${$(stocks).pluralise("stock", "s")} to sell in ${market.title}.`;
+			return `You can sell ${$(stocks).pluralise("stock", "s")} for ${$(stocks * value).pluralise("credit", "s")} in ${market.title}.`;
 	},
 	invalid(tag: string): string
 	{
@@ -443,138 +444,15 @@ export class StonksStructure extends GenericStructure
 // Standard city equipment shops and standard traders are implicitly integrated with the city they're in.
 // For example, Rookie Sandwiches are part of Rookie Harbor's market.
 // Do not use Market objects for this. This will be used to override values to update existing storage data, but if you instantiate a Market object, it'll overwrite all values.
-export const StandardMarkets: {[tag: string]: object} = {
-	rookie:
-	{
-		title: "Rookie Harbor",
-		description: "",
-		volatility: 0
-	},
-	bergen:
-	{
-		title: "Bergen Village",
-		description: "",
-		volatility: 0
-	},
-	bakii:
-	{
-		title: "Ba'kii Kum",
-		description: "",
-		volatility: 0
-	},
-	basin:
-	{
-		title: "Basin Keep",
-		description: "",
-		volatility: 0
-	},
-	sapphire:
-	{
-		title: "Sapphire Ridge",
-		description: "",
-		volatility: 0
-	},
-	rhombus:
-	{
-		title: "Rhombus Square",
-		description: "",
-		volatility: 0
-	},
-	teak:
-	{
-		title: "Ms. Teak's Steaks",
-		description: "",
-		volatility: 0
-	},
-	icecream:
-	{
-		title: "Frosty Arnold's Ice Cream Stand",
-		description: "",
-		volatility: 0
-	},
-	plants:
-	{
-		title: "Talatu Lips' Botantical Garden",
-		description: "",
-		volatility: 0
-	},
-	tara:
-	{
-		title: "Tara's Sandwich Shop",
-		description: "",
-		volatility: 0
-	},
-	hermit:
-	{
-		title: "Hermit's Pub",
-		description: "bergen",
-		volatility: 0
-	},
-	tophat:
-	{
-		title: "Bergen Hatmaker",
-		description: "",
-		volatility: 0
-	},
-	mine:
-	{
-		title: "The Bergen Mine",
-		description: "",
-		volatility: 0
-	},
-	brewery:
-	{
-		title: "The Ba'kii Kum Brewery",
-		description: "",
-		volatility: 0
-	},
-	bazaar:
-	{
-		title: "The Baki Bazaar Union",
-		description: "",
-		volatility: 0
-	},
-	pond:
-	{
-		title: "The Pond Slums Traders",
-		description: "",
-		volatility: 0
-	},
-	zirvitar:
-	{
-		title: "Zir'vitar Power Plant",
-		description: "basin",
-		volatility: 0
-	},
-	booster:
-	{
-		title: "Rhombus Booster Shop",
-		description: "",
-		volatility: 0
-	},
-	chest:
-	{
-		title: "Rhombus Chest Detector Shop",
-		description: "",
-		volatility: 0
-	},
-	arena:
-	{
-		title: "The Rhombus Arena",
-		description: "",
-		volatility: 0
-	}
-};
+export const StandardMarkets: GenericJSON = JSON.parse(read("standard/markets.json", "utf-8"));
+const StandardEvents: Event[] = loadEvents(JSON.parse(read("standard/events.json", "utf-8")));
 
-const StandardEvents: Event[] = [
-	new Event({
-		headline: "BREAKING NEWS: Rising sea levels cause expensive damages and disrupt commerce in Rookie Harbor!",
-		description: "Tons of seekers were caught in the disaster as with many shops. Rookie Harbor officials request assistance from nearby areas.",
-		effects:
-		{
-			rookie: ["MUL", 0.4, 0.6],
-			bergen: ["SET", 0.9, 1],
-			sapphire: ["ADD", 0.1, 0.2]
-		}
-	})
-];
+function loadEvents(data: GenericJSON[]): Event[]
+{
+	const list: Event[] = [];
+	
+	for(const entry of data)
+		list.push(new Event(entry));
+	
+	return list;
+}
