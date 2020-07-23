@@ -87,7 +87,10 @@ import {initializeSchedulers} from "./modules/scheduler";
 			return message.channel.send("Too many arguments!");
 		
 		// Execute with dynamic library attached. //
-		command.execute(Object.assign($, {
+		// The purpose of using $.bind($) is to clone the function so as to not modify the original $.
+		// The cloned function doesn't copy the properties, so Object.assign() is used.
+		// Object.assign() modifies the first element and returns that, the second element applies its properties and the third element applies its own overriding the second one.
+		command.execute(Object.assign($.bind($), {
 			args: params,
 			author: message.author,
 			channel: message.channel,
@@ -95,10 +98,10 @@ import {initializeSchedulers} from "./modules/scheduler";
 			guild: message.guild,
 			member: message.member,
 			message: message
-		}));
+		}, $));
 	});
 	
-	client.once("ready", async() => {
+	client.once("ready", () => {
 		if(client.user)
 		{
 			$.ready(`Logged in as ${client.user.username}#${client.user.discriminator}.`);
