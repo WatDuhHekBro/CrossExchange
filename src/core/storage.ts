@@ -23,7 +23,7 @@ const Storage = {
 			catch(error)
 			{
 				$.warn(`Malformed JSON data (header: ${header}), backing it up.`, file);
-				fs.writeFileSync(`${path}.backup`, file);
+				fs.writeFile(`${path}.backup`, file, generateHandler(`Backup file of "${header}" successfully written as ${file}.`));
 			}
 		}
 		
@@ -35,9 +35,9 @@ const Storage = {
 		const path = `data/${header}.json`;
 		
 		if(process.argv[2] === "dev" || header === "config")
-			fs.writeFileSync(path, JSON.stringify(data, null, '\t'));
+			fs.writeFile(path, JSON.stringify(data, null, '\t'), generateHandler(`"${header}" sucessfully spaced and written.`));
 		else
-			fs.writeFileSync(path, JSON.stringify(data));
+			fs.writeFile(path, JSON.stringify(data), generateHandler(`"${header}" sucessfully written.`));
 	},
 	open(path: string, filter?: (value: string, index: number, array: string[]) => unknown): string[]
 	{
@@ -54,7 +54,7 @@ const Storage = {
 	close(path: string)
 	{
 		if(fs.existsSync(path) && fs.readdirSync(path).length === 0)
-			fs.rmdirSync(path);
+			fs.rmdir(path, generateHandler(`"${path}" successfully closed.`));
 	},
 	/** Returns the cache of the commands if it exists and searches the directory if not. */
 	async loadCommands(): Promise<Collection<string, Command>>
@@ -62,8 +62,8 @@ const Storage = {
 		if(commands)
 			return commands;
 		
-		if(!fs.existsSync("src/commands/test.ts"))
-			fs.writeFileSync("src/commands/test.ts", template);
+		if(process.argv[2] === "dev" && !fs.existsSync("src/commands/test.ts"))
+			fs.writeFile("src/commands/test.ts", template, generateHandler('"test.ts" (testing/template command) successfully generated.'));
 		
 		commands = new Collection();
 		
@@ -77,6 +77,16 @@ const Storage = {
 		
 		return commands;
 	}
+};
+
+function generateHandler(message: string)
+{
+	return (error: Error|null) => {
+		if(error)
+			$.error(error);
+		else
+			$.debug(message);
+	};
 };
 
 export default Storage;
