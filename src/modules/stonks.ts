@@ -218,7 +218,7 @@ class Event
 {
 	public headline: string;
 	public description: string;
-	public effects: {[market: string]: ["ADD"|"MUL"|"SET", number, number]};
+	public effects: {[market: string]: [number, number]};
 	
 	constructor(data?: GenericJSON)
 	{
@@ -234,10 +234,7 @@ class Event
 				
 				if(isType(market, Array))
 				{
-					const isValidOperation = ["ADD", "MUL", "SET"].includes(market[0]);
-					const isValidRange = isType(market[1], Number) && isType(market[2], Number);
-					
-					if(isValidOperation && isValidRange)
+					if(isType(market[0], Number) && isType(market[1], Number))
 						this.effects = data.effects;
 					else
 						$.warn(`Tag "${tag}" of the selected effect is invalid!`, data.effects);
@@ -367,16 +364,9 @@ export class StonksStructure extends GenericStructure
 		{
 			const effect = event.effects[tag];
 			const market = this.markets[tag];
-			const target = Random.num(effect[1], effect[2]);
+			const target = Random.num(effect[0], effect[1]);
 			const oldValue = market.event;
-			
-			switch(effect[0])
-			{
-				case "ADD": market.event += target; break;
-				case "MUL": market.event *= target; break;
-				case "SET": market.event = target; break;
-			}
-			
+			market.event *= target;
 			const newValue = market.event;
 			// delta or % increase = new / old <-- (1.5 / 0.5 = 3x or 300% more valuable)
 			const change = newValue / oldValue;
