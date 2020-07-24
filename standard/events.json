@@ -1,0 +1,172 @@
+[
+	{
+		"headline": "Killer bugs on the loose!",
+		"description": "A mysterious mutation has made bugs all over Shadoon stronger and much more aggressive. Research into this matter is still ongoing, though some suspect that messing with the template in the Bergen Mine might've summoned an ancient power while others point out the strange corruption happening near the Zir'vitar Power Plant.",
+		"effects":
+		{
+			"bergen": [0.8, 0.9],
+			"basin": [0.9, 0.95],
+			"sapphire": [0.4, 0.7],
+			"mine": [0.6, 0.8],
+			"zirvitar": [0.7, 0.85]
+		}
+	},
+	{
+		"headline": "Mayor of Basin Keep ignores plea from Shad diplomats!",
+		"description": "Mayor Sullyvan of Basin Keep reportedly said that increasingly aggressive enemies in Gaia's Garden \"is not our concern even in the slightest bit\", sparking tensions between the Shad.",
+		"effects":
+		{
+			"basin": [0.7, 0.9],
+			"zirvitar": [0.6, 0.85]
+		}
+	},
+	{
+		"headline": "Shadoon's environment just got HEATED!",
+		"description": "The planet of Shadoon is currently experiencing a massive heatwave along with a drought. Some speculate that there are even some sandstorms brewing, but officials from Ba'kii Kum have yet to confirm this.",
+		"effects":
+		{
+			"bergen": [1.2, 1.4],
+			"bakii": [0.6, 0.8],
+			"icecream": [1.3, 1.5],
+			"hermit": [1.2, 1.4],
+			"brewery": [1.5, 1.75],
+			"bazaar": [0.8, 0.9]
+		}
+	},
+	{
+		"headline": "Iron prices: It's a steal!",
+		"description": "The demand for iron has sharply increased. Some believe this is due to an upcoming addition to the Rhombus Arena, but only time will tell.",
+		"effects":
+		{
+			"rookie": [1.1, 1.3],
+			"bergen": [1.2, 1.4],
+			"bakii": [1.1, 1.3],
+			"mine": [1.3, 1.5],
+			"arena": [1.1, 1.2]
+		}
+	},
+	{
+		"headline": "Crazy businessman tries new strategy!",
+		"description": "A local businessman in Rookie Harbor decided to try selling his sandwiches for 10,000 credits each in an attempt to gain more revenue. \"Hey, what's the worst that could happen? My wares are cool, right?\" Nearby vendors criticize him saying that \"that's not how it works.\"",
+		"effects":
+		{
+			"tara": [0.5, 0.75]
+		}
+	},
+	{
+		"headline": "Well fancy that!",
+		"description": "A new trend rises where people try and act as fancy as they possibly can, and that includes affecting their wallets too. There's also talk of who the supposed leader of this group might be with some recalling that they'd seen a man with a crimson scarf and green, pointy hair, though that's still in the air.",
+		"effects":
+		{
+			"basin": [1.05, 1.2],
+			"tara": [1.1, 1.25],
+			"tophat": [1.15, 1.3]
+		}
+	},
+	{
+		"headline": "Seekers want a challenge, and they want it NOW!",
+		"description": "The Rhombus Arena has gotten more attention with an increasing sentiment among seekers that a proper challenge is the way to go. This has led to a boom in Rhombus Square's entertainment sector. There've been reports of a fairly recent guild battling their way through the Rhombus Arena, notably a spheromancer with blue hair as the star of this newfound attention, though some suspect that that's just due to her unusual horns.",
+		"effects":
+		{
+			"rhombus": [1.1, 1.25],
+			"booster": [1.25, 1.5],
+			"chest": [1.2, 1.4],
+			"arena": [1.4, 1.75]
+		}
+	},
+	{
+		"headline": "A rise in vacations to the ocean!",
+		"description": "Seaside resorts have become mildly popular recently, with businesses booming for cities near the sea too.",
+		"effects":
+		{
+			"rookie": [1.1, 1.2],
+			"rhombus": [1.15, 1.25],
+			"teak": [1.2, 1.3],
+			"icecream": [1.2, 1.3],
+			"plants": [1.15, 1.25],
+			"arena": [1.1, 1.2]
+		}
+	},
+	{
+		"headline": "BREAKING NEWS: A hurricane strikes!",
+		"description": "Rookie Harbor and Rhombus Square were attacked today by a strong hurricane that had been brewing for a while now! Untold amounts of expensive property damages, disrupted commerce, and untold lives were lost in the process! Rookie Harbor officials are requesting assistance from nearby towns, but nobody knows how long these damages might last for.",
+		"effects":
+		{
+			"rookie": [0.15, 0.4],
+			"rhombus": [0.15, 0.4]
+		}
+	},
+	{
+		"headline": "Basin crime is on the rise!",
+		"description": "Several groups in the east side of Basin Keep have become even more disorganized. Tensions worsen between the west side and the east side, and the chaos ensues.",
+		"effects":
+		{
+			"basin": [0.8, 0.9],
+			"pond": [0.6, 0.8]
+		}
+	},
+	{
+		"headline": "The demand for electricity isn't static after all!",
+		"description": "Recently, there was a surge in demand for the electricity that powers high-tech metropolises, and that demand has been exceeded by the workers at the Zir'vitar Power Plant. With that extra energy, officials at Rhombus Square decided to add new sights to behold.",
+		"effects":
+		{
+			"basin": [1.1, 1.25],
+			"rhombus": [1.1, 1.25],
+			"zirvitar": [1.3, 1.6],
+			"pond": [1.05, 1.1],
+			"arena": [1.05, 1.15]
+		}
+	},
+	{
+		"headline": "Plant enthusiasts unite!",
+		"description": "Following in the footsteps of local Rookie Harbor resident and plant collector Talatu Lips, many have begun a journey to collect plants as well.",
+		"effects":
+		{
+			"sapphire": [1.2, 1.3],
+			"plants": [1.4, 1.5]
+		}
+	},
+	{
+		"headline": "Local markets break out into the global trade!",
+		"description": "There has been a move to help local vendors such as Rookie Harbor resident Selena Teak get their products out there to be enjoyed by anyone in Shadoon. This has, in a large part, been facilitated by the Baki Bazaar Union who has decided to take on these requests to deal in bulk transportation for a while.",
+		"effects":
+		{
+			"teak": [1.1, 1.2],
+			"icecream": [1.1, 1.2],
+			"hermit": [1.1, 1.2],
+			"tophat": [1.1, 1.2],
+			"brewery": [1.1, 1.2],
+			"bazaar": [1.3, 1.5],
+			"pond": [1.1, 1.2],
+			"booster": [1.1, 1.2],
+			"chest": [1.1, 1.2]
+		}
+	},
+	{
+		"headline": "Thieves do the crime yet avoid the time?!",
+		"description": "There has been talk of thieves gathering in significant numbers to raid small businesses. Reports say that these thieves are likely to hail from Basin Keep's Pond Slums, sparking a lot of people blaming Basin Keep for its lackluster performance. As one routine traveller remarks, \"They can't even keep birds from breaking into their buildings! So of course they can't manage a bunch of petty criminals!\"",
+		"effects":
+		{
+			"basin": [0.7, 0.9],
+			"teak": [0.8, 0.9],
+			"icecream": [0.8, 0.9],
+			"plants": [0.8, 0.9],
+			"hermit": [0.8, 0.9],
+			"tophat": [0.8, 0.9],
+			"brewery": [0.8, 0.9],
+			"pond": [0.5, 0.75],
+			"booster": [0.8, 0.9],
+			"chest": [0.8, 0.9]
+		}
+	},
+	{
+		"headline": "Seekers demand more features faster!",
+		"description": "Some seekers playing in the Rhombus Arena are starting to get impatient for the upcoming additions to the arena. \"They've been delaying these features for months without any word on it! And CrossWorlds is still in beta after all these years!\" While some argue that it's starting to get boring due to this, there is quite a lot of criticism in return from other seekers saying that everything takes time, and that they need to be patient for new additions along with features like the Temple of Ascension.",
+		"effects":
+		{
+			"booster": [0.85, 0.95],
+			"chest": [0.85, 0.95],
+			"arena": [0.8, 0.9]
+		}
+	}
+]

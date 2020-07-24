@@ -1,59 +1,50 @@
-import {Client, Collection, MessageMentions} from "discord.js";
-import {existsSync, writeFileSync} from "fs";
-import Storage from "./core/storage";
-import lib from "./core/lib";
+import {Client, Permissions} from "discord.js";
+import $, {unreact} from "./core/lib";
 import setup from "./setup";
-import {Config} from "./core/structures";
-import Command, {template} from "./core/command";
+import FileManager from "./core/storage";
+import {Config, Storage} from "./core/structures";
+import intercept from "./modules/intercept";
+import {initializeSchedulers} from "./modules/scheduler";
 
 (async() => {
 	// Setup //
 	await setup.init();
 	const client = new Client();
+	const commands = await FileManager.loadCommands();
 	client.login(Config.token).catch(setup.again);
-	
-	// Load Commands //
-	const commands = new Collection();
-	
-	if(!existsSync("src/commands/test.ts"))
-		writeFileSync("src/commands/test.ts", template);
-	
-	for(const file of Storage.open("dist/commands", file => file.endsWith(".js")))
-	{
-		const header = file.substring(0, file.indexOf(".js"));
-		const command = (await import(`./commands/${header}`)).default;
-		commands.set(header, command);
-	}
-	
-	// Special case for the help command.
-	if(commands.has("help"))
-	{
-		(commands.get("help") as Command).special = commands;
-		(commands.get("help") as Command).any!.special = commands;
-	}
+	initializeSchedulers(client);
 	
 	client.on("message", async message => {
 		// Message Setup //
 		if(message.author.bot)
 			return;
 		
-		// uwu-ing penalties, etc.
+		const prefix = Storage.getGuild(message.guild?.id || "N/A").prefix || Config.prefix;
 		
-		if(!message.content.startsWith(Config.prefix))
-		{
-			if(message.mentions.members?.has(client.user?.id || ""))
-				message.channel.send(`My prefix is \`${Config.prefix}\`.`);
-			else
-				return;
-		}
+		if(!message.content.startsWith(prefix))
+			return intercept(message);
 		
-		const [header, ...args] = message.content.substring(Config.prefix.length).split(/ +/);
+		const [header, ...args] = message.content.substring(prefix.length).split(/ +/);
 		
 		if(!commands.has(header))
 			return;
+		if(message.channel.type === "text" && !message.channel.permissionsFor(client.user || "")?.has(Permissions.FLAGS.SEND_MESSAGES))
+		{
+			let status;
+			
+			if(message.member?.hasPermission(Permissions.FLAGS.ADMINISTRATOR))
+				status = "Because you're a server admin, you have the ability to change that channel's permissions to match if that's what you intended.";
+			else
+				status = "Try using a different channel or contacting a server admin to change permissions of that channel if you think something's wrong.";
+			
+			return message.author.send(`I don't have permission to send messages in ${message.channel.toString()}. ${status}`);
+		}
+		
+		$.log(`${message.author.username}#${message.author.discriminator} executed the command "${header}" with arguments "${args}".`);
 		
 		// Subcommand Recursion //
-		let command = commands.get(header) as Command;
+		let command = commands.get(header);
+		if(!command) return $.warn(`Command "${header}" was called but for some reason it's still undefined!`);
 		const params: any[] = [];
 		let isEndpoint = false;
 		
@@ -62,21 +53,23 @@ import Command, {template} from "./core/command";
 			if(command.endpoint)
 			{
 				if(command.subcommands || command.user || command.number || command.any)
-					console.warn(`An endpoint cannot have subcommands! Check ${Config.prefix}${header} again.`);
+					$.warn(`An endpoint cannot have subcommands! Check ${prefix}${header} again.`);
 				isEndpoint = true;
 				break;
 			}
 			
-			if(command.subcommands && (param in command.subcommands))
+			if(command.subcommands?.[param])
 				command = command.subcommands[param];
-			else if(command.user && (/\d{17,19}/.test(param) || MessageMentions.USERS_PATTERN.test(param)))
+			// Any Discord ID format will automatically format to a user ID.
+			else if(command.user && (/\d{17,19}/.test(param)))
 			{
 				const id = param.match(/\d+/g)![0];
 				command = command.user;
 				try {params.push(await client.users.fetch(id))}
-				catch(error) {params.push(null)}
+				catch(error) {return message.channel.send(`No user found by the ID \`${id}\`!`)}
 			}
-			else if(command.number && Number(param))
+			// Disallow infinity and allow for 0.
+			else if(command.number && (Number(param) || param === "0") && !param.includes("Infinity"))
 			{
 				command = command.number;
 				params.push(Number(param));
@@ -91,13 +84,13 @@ import Command, {template} from "./core/command";
 		}
 		
 		if(isEndpoint)
-		{
-			message.channel.send("`Too many arguments!`");
-			return;
-		}
+			return message.channel.send("Too many arguments!");
 		
 		// Execute with dynamic library attached. //
-		command.execute(Object.assign({
+		// The purpose of using $.bind($) is to clone the function so as to not modify the original $.
+		// The cloned function doesn't copy the properties, so Object.assign() is used.
+		// Object.assign() modifies the first element and returns that, the second element applies its properties and the third element applies its own overriding the second one.
+		command.execute(Object.assign($.bind($), {
 			args: params,
 			author: message.author,
 			channel: message.channel,
@@ -105,14 +98,19 @@ import Command, {template} from "./core/command";
 			guild: message.guild,
 			member: message.member,
 			message: message
-		}, lib));
+		}, $));
 	});
 	
 	client.once("ready", () => {
-		console.log("Ready!");
-		client.user?.setActivity({
-			type: "LISTENING",
-			name: `${Config.prefix}help`
-		});
+		if(client.user)
+		{
+			$.ready(`Logged in as ${client.user.username}#${client.user.discriminator}.`);
+			client.user.setActivity({
+				type: "LISTENING",
+				name: `${Config.prefix}help`
+			});
+		}
 	});
+	
+	client.on("messageReactionRemove", unreact);
 })()

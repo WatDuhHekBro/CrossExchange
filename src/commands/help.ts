@@ -1,16 +1,18 @@
 import Command from "../core/command";
 import {CommonLibrary} from "../core/lib";
+import FileManager from "../core/storage";
 
 const types = ["user", "number", "any"];
 
 export default new Command({
 	description: "Lists all commands. If a command is specified, their arguments are listed as well.",
 	usage: "([command, [subcommand/type], ...])",
-	async run($: CommonLibrary)
+	async run($: CommonLibrary): Promise<any>
 	{
+		const commands = await FileManager.loadCommands();
 		const list: string[] = [];
 		
-		for(const [header, command] of this.special)
+		for(const [header, command] of commands)
 			if(header !== "test")
 				list.push(`- \`${header}\` - ${command.description}`);
 		
@@ -18,10 +20,11 @@ export default new Command({
 		$.channel.send(`Legend: \`<type>\`, \`[list/of/subcommands]\`, \`(optional)\`, \`(<optional type>)\`, \`([optional/list/...])\`\nCommands:${outList}`, {split: true});
 	},
 	any: new Command({
-		async run($: CommonLibrary)
+		async run($: CommonLibrary): Promise<any>
 		{
+			const commands = await FileManager.loadCommands();
 			let header = $.args.shift();
-			let command = this.special.get(header);
+			let command = commands.get(header);
 			
 			if(!command || header === "test")
 				$.channel.send(`No command found by the name \`${header}\`!`);
@@ -36,21 +39,17 @@ export default new Command({
 					if(/<\w+>/g.test(param))
 					{
 						const type = param.match(/\w+/g)[0];
+						command = command[type];
 						
-						if(types.includes(type))
-						{
-							command = command[type];
-							
-							if(command.usage !== "")
-								usage = command.usage;
-						}
+						if(types.includes(type) && command?.usage)
+							usage = command.usage;
 						else
 						{
-							command = null;
+							command = undefined;
 							break;
 						}
 					}
-					else if(command?.subcommands && param in command.subcommands)
+					else if(command?.subcommands?.[param])
 					{
 						command = command.subcommands[param];
 						
@@ -59,16 +58,13 @@ export default new Command({
 					}
 					else
 					{
-						command = null;
+						command = undefined;
 						break;
 					}
 				}
 				
 				if(!command)
-				{
-					$.channel.send(`No command found by the name \`${header}\`!`);
-					return;
-				}
+					return $.channel.send(`No command found by the name \`${header}\`!`);
 				
 				let append = "";
 				
@@ -78,13 +74,21 @@ export default new Command({
 					
 					for(const subtag in command.subcommands)
 					{
-						const subcmd = command.subcommands[subtag] as Command;
-						list.push(`- \`${header} ${subtag}\` - ${subcmd.description}`);
+						const subcmd = command.subcommands[subtag];
+						const customUsage = subcmd.usage ? ` ${subcmd.usage}` : "";
+						list.push(`- \`${header} ${subtag}${customUsage}\` - ${subcmd.description}`);
 					}
 					
 					for(const type of types)
+					{
 						if(command[type])
-							list.push(`- \`${header} <${type}>\` - ${command[type].description}`);
+						{
+							const cmd = command[type];
+							const customUsage = cmd.usage ? ` ${cmd.usage}` : "";
+							list.push(`- \`${header} <${type}>${customUsage}\` - ${cmd.description}`);
+						}
+					}
+						
 					
 					append = "Usages:" + (list.length > 0 ? `\n${list.join('\n')}` : " None.");
 				}

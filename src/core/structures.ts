@@ -1,68 +1,137 @@
-import Storage from "./storage";
-import {isType} from "./lib";
+import FileManager from "./storage";
+import $, {isType, select, GenericJSON, GenericStructure} from "./lib";
+import {watch} from "fs";
+import {StonksStructure, StandardMarkets} from "../modules/stonks";
 
-/*
-Got an idea: The templates should resolve to actual objects, because picture this.
-
-Storage.read(*) (in templates)
-(As it resolves into that object, which is still ultimately JSON btw, it'll add and remove excessive properties of each object and array.)
-
-import {Data} from Storage
-user = Data.addUser(options?) --> User
-user.credits += 500;
-Data.save()
-
-Because the data will be consistent, you can put it into classes.
-Also, unused keys will automatically not be parsed.
-*/
-
-interface GenericJSON
-{
-	[key: string]: any;
-}
-
-class ConfigStructure
+class ConfigStructure extends GenericStructure
 {
 	public token: string;
 	public prefix: string;
-	public admins: string[];
+	public mechanics: string[];
 	
 	constructor(data: GenericJSON)
 	{
+		super("config");
 		this.token = select(data.token, "<ENTER YOUR TOKEN HERE>", String);
 		this.prefix = select(data.prefix, "$", String);
-		this.admins = select(data.admins, [], String, true);
-	}
-	
-	public save()
-	{
-		Storage.write("config", this);
+		this.mechanics = select(data.mechanics, [], String, true);
 	}
 }
 
-/**
- * Checks a value to see if it matches the fallback's type, otherwise returns the fallback.
- * For the purposes of the templates system, this function will only check array types, objects should be checked under their own type (as you'd do anyway with something like a User object).
- * If at any point the value doesn't match the data structure provided, the fallback is returned.
- * Warning: Type checking is based on the fallback's type. Be sure that the "type" parameter is accurate to this!
- */
-function select<T>(value: any, fallback: T, type: Function, isArray = false): T
+class User
 {
-	if(isArray && isType(value, Array))
+	public money: number;
+	public penalties: number;
+	public lastReceived: number;
+	public net: number;
+	public lost: number;
+	public invested: {[market: string]: number};
+	
+	constructor(data?: GenericJSON)
 	{
-		for(let item of value)
-			if(!isType(item, type))
-				return fallback;
-		return value;
+		this.money = select(data?.money, 0, Number);
+		this.penalties = select(data?.penalties, 0, Number);
+		this.lastReceived = select(data?.lastReceived, -1, Number);
+		this.net = select(data?.net, 0, Number);
+		this.lost = select(data?.lost, 0, Number);
+		this.invested = {};
+		
+		if(data?.invested)
+			for(const tag in data.invested)
+				if(tag in StandardMarkets && isType(data.invested[tag], Number))
+					this.invested[tag] = data.invested[tag];
 	}
-	else
+	
+	public initMarket(tag: string)
 	{
-		if(isType(value, type))
-			return value;
+		if(!(tag in this.invested))
+			this.invested[tag] = 0;
+	}
+}
+
+class Guild
+{
+	public prefix: string|null;
+	public intercept: boolean;
+	
+	constructor(data?: GenericJSON)
+	{
+		this.prefix = select(data?.prefix, null, String);
+		this.intercept = select(data?.intercept, true, Boolean);
+	}
+}
+
+class StorageStructure extends GenericStructure
+{
+	public users: {[id: string]: User};
+	public guilds: {[id: string]: Guild};
+	
+	constructor(data: GenericJSON)
+	{
+		super("storage");
+		this.users = {};
+		this.guilds = {};
+		
+		for(let id in data.users)
+			if(/\d{17,19}/g.test(id))
+				this.users[id] = new User(data.users[id]);
+		
+		for(let id in data.guilds)
+			if(/\d{17,19}/g.test(id))
+				this.guilds[id] = new Guild(data.guilds[id]);
+	}
+	
+	/** Gets a user's profile if they exist and generate one if not. */
+	public getUser(id: string): User
+	{
+		if(!/\d{17,19}/g.test(id))
+			$.warn(`"${id}" is not a valid user ID! It will be erased when the data loads again.`);
+		
+		if(id in this.users)
+			return this.users[id];
 		else
-			return fallback;
+		{
+			const user = new User();
+			this.users[id] = user;
+			return user;
+		}
+	}
+	
+	/** Gets a guild's settings if they exist and generate one if not. */
+	public getGuild(id: string): Guild
+	{
+		if(!/\d{17,19}/g.test(id))
+			$.warn(`"${id}" is not a valid guild ID! It will be erased when the data loads again.`);
+		
+		if(id in this.guilds)
+			return this.guilds[id];
+		else
+		{
+			const guild = new Guild();
+			this.guilds[id] = guild;
+			return guild;
+		}
 	}
 }
 
 // Exports instances. Don't worry, importing it from different files will load the same instance.
-export const Config = new ConfigStructure(Storage.read("config"));
+export let Config = new ConfigStructure(FileManager.read("config"));
+export let Storage = new StorageStructure(FileManager.read("storage"));
+export let Stonks = new StonksStructure(FileManager.read("stonks"));
+
+// This part will allow the user to manually edit any JSON files they want while the program is running which'll update the program's cache.
+// However, fs.watch is a buggy mess that should be avoided in production. While it helps test out stuff for development, it's not a good idea to have it running outside of development as it causes all sorts of issues.
+if(process.argv[2] === "dev")
+{
+	watch("data", (event, filename) => {
+		$.debug("File Watcher:", event, filename);
+		const header = filename.substring(0, filename.indexOf(".json"));
+		
+		switch(header)
+		{
+			case "config": Config = new ConfigStructure(FileManager.read("config")); break;
+			case "storage": Storage = new StorageStructure(FileManager.read("storage")); break;
+			case "stonks": Stonks = new StonksStructure(FileManager.read("stonks")); break;
+		}
+	});
+}
