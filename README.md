@@ -17,3 +17,4 @@ Yet another Discord bot. This time, a CrossCode-themed stock market.
 This isn't a comprehensive guide to all the commands as that's already embedded in the `help` command.
 - To begin the stonks and initialize its news into a server, you have to dedicate a channel to it. This will be the channel the bot updates whenever stuff changes. `$admin init` which can be used by server admins and the bot's mechanics.
 - You can get credits every 22 hours by doing `$money get`. Then do `$stonks` to buy and sell le stonks.
+- If a market's value reaches 0, all of the stocks invested into that market will be forfeited.

@@ -1,6 +1,6 @@
 {
   "name": "crossexchange",
-  "version": "0.6.9",
+  "version": "1.0.0",
   "description": "Yet another Discord bot.",
   "main": "dist/index.js",
   "dependencies": {

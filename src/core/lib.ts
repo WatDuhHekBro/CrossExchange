@@ -52,7 +52,7 @@ export default function $(value: any)
 $.handler = function(this: CommonLibrary, error: Error)
 {
 	if(this)
-		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error.stack || error}\`\`\``);
+		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error.stack ?? error}\`\`\``);
 	else
 		$.warn("No context was attached to $.handler! Make sure to use .catch($.handler.bind($)) or .catch(error => $.handler(error)) instead!");
 	
@@ -354,11 +354,11 @@ export abstract class GenericStructure
 		this.__meta__ = tag || this.__meta__;
 	}
 	
-	public save()
+	public save(asynchronous = true)
 	{
 		const tag = this.__meta__;
 		delete this.__meta__;
-		FileManager.write(tag, this);
+		FileManager.write(tag, this, asynchronous);
 		this.__meta__ = tag;
 	}
 }

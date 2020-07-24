@@ -58,7 +58,7 @@ import {initializeSchedulers} from "./modules/scheduler";
 				break;
 			}
 			
-			if(command.subcommands && (param in command.subcommands))
+			if(command.subcommands?.[param])
 				command = command.subcommands[param];
 			// Any Discord ID format will automatically format to a user ID.
 			else if(command.user && (/\d{17,19}/.test(param)))

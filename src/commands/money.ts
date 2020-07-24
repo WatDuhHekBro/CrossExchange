@@ -84,17 +84,17 @@ export default new Command({
 				
 				if(user.lastReceived === -1)
 				{
-					user.money = 500;
+					user.money = 100;
 					user.lastReceived = now;
 					Storage.save();
-					$.channel.send("Here's 500 credits to get started.", getMoneyEmbed($.author));
+					$.channel.send("Here's 100 credits to get started, the price of a sandwich in Rookie Harbor.", getMoneyEmbed($.author));
 				}
 				else if(now - user.lastReceived >= 79200000)
 				{
-					user.money += 100;
+					user.money += 25;
 					user.lastReceived = now;
 					Storage.save();
-					$.channel.send("Here's your daily 100 credits.", getMoneyEmbed($.author));
+					$.channel.send("Here's your daily 25 credits.", getMoneyEmbed($.author));
 				}
 				else
 					$.channel.send(`It's too soon to pick up your daily credits. You have about ${((user.lastReceived + 79200000 - now) / 3600000).toFixed(1)} hours to go.`);

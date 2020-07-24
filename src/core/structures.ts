@@ -24,6 +24,7 @@ class User
 	public penalties: number;
 	public lastReceived: number;
 	public net: number;
+	public lost: number;
 	public invested: {[market: string]: number};
 	
 	constructor(data?: GenericJSON)
@@ -32,6 +33,7 @@ class User
 		this.penalties = select(data?.penalties, 0, Number);
 		this.lastReceived = select(data?.lastReceived, -1, Number);
 		this.net = select(data?.net, 0, Number);
+		this.lost = select(data?.lost, 0, Number);
 		this.invested = {};
 		
 		if(data?.invested)
@@ -118,14 +120,18 @@ export let Storage = new StorageStructure(FileManager.read("storage"));
 export let Stonks = new StonksStructure(FileManager.read("stonks"));
 
 // This part will allow the user to manually edit any JSON files they want while the program is running which'll update the program's cache.
-watch("data", (event, filename) => {
-	$.debug("File Watcher:", event, filename);
-	const header = filename.substring(0, filename.indexOf(".json"));
-	
-	switch(header)
-	{
-		case "config": Config = new ConfigStructure(FileManager.read("config")); break;
-		case "storage": Storage = new StorageStructure(FileManager.read("storage")); break;
-		case "stonks": Stonks = new StonksStructure(FileManager.read("stonks")); break;
-	}
-});
+// However, fs.watch is a buggy mess that should be avoided in production. While it helps test out stuff for development, it's not a good idea to have it running outside of development as it causes all sorts of issues.
+if(process.argv[2] === "dev")
+{
+	watch("data", (event, filename) => {
+		$.debug("File Watcher:", event, filename);
+		const header = filename.substring(0, filename.indexOf(".json"));
+		
+		switch(header)
+		{
+			case "config": Config = new ConfigStructure(FileManager.read("config")); break;
+			case "storage": Storage = new StorageStructure(FileManager.read("storage")); break;
+			case "stonks": Stonks = new StonksStructure(FileManager.read("stonks")); break;
+		}
+	});
+}

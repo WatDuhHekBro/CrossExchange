@@ -22,22 +22,39 @@ const Storage = {
 			}
 			catch(error)
 			{
-				$.warn(`Malformed JSON data (header: ${header}), backing it up.`, file);
-				fs.writeFile(`${path}.backup`, file, generateHandler(`Backup file of "${header}" successfully written as ${file}.`));
+				if(process.argv[2] !== "dev")
+				{
+					$.warn(`Malformed JSON data (header: ${header}), backing it up.`, file);
+					fs.writeFile(`${path}.backup`, file, generateHandler(`Backup file of "${header}" successfully written as ${file}.`));
+				}
 			}
 		}
 		
 		return data;
 	},
-	write(header: string, data: object)
+	write(header: string, data: object, asynchronous = true)
 	{
 		this.open("data");
 		const path = `data/${header}.json`;
 		
 		if(process.argv[2] === "dev" || header === "config")
-			fs.writeFile(path, JSON.stringify(data, null, '\t'), generateHandler(`"${header}" sucessfully spaced and written.`));
+		{
+			const result = JSON.stringify(data, null, '\t');
+			
+			if(asynchronous)
+				fs.writeFile(path, result, generateHandler(`"${header}" sucessfully spaced and written.`));
+			else
+				fs.writeFileSync(path, result);
+		}
 		else
-			fs.writeFile(path, JSON.stringify(data), generateHandler(`"${header}" sucessfully written.`));
+		{
+			const result = JSON.stringify(data);
+			
+			if(asynchronous)
+				fs.writeFile(path, result, generateHandler(`"${header}" sucessfully written.`));
+			else
+				fs.writeFileSync(path, result);
+		}
 	},
 	open(path: string, filter?: (value: string, index: number, array: string[]) => unknown): string[]
 	{

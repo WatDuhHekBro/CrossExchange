@@ -4,7 +4,7 @@ import {Client, Guild, TextChannel} from "discord.js";
 import {readFileSync as read} from "fs";
 
 // Stonks Board Embeds //
-export function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: number): object[]
+function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: number): object[]
 {
 	const sections: object[] = [];
 	// For the stonks board, the maximum allowed fields for embeds is 25, but 24 looks much nicer when it's inline.
@@ -50,7 +50,7 @@ export function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTime
 	return sections;
 }
 
-export function getEventEmbed(headline: string, description: string, changes: {[market: string]: number}, latestTimestamp: number): object
+function getEventEmbed(headline: string, description: string, changes: {[market: string]: number}, latestTimestamp: number): object
 {
 	const effects: object[] = [];
 	
@@ -75,100 +75,6 @@ export function getEventEmbed(headline: string, description: string, changes: {[
 		timestamp: latestTimestamp
 	}};
 }
-
-/**
- * Acts as the mediator between the stonks command and the data itself.
- * 
- * `Query.buy(market, author.id)` --> How much can I buy from this market?
- * `Query.buy(market, author.id, amount)` --> Attempt to buy this amount of stocks.
- * `Query.buy(market, author.id, Infinity)` --> Buy as many stocks as possible.
- * 
- * `Query.sell(market, author.id)` --> How much can I sell from this market?
- * `Query.sell(market, author.id, amount)` --> Attempt to sell this amount of stocks.
- * `Query.sell(market, author.id, Infinity)` --> Sell as many stocks as possible.
- */
-export const Query = {
-	buy(tag: string, initiator: string, amount?: number): string
-	{
-		const market = Stonks.getMarket(tag);
-		const user = Storage.getUser(initiator);
-		
-		if(!market)
-			return this.invalid(tag);
-		
-		const value = Math.round(market.value);
-		const capacity = Math.floor(user.money / value);
-		
-		if(value <= 0 || capacity <= 0)
-			return `You can't buy any stocks from ${market.title}!`;
-		else if(amount)
-		{
-			amount = Math.floor(amount);
-			
-			if(amount <= 0)
-				return `You need to enter in a value of 1 or greater!`;
-			
-			if(amount === Infinity)
-				amount = capacity;
-			else if(user.money < value * amount)
-				return "You don't have enough money!";
-			
-			user.initMarket(tag);
-			market.invested += amount;
-			user.invested[tag] += amount;
-			user.money -= value * amount;
-			user.net -= value * amount;
-			Storage.save();
-			Stonks.save();
-			
-			return `You invested in and bought ${$(amount).pluralise("stock", "s")} from ${market.title}. You have now invested ${user.invested[tag]} out of its ${$(market.invested).pluralise("total stock", "s")}.`;
-		}
-		else
-			return `You can buy up to ${capacity} stocks from ${market.title}.`;
-	},
-	sell(tag: string, initiator: string, amount?: number): string
-	{
-		const market = Stonks.getMarket(tag);
-		const user = Storage.getUser(initiator);
-		
-		if(!market)
-			return this.invalid(tag);
-		
-		user.initMarket(tag);
-		const stocks = user.invested[tag];
-		const value = Math.round(market.value);
-		
-		if(stocks <= 0)
-			return `You don't have any stocks in ${market.title}!`;
-		else if(amount)
-		{
-			amount = Math.floor(amount);
-			
-			if(amount <= 0)
-				return `You need to enter in a value of 1 or greater!`;
-			
-			if(amount === Infinity)
-				amount = stocks;
-			else if(amount > stocks)
-				return "You don't have that many stocks!";
-			
-			market.invested -= amount;
-			user.invested[tag] -= amount;
-			user.money += value * amount;
-			user.net += value * amount;
-			Storage.save();
-			Stonks.save();
-			
-			return `You sold ${$(amount).pluralise("stock", "s")} from ${market.title} for ${$(value * amount).pluralise("credit", "s")}!`;
-		}
-		else
-			return `You can sell ${$(stocks).pluralise("stock", "s")} for ${$(stocks * value).pluralise("credit", "s")} in ${market.title}.`;
-	},
-	invalid(tag: string): string
-	{
-		return `\`${tag}\` is not a valid market! Make sure you use the market's tag instead of its name, such as \`rookie\` instead of \`Rookie Harbor\`. To see a list of valid tags, use \`stonks info\`.`;
-	}
-};
 
 class Market
 {
@@ -272,11 +178,11 @@ export class StonksStructure extends GenericStructure
 		this.guilds = {};
 		this.lastUpdatedStonks = select(data.lastUpdatedStonks, Date.now(), Number);
 		this.lastUpdatedEvent = select(data.lastUpdatedEvent, Date.now(), Number);
+		// You need to initialize the list of markets regardless, so initialize it even if "markets" doesn't exist on "data".
+		const list: GenericJSON = select(data.markets, {}, Object);
 		
-		// Initialize only the values that aren't part of the default market so descriptions can update if any of them change.
-		if(isType(data.markets, Object))
-			for(const tag in StandardMarkets)
-				this.markets[tag] = new Market(data.markets[tag] ? Object.assign(data.markets[tag], StandardMarkets[tag]) : StandardMarkets[tag]);
+		for(const tag in StandardMarkets)
+			this.markets[tag] = new Market(list[tag] ? Object.assign(list[tag], StandardMarkets[tag]) : StandardMarkets[tag]);
 		
 		if(isType(data.guilds, Object))
 			for(const id in data.guilds)
@@ -299,10 +205,32 @@ export class StonksStructure extends GenericStructure
 		{
 			const market = this.markets[tag];
 			market.iterate();
+
+			// Handle what happens if the value is 0.
+			const value = Math.round(market.value);
+			
+			if(value <= 0)
+			{
+				$.debug(`Market crash at "${tag}".`);
+				
+				for(const id in Storage.users)
+				{
+					const user = Storage.users[id];
+					
+					if(tag in user.invested)
+					{
+						user.lost += user.invested[tag];
+						user.invested[tag] = 0;
+					}
+				}
+				
+				market.invested = 0;
+			}
 		}
 		
 		this.lastUpdatedStonks = Date.now();
 		this.save();
+		Storage.save();
 		const embeds = getStonksEmbedArray(this.markets, this.lastUpdatedStonks);
 		const total = embeds.length;
 		

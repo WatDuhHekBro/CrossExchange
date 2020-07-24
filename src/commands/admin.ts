@@ -148,21 +148,25 @@ export default new Command({
 			}
 		}),
 		diag: new Command({
-			description: "Requests a debug log with the \"info\" verbosity level. Anyone can request a log from the bot.",
+			description: "Requests a debug log with the \"info\" verbosity level.",
 			async run($: CommonLibrary): Promise<any>
 			{
-				$.channel.send(getLogBuffer("info"));
+				if(authenticate($))
+					$.channel.send(getLogBuffer("info"));
 			},
 			any: new Command({
 				description: `Select a verbosity to listen to. Available levels: \`[${Object.keys(logs)}]\``,
 				async run($: CommonLibrary): Promise<any>
 				{
-					const type = $.args[0];
-					
-					if(type in logs)
-						$.channel.send(getLogBuffer(type));
-					else
-						$.channel.send(`Couldn't find a verbosity level named \`${type}\`! The available types are \`[${Object.keys(logs)}]\`.`);
+					if(authenticate($))
+					{
+						const type = $.args[0];
+						
+						if(type in logs)
+							$.channel.send(getLogBuffer(type));
+						else
+							$.channel.send(`Couldn't find a verbosity level named \`${type}\`! The available types are \`[${Object.keys(logs)}]\`.`);
+					}
 				}
 			})
 		})

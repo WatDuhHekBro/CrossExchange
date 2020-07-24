@@ -49,7 +49,7 @@ export default new Command({
 							break;
 						}
 					}
-					else if(command?.subcommands && param in command.subcommands)
+					else if(command?.subcommands?.[param])
 					{
 						command = command.subcommands[param];
 						

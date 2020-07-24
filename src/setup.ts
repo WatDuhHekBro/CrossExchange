@@ -42,7 +42,7 @@ export default {
 		$.error("It seems that the token you provided is invalid.");
 		const answers = await inquirer.prompt(prompts.slice(0, 1));
 		Config.token = answers.token as string;
-		Config.save();
+		Config.save(false);
 		process.exit();
 	}
 };

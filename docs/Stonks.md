@@ -7,6 +7,7 @@ At its core, the stock market, at least for this bot, is a series of ups and dow
 - Then, `volatility`, a percentage of how stable the market is, can make changes spiral out of that sine wave.
 - All in all, it's really just picking a point on a sine wave and then making changes to it to add more variation.
 - `volatility` is the one property that cannot be changed. It's intrinsic to that market and part of what makes it unique.
+- There's a risk of buying very low: If a market becomes bankrupt (anytime it hits 0), all stocks are forfeited. It was high reward until I made it high risk by adding this.
 
 # Events
 - Besides volatility, there isn't a whole lot of variation that makes the game interesting. That's because the main source of randomness comes from random events which affect specific markets per event.
