@@ -145,27 +145,6 @@ function getProfileEmbed(user: User): object
 	}};
 }
 
-function getConvertedCatalog(catalog: [number, number][]): object[]
-{
-	const fields: object[] = new Array(catalog.length);
-	
-	for(let i = 0; i < catalog.length; i++)
-	{
-		const entry = catalog[i];
-		const previousEntry = catalog[i+1];
-		const currentValue = entry[0];
-		const timestamp = entry[1];
-		const delta = previousEntry ? `, ${$(currentValue - previousEntry[0]).pluraliseSigned("credit", "s")}` : "";
-		
-		fields[i] = {
-			name: formatUTCTimestamp(new Date(timestamp)),
-			value: `${$(currentValue).pluralise("credit", "s")}${delta}`
-		};
-	}
-	
-	return fields;
-}
-
 export default new Command({
 	description: "Check your profile related to stonks. Also provides other commands related to stonks.",
 	async run($: CommonLibrary): Promise<any>
@@ -257,7 +236,7 @@ export default new Command({
 			})
 		}),
 		info: new Command({
-			description: "Get info on a market along with its catalog of market values or get a list of all markets.",
+			description: "Get info on a market or get a list of all markets.",
 			usage: "(<market>)",
 			async run($: CommonLibrary): Promise<any>
 			{
@@ -279,27 +258,18 @@ export default new Command({
 					if(!market)
 						return $.channel.send(Query.invalid($.args[0]));
 					
-					const catalogs = perforate(getConvertedCatalog(market.catalog), 10);
-					const embed = {embed: {
+					$.channel.send({embed: {
 						color: 0x008000,
 						title: market.title,
-						description: `${market.description} **(Currently at ${$(Math.round(market.value)).pluralise("credit", "s")} per stock.)**`,
-						fields: catalogs[0]
-					}} as any;
-					const total = catalogs.length;
-					const hasMultiplePages = total > 1;
-					const getPageHeader = (page: number) => `Page ${page+1} of ${total}`;
-					
-					if(hasMultiplePages)
-					{
-						const msg = await $.channel.send(getPageHeader(0), embed);
-						$.paginate(msg, $.author.id, total, page => {
-							embed.embed.fields = catalogs[page];
-							msg.edit(getPageHeader(page), embed);
-						}, 300000);
-					}
-					else
-						$.channel.send(embed);
+						description: market.description,
+						fields:
+						[
+							{
+								name: "Market Value",
+								value: `${$(Math.round(market.value)).pluralise("credit", "s")} (${$(market.difference).pluraliseSigned("credit", "s")})`
+							}
+						]
+					}});
 				}
 			})
 		}),

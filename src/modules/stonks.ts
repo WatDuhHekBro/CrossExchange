@@ -17,24 +17,9 @@ function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: 
 		for(const tag of list)
 		{
 			const market = markets[tag];
-			const current = market.catalog[0];
-			const previous = market.catalog[1];
-			let display = "N/A";
-			
-			if(current)
-			{
-				display = $(current[0]).pluralise("credit", "s");
-				
-				if(previous)
-				{
-					const change = current[0] - previous[0];
-					display += ` (${$(change).pluraliseSigned("credit", "s")})`;
-				}
-			}
-			
 			fields.push({
 				name: market.title || "N/A",
-				value: display,
+				value: `${$(Math.round(market.value)).pluralise("credit", "s")} (${$(market.difference).pluraliseSigned("credit", "s")})`,
 				inline: true
 			});
 		}
@@ -85,7 +70,7 @@ class Market
 	public invested: number;
 	public volatility: number;
 	public event: number;
-	public catalog: [number, number][];
+	public difference: number;
 	
 	constructor(data?: GenericJSON)
 	{
@@ -96,17 +81,13 @@ class Market
 		this.invested = select(data?.invested, 0, Number);
 		this.volatility = Math.min(Math.max(select(data?.volatility, 0, Number), 0), 1);
 		this.event = select(data?.event, 1, Number);
-		this.catalog = [];
-		
-		if(data?.catalog && isType(data.catalog, Array))
-			for(const entry of data.catalog)
-				if(entry.length === 2 && isType(entry[0], Number) && isType(entry[1], Number))
-					this.catalog.push(entry);
+		this.difference = select(data?.difference, 0, Number);
 	}
 	
 	/** Do the calculations on a market for one round. */
 	iterate()
 	{
+		const previous = Math.round(this.value);
 		this.value = Math.max(this.value, 0.001);
 		this.cycle += Random.deviation(0.01, 0.005);
 		if(this.cycle > 1) this.cycle -= 2;
@@ -116,7 +97,7 @@ class Market
 		const sign = Random.chance(this.volatility) ? Random.sign(3) : 1;
 		this.value += sign * amplitude * gain * this.event;
 		this.value = Math.max(this.value, 0.001);
-		this.catalog.unshift([Math.round(this.value), Date.now()]);
+		this.difference = Math.round(this.value) - previous;
 	}
 }
 

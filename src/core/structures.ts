@@ -57,7 +57,7 @@ class Guild
 	constructor(data?: GenericJSON)
 	{
 		this.prefix = select(data?.prefix, null, String);
-		this.intercept = select(data?.intercept, true, Boolean);
+		this.intercept = select(data?.intercept, false, Boolean);
 	}
 }
 
