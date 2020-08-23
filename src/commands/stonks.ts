@@ -1,5 +1,5 @@
 import Command from "../core/command";
-import $, {CommonLibrary, perforate, formatUTCTimestamp} from "../core/lib";
+import $, {CommonLibrary} from "../core/lib";
 import {Storage, Stonks} from "../core/structures";
 import {User} from "discord.js";
 

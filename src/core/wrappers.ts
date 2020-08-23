@@ -41,11 +41,44 @@ export class NumberWrapper extends GenericWrapper<number>
 	}
 }
 
+export class StringWrapper extends GenericWrapper<string>
+{
+	public replaceAll(before: string, after: string): string
+	{
+		let result = this.value;
+		
+		while(result.indexOf(before) !== -1)
+			result = result.replace(before, after);
+		
+		return result;
+	}
+	
+	public toTitleCase(): string
+	{
+		return this.value.replace(/([^\W_]+[^\s-]*) */g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+	}
+}
+
 export class ArrayWrapper<T> extends GenericWrapper<T[]>
 {
 	/** Returns a random element from this array. */
 	public random(): T
 	{
 		return this.value[Math.floor(Math.random() * this.value.length)];
+	}
+	
+	/**
+	* Splits up this array into a specified length.
+	* `$([1,2,3,4,5,6,7,8,9,10]).split(3)` = `[[1,2,3],[4,5,6],[7,8,9],[10]]`
+	*/
+	public split(lengthOfEachSection: number): T[][]
+	{
+		const amountOfSections = Math.ceil(this.value.length / lengthOfEachSection);
+		const sections: T[][] = new Array(amountOfSections);
+		
+		for(let index = 0; index < amountOfSections; index++)
+			sections[index] = this.value.slice(index * lengthOfEachSection, (index + 1) * lengthOfEachSection);
+		
+		return sections;
 	}
 }

@@ -2,11 +2,13 @@ import FileManager from "./storage";
 import $, {isType, select, GenericJSON, GenericStructure} from "./lib";
 import {watch} from "fs";
 import {StonksStructure, StandardMarkets} from "../modules/stonks";
+import {Guild as DiscordGuild} from "discord.js";
 
 class ConfigStructure extends GenericStructure
 {
 	public token: string;
 	public prefix: string;
+	public owner: string;
 	public mechanics: string[];
 	
 	constructor(data: GenericJSON)
@@ -14,6 +16,7 @@ class ConfigStructure extends GenericStructure
 		super("config");
 		this.token = select(data.token, "<ENTER YOUR TOKEN HERE>", String);
 		this.prefix = select(data.prefix, "$", String);
+		this.owner = select(data.owner, "", String);
 		this.mechanics = select(data.mechanics, [], String, true);
 	}
 }
@@ -134,4 +137,9 @@ if(process.argv[2] === "dev")
 			case "stonks": Stonks = new StonksStructure(FileManager.read("stonks")); break;
 		}
 	});
+}
+
+export function getPrefix(guild: DiscordGuild|null): string
+{
+	return Storage.getGuild(guild?.id || "N/A").prefix ?? Config.prefix;
 }

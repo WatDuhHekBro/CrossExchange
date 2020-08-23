@@ -2,7 +2,7 @@ import {existsSync as exists} from "fs";
 import inquirer from "inquirer";
 import Storage from "./core/storage";
 import {Config} from "./core/structures";
-import $ from "./core/lib";
+import $, {setConsoleActivated} from "./core/lib";
 
 // This file is called (or at least should be called) automatically as long as a config file doesn't exist yet.
 // And that file won't be written until the data is successfully initialized.
@@ -18,8 +18,12 @@ const prompts = [{
 	default: "$"
 }, {
 	type: "input",
+	name: "owner",
+	message: "Enter the owner's user ID here."
+}, {
+	type: "input",
 	name: "mechanics",
-	message: "Enter a list of bot mechanics (by their IDs) separated by spaces."
+	message: "Enter a list of the bot's mechanics (by their IDs) separated by spaces."
 }];
 
 export default {
@@ -31,15 +35,17 @@ export default {
 			Storage.open("data");
 			Config.token = answers.token as string;
 			Config.prefix = answers.prefix as string;
+			Config.owner = answers.owner as string;
 			const mechanics = (answers.mechanics as string);
 			Config.mechanics = mechanics !== "" ? mechanics.split(" ") : [];
-			Config.save();
+			Config.save(false);
 		}
 	},
 	/** Prompt the user to set their token again. */
 	async again()
 	{
 		$.error("It seems that the token you provided is invalid.");
+		setConsoleActivated(false);
 		const answers = await inquirer.prompt(prompts.slice(0, 1));
 		Config.token = answers.token as string;
 		Config.save(false);

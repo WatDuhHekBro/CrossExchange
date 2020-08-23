@@ -1,4 +1,4 @@
-import $, {Random, isType, select, GenericJSON, GenericStructure, perforate} from "../core/lib";
+import $, {Random, isType, select, GenericJSON, GenericStructure} from "../core/lib";
 import {Stonks, Storage} from "../core/structures";
 import {Client, Guild, TextChannel} from "discord.js";
 import {readFileSync as read} from "fs";
@@ -8,7 +8,7 @@ function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: 
 {
 	const sections: object[] = [];
 	// For the stonks board, the maximum allowed fields for embeds is 25, but 24 looks much nicer when it's inline.
-	const tags = perforate(Object.keys(markets), 24);
+	const tags = $(Object.keys(markets)).split(24);
 	
 	for(const list of tags)
 	{

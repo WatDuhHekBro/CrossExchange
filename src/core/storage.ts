@@ -1,9 +1,5 @@
 import fs from "fs";
 import $ from "./lib";
-import {Collection} from "discord.js";
-import Command, {template} from "../core/command";
-
-let commands: Collection<string, Command>|null = null;
 
 const Storage = {
 	read(header: string): object
@@ -72,31 +68,10 @@ const Storage = {
 	{
 		if(fs.existsSync(path) && fs.readdirSync(path).length === 0)
 			fs.rmdir(path, generateHandler(`"${path}" successfully closed.`));
-	},
-	/** Returns the cache of the commands if it exists and searches the directory if not. */
-	async loadCommands(): Promise<Collection<string, Command>>
-	{
-		if(commands)
-			return commands;
-		
-		if(process.argv[2] === "dev" && !fs.existsSync("src/commands/test.ts"))
-			fs.writeFile("src/commands/test.ts", template, generateHandler('"test.ts" (testing/template command) successfully generated.'));
-		
-		commands = new Collection();
-		
-		for(const file of Storage.open("dist/commands", (filename: string) => filename.endsWith(".js")))
-		{
-			const header = file.substring(0, file.indexOf(".js"));
-			const command = (await import(`../commands/${header}`)).default;
-			commands.set(header, command);
-			$.log("Loading Command:", header);
-		}
-		
-		return commands;
 	}
 };
 
-function generateHandler(message: string)
+export function generateHandler(message: string)
 {
 	return (error: Error|null) => {
 		if(error)

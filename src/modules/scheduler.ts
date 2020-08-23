@@ -1,18 +1,16 @@
 import $, {Random} from "../core/lib";
 import {Stonks} from "../core/structures";
-import {Client} from "discord.js";
+import {client} from "../index";
 
 /** Execute at some point in time during every 5 minute time frame. */
 class StonksScheduler
 {
-	private client: Client;
 	private lower = 0;
 	private upper = 0;
 	private scheduled = 0;
 	
-	constructor(client: Client)
+	constructor()
 	{
-		this.client = client;
 		this.activate();
 	}
 	
@@ -36,7 +34,7 @@ class StonksScheduler
 		$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
 		
 		setTimeout(() => {
-			Stonks.triggerStonks(this.client);
+			Stonks.triggerStonks(client);
 			this.activate();
 		}, this.scheduled - Date.now());
 	}
@@ -45,14 +43,12 @@ class StonksScheduler
 /** Execute at some point in time during every 1 day time frame. */
 class EventScheduler
 {
-	private client: Client;
 	private lower = 0;
 	private upper = 0;
 	private scheduled = 0;
 	
-	constructor(client: Client)
+	constructor()
 	{
-		this.client = client;
 		this.activate();
 	}
 	
@@ -76,14 +72,14 @@ class EventScheduler
 		$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
 		
 		setTimeout(() => {
-			Stonks.triggerEvent(this.client);
+			Stonks.triggerEvent(client);
 			this.activate();
 		}, this.scheduled - Date.now());
 	}
 }
 
-export function initializeSchedulers(client: Client)
+export function initializeSchedulers()
 {
-	new StonksScheduler(client);
-	new EventScheduler(client);
+	new StonksScheduler();
+	new EventScheduler();
 }

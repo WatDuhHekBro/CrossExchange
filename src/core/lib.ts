@@ -1,7 +1,9 @@
-import {GenericWrapper, NumberWrapper, ArrayWrapper} from "./wrappers";
-import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember, MessageReaction, PartialUser} from "discord.js";
+import {GenericWrapper, NumberWrapper, StringWrapper, ArrayWrapper} from "./wrappers";
+import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember, Permissions} from "discord.js";
 import chalk from "chalk";
 import FileManager from "./storage";
+import {eventListeners} from "../events/messageReactionRemove";
+import {client} from "../index";
 
 /** A type that describes what the library module does. */
 export interface CommonLibrary
@@ -9,6 +11,7 @@ export interface CommonLibrary
 	// Wrapper Object //
 	/** Wraps the value you enter with an object that provides extra functionality and provides common utility functions. */
 	(value: number): NumberWrapper;
+	(value: string): StringWrapper;
 	<T>(value: T[]): ArrayWrapper<T>;
 	<T>(value: T): GenericWrapper<T>;
 	
@@ -34,12 +37,15 @@ export interface CommonLibrary
 }
 
 export default function $(value: number): NumberWrapper;
+export default function $(value: string): StringWrapper;
 export default function $<T>(value: T[]): ArrayWrapper<T>;
 export default function $<T>(value: T): GenericWrapper<T>;
 export default function $(value: any)
 {
 	if(isType(value, Number))
 		return new NumberWrapper(value);
+	else if(isType(value, String))
+		return new StringWrapper(value);
 	else if(isType(value, Array))
 		return new ArrayWrapper(value);
 	else
@@ -67,17 +73,22 @@ export const logs: {[type: string]: string} = {
 	verbose: ""
 };
 
+let enabled = true;
+export function setConsoleActivated(activated: boolean) {enabled = activated};
+
 // The custom console. In order of verbosity, error, warn, log, and debug. Ready is a variation of log.
 // General Purpose Logger
 $.log = (...args: any[]) => {
-	console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgWhite("INFO"), ...args);
+	if(enabled)
+		console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgWhite("INFO"), ...args);
 	const text = `[${formatUTCTimestamp()}] [INFO] ${args.join(" ")}\n`;
 	logs.info += text;
 	logs.verbose += text;
 };
 // "It'll still work, but you should really check up on this."
 $.warn = (...args: any[]) => {
-	console.warn(chalk.white.bgGray(formatTimestamp()), chalk.black.bgYellow("WARN"), ...args);
+	if(enabled)
+		console.warn(chalk.white.bgGray(formatTimestamp()), chalk.black.bgYellow("WARN"), ...args);
 	const text = `[${formatUTCTimestamp()}] [WARN] ${args.join(" ")}\n`;
 	logs.warn += text;
 	logs.info += text;
@@ -85,7 +96,8 @@ $.warn = (...args: any[]) => {
 };
 // Used for anything which prevents the program from actually running.
 $.error = (...args: any[]) => {
-	console.error(chalk.white.bgGray(formatTimestamp()), chalk.white.bgRed("ERROR"), ...args);
+	if(enabled)
+		console.error(chalk.white.bgGray(formatTimestamp()), chalk.white.bgRed("ERROR"), ...args);
 	const text = `[${formatUTCTimestamp()}] [ERROR] ${args.join(" ")}\n`;
 	logs.error += text;
 	logs.warn += text;
@@ -94,14 +106,15 @@ $.error = (...args: any[]) => {
 };
 // Be as verbose as possible. If anything might help when debugging an error, then include it. This only shows in your console if you run this with "dev", but you can still get it from "logs.verbose".
 $.debug = (...args: any[]) => {
-	if(process.argv[2] === "dev")
+	if(process.argv[2] === "dev" && enabled)
 		console.debug(chalk.white.bgGray(formatTimestamp()), chalk.white.bgBlue("DEBUG"), ...args);
 	const text = `[${formatUTCTimestamp()}] [DEBUG] ${args.join(" ")}\n`;
 	logs.verbose += text;
 };
 // Used once at the start of the program when the bot loads.
 $.ready = (...args: any[]) => {
-	console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgGreen("READY"), ...args);
+	if(enabled)
+		console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgGreen("READY"), ...args);
 	const text = `[${formatUTCTimestamp()}] [READY] ${args.join(" ")}\n`;
 	logs.info += text;
 	logs.verbose += text;
@@ -129,14 +142,15 @@ export function formatUTCTimestamp(now = new Date())
 	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
 
-// A list of message ID and callback pairs. You get the emote name and ID of the user reacting.
-const eventListeners: Map<string, (emote: string, id: string) => void> = new Map();
+export function botHasPermission(guild: Guild|null, permission: number): boolean
+{
+	return !!(client.user && guild?.members.resolve(client.user)?.hasPermission(permission))
+}
 
 // Pagination function that allows for customization via a callback.
 // Define your own pages outside the function because this only manages the actual turning of pages.
 $.paginate = async(message: Message, senderID: string, total: number, callback: (page: number) => void, duration = 60000) => {
 	let page = 0;
-	
 	const turn = (amount: number) => {
 		page += amount;
 		
@@ -163,7 +177,14 @@ $.paginate = async(message: Message, senderID: string, total: number, callback: 
 	await message.react('➡️');
 	eventListeners.set(message.id, handle);
 	await message.awaitReactions((reaction, user) => {
+		// The reason this is inside the call is because it's possible to switch a user's permissions halfway and suddenly throw an error.
+		// This will dynamically adjust for that, switching modes depending on whether it currently has the "Manage Messages" permission.
+		const canDeleteEmotes = botHasPermission(message.guild, Permissions.FLAGS.MANAGE_MESSAGES);
 		handle(reaction.emoji.name, user.id);
+		
+		if(canDeleteEmotes)
+			reaction.users.remove(user);
+		
 		return false;
 	}, {time: duration});
 	
@@ -172,13 +193,6 @@ $.paginate = async(message: Message, senderID: string, total: number, callback: 
 	message.reactions.cache.get('⬅️')?.users.remove(message.author);
 	message.reactions.cache.get('➡️')?.users.remove(message.author);
 };
-
-// Attached to the client, there can be one event listener attached to a message ID which is executed if present.
-export function unreact(reaction: MessageReaction, user: User|PartialUser)
-{
-	const callback = eventListeners.get(reaction.message.id);
-	callback && callback(reaction.emoji.name, user.id);
-}
 
 // Waits for the sender to either confirm an action or let it pass (and delete the message).
 $.prompt = async(message: Message, senderID: string, onConfirm: () => void, duration = 10000) => {
@@ -253,7 +267,7 @@ export function parseArgs(line: string): string[]
  * - `%%` = `%`
  * - If the invalid token is null/undefined, nothing is changed.
  */
-export function parseVars(line: string, definitions: {[key: string]: string}, invalid: string|null|undefined = ""): string
+export function parseVars(line: string, definitions: {[key: string]: string}, invalid: string|null = ""): string
 {
 	let result = "";
 	let inVariable = false;
@@ -271,7 +285,7 @@ export function parseVars(line: string, definitions: {[key: string]: string}, in
 				{
 					if(token in definitions)
 						result += definitions[token];
-					else if(invalid === undefined || invalid === null)
+					else if(invalid === null)
 						result += `%${token}%`;
 					else
 						result += invalid;
@@ -291,22 +305,7 @@ export function parseVars(line: string, definitions: {[key: string]: string}, in
 	return result;
 }
 
-/**
- * Split up an array into a specified length.
- * [1,2,3,4,5,6,7,8,9,10] split by 3 = [[1,2,3],[4,5,6],[7,8,9],[10]]
- */
-export function perforate<T>(list: T[], lengthOfEachSection: number): T[][]
-{
-	const sections: T[][] = [];
-	const amountOfSections = Math.ceil(list.length / lengthOfEachSection);
-	
-	for(let index = 0; index < amountOfSections; index++)
-		sections.push(list.slice(index * lengthOfEachSection, (index + 1) * lengthOfEachSection));
-	
-	return sections;
-}
-
-export function isType(value: any, type: Function): boolean
+export function isType(value: any, type: any): boolean
 {
 	if(value === undefined && type === undefined)
 		return true;
@@ -347,7 +346,7 @@ export interface GenericJSON
 
 export abstract class GenericStructure
 {
-	protected __meta__ = "generic";
+	private __meta__ = "generic";
 	
 	constructor(tag?: string)
 	{

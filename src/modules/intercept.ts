@@ -11,6 +11,7 @@ const duolingo = [
 	"Dutch or it's your life you'll clutch.",
 	"Thai or die."
 ];
+
 const duo = [
 	"https://i.kym-cdn.com/entries/icons/original/000/029/091/duo.jpg",
 	"https://i.ytimg.com/vi/u6PZZn3SiVo/maxresdefault.jpg",
@@ -21,12 +22,14 @@ const duo = [
 	"https://i.ytimg.com/vi/VKbteJ7C4pA/maxresdefault.jpg",
 	"https://i.redd.it/y0jvi57jxqs21.png"
 ];
+
 const french = [
 	['🥖'],
 	['🥐'],
 	['🇫🇷'],
 	['🇴','🇺','🇮','❗']
 ];
+
 const leFrench = [
 	"french",
 	"france",
@@ -46,7 +49,9 @@ const leFrench = [
 
 export default async function intercept(message: Message)
 {
-	if(!Storage.getGuild(message.guild?.id || "N/A").intercept) return;
+	if(!Storage.getGuild(message.guild?.id || "N/A").intercept)
+		return;
+	
 	const msg = message.content.toLowerCase();
 	
 	if(msg.includes("uwu") || msg.includes("owo"))
@@ -59,10 +64,13 @@ export default async function intercept(message: Message)
 		Storage.save();
 		message.channel.send("Don't uwu, 350 credit penalty.", getMoneyEmbed(message.author));
 	}
+	
 	if(msg.includes("duolingo"))
 		message.channel.send(`${$(duolingo).random()}\n${$(duo).random()}`);
+	
 	if(msg.includes("oil"))
 		message.channel.send("***DID SOMEONE SAY OIL?!***\nhttps://cdn.discordapp.com/attachments/382973609968271361/730598140910108673/leaCheeseAmerican.png");
+	
 	if(contains(msg, leFrench))
 		for(const emoji of $(french).random())
 			await message.react(emoji);

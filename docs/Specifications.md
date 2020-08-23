@@ -4,6 +4,10 @@ The top-level directory is reserved for files that have to be there for it to wo
 	- `core`: This is where core structures and critical functions for the bot go.
 	- `modules`: This is where modules go that accomplish one specific purpose but isn't so necessary for the bot to function. The goal is to be able to safely remove these without too much trouble.
 	- `commands`: Here's the place to store commands. The file name determines the command name.
+		- `subcommands/`: All commands here are ignored by the category loader. Here is where you can split commands into different files. Also works per directory, for example, `utility/subcommands/` is ignored.
+		- `<directory>/`: Specify a directory which'll group commands into a category. For example, a `utility` folder would make all commands inside have the `Utility` category.
+		- `<file>.ts`: All commands at this level will have the `Miscellaneous` category.
+	- `events`: Here's the place to store events. The file name determines the event type.
 - `dist`: This is where the runnable code in `src` compiles to. (The directory structure mirrors `src`.)
 - `data`: Holds all the dynamic data used by the bot. This is what you modify if you want to change stuff for just your instance of the bot.
 - `standard`: Contains all the standard data to be used with the project itself. It's part of the code and will not be checked for inaccuracies because it's not meant to be easily modified.
@@ -16,11 +20,10 @@ This list starts from `src`/`dist`.
 - `core/lib`: Exports a function object which lets you wrap values letting you call special functions as well as calling utility functions common to all commands.
 - `core/structures`: Contains all the structures that the dynamic data read from JSON files should follow. This exports instances of these classes.
 - `core/command`: Contains the class used to instantiate commands.
+- `core/event`: Contains the class used to instantiate events.
 - `core/storage`: Exports an object which handles everything related to files.
 - `core/wrappers`: Contains classes that wrap around values and provide extra functionality.
-- `modules/intercept`: A function called whenever a message event occurs letting you add additional events for certain messages in chat while moving this code away from the main file.
-- `modules/stonks`: Contains all the classes, functions, and mediators related to stonks. Also contains all the standard data.
-- `modules/scheduler`: A custom scheduler managing random events with a semi-predictable time.
+- `core/permissions`: The file containing everything related to permissions.
 
 # Design Decisions
 - All top-level files (relative to `src`/`dist`) should ideally be independent, one-time use scripts. This helps separate code that just initializes once and reusable code that forms the bulk of the main program itself. That's why all the file searching and loading commands/events will be done in `index`.
@@ -32,3 +35,8 @@ This list starts from `src`/`dist`.
 - I want to make attaching subcommands more flexible, so you can either add subcommands in the constructor or by using a method. However, you have to add all other properties when instantiating a command.
 - All commands should have only one parameter. This parameter is meant to be flexible so you can add properties without making a laundry list of parameters. It also has convenience functions too so you don't have to import the library for each command.
 - The objects in `core/structures` are initialized into a special object once and then cached into memory automatically due to an import system. This means you don't have to keep loading JSON files over and over again even without the stack storage system. Because a JSON file resolves into an object, any extra keys are removed automatically (as it isn't initialized into the data) and any property that doesn't yet exist on the JSON object will be initialized into something. You can then have specific functions like `addUser` onto objects with a specific structure.
+- There were several possible ways to go about implementing aliases and subaliases.
+	- Two properties on the `Command` class, `aliases: string[]` and `subaliases: {[key: string]: string[]}`.
+	- Exporting a const named `aliases` which would handle top-level aliases.
+	- For `subaliases`, either making subaliases work like redirects (Instead of doing `new Command(...)`, you'd do `"nameOfSubcommand"`), or define properties on `Command`.
+- What I ended up doing for aliases is making an `aliases` property on `Command` and then converting those string arrays to a more usable structure with strings pointing to the original commands. `aliases` at the very top will determine global aliases and is pretty much the exception in the program's logic. `aliases` elsewhere will provide aliases per subcommand. For anything other than the top-level or `subcommands`, `aliases` does nothing (plus you'll get a warning about it).
