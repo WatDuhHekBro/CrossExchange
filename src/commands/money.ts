@@ -214,6 +214,32 @@ export default new Command({
 					fields: fields
 				}});
 			}
+		}),
+		set: new Command({
+			description: "Forcefully sets someone's amount of money.",
+			permission: Command.PERMISSIONS.BOT_OWNER,
+			usage: "<amount> (<user>)",
+			run: "You need to enter in the amount of money to set.",
+			number: new Command({
+				async run($: CommonLibrary): Promise<any>
+				{
+					const userObject = $.author;
+					const user = Storage.getUser(userObject.id);
+					user.money = $.args[0];
+					Storage.save();
+					$.channel.send(`This is ${userObject}'s new amount of money.`, getMoneyEmbed(userObject));
+				},
+				user: new Command({
+					async run($: CommonLibrary): Promise<any>
+					{
+						const userObject = $.args[1];
+						const user = Storage.getUser(userObject.id);
+						user.money = $.args[0];
+						Storage.save();
+						$.channel.send(`This is ${userObject}'s new amount of money.`, getMoneyEmbed(userObject));
+					}
+				})
+			})
 		})
 	},
 	user: new Command({

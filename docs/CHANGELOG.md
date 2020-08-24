@@ -1,3 +1,9 @@
+# 1.1.0
+Structural Overhaul!
+- Ported over the structural overhaul from my work on TravBot-v3, adding dynamic events, command categories, permissions, and aliases.
+- Added `money set` which allows the bot owner to forcefully change the amount of money someone has.
+- Moved `admin init` to `stonks init`.
+
 # 1.0.1
 - Removed the market catalog feature. This was due to catastrophic results when simulating the market for 50 days. There was an out of memory error when loading in the data.
 - Made message intercept false by default. I think it's better to make it more of a voluntary action.

@@ -1,6 +1,6 @@
 import Command from "../core/command";
 import {CommonLibrary, logs} from "../core/lib";
-import {Config, Storage, Stonks} from "../core/structures";
+import {Config, Storage} from "../core/structures";
 import {PermissionNames, getPermissionLevel} from "../core/permissions";
 
 function getInterceptMessage(activated: boolean)
@@ -30,22 +30,6 @@ export default new Command({
 	},
 	subcommands:
 	{
-		init: new Command({
-			description: "Initializes messages for market values and random events. (MAKE SURE TO DO THIS IN A DEDICATED CHANNEL!)",
-			permission: Command.PERMISSIONS.ADMIN,
-			async run($: CommonLibrary): Promise<any>
-			{
-				if($.channel.type !== "text")
-					return $.channel.send("You need to be in a text channel to use this command!");
-				
-				const channel = $.channel;
-				
-				$.prompt(await channel.send(`Are you sure you want to set ${channel.toString()} as the channel dedicated to displaying market values and events for the stonks bot?\n*(This message will automatically be deleted after 10 seconds.)*`), $.author.id, () => {
-					Stonks.addGuild(channel);
-					Stonks.save();
-				});
-			}
-		}),
 		set: new Command({
 			description: "Set different per-guild settings for the bot.",
 			permission: Command.PERMISSIONS.ADMIN,

@@ -287,6 +287,22 @@ export default new Command({
 				
 				$.channel.send(output, {split: true});
 			}
+		}),
+		init: new Command({
+			description: "Initializes messages for market values and random events. (MAKE SURE TO DO THIS IN A DEDICATED CHANNEL!)",
+			permission: Command.PERMISSIONS.ADMIN,
+			async run($: CommonLibrary): Promise<any>
+			{
+				if($.channel.type !== "text")
+					return $.channel.send("You need to be in a text channel to use this command!");
+				
+				const channel = $.channel;
+				
+				$.prompt(await channel.send(`Are you sure you want to set ${channel.toString()} as the channel dedicated to displaying market values and events for the stonks bot?\n*(This message will automatically be deleted after 10 seconds.)*`), $.author.id, () => {
+					Stonks.addGuild(channel);
+					Stonks.save();
+				});
+			}
 		})
 	},
 	user: new Command({
