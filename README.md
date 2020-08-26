@@ -10,8 +10,13 @@ Yet another Discord bot. This time, a CrossCode-themed stock market.
 1. `npm install`
 2. `npm run dev`
 3. Familiarize yourself with the [project's structure](docs/Specifications.md).
-4. Don't forget to update the [changelog](docs/CHANGELOG.md), version numbers in `package.json` and `package-lock.json`, and any other necessary docs.
+4. Make sure to avoid using `npm run build`! This will remove all your dev dependencies (in order to reduce space used). Instead, use `npm run once` to compile and build in non-dev mode.
 5. Begin developing.
+
+## Don't forget to...
+- ...update the [changelog](docs/CHANGELOG.md) and any other necessary docs.
+- ...update the version numbers in `package.json` and `package-lock.json`.
+- ...make sure the test suite passes by running `npm test`.
 
 # User Guide
 This isn't a comprehensive guide to all the commands as that's already embedded in the `help` command.

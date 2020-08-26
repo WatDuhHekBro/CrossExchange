@@ -1,3 +1,6 @@
+# 1.1.1
+Added a test suite and auto-prune for production.
+
 # 1.1.0
 Structural Overhaul!
 - Ported over the structural overhaul from my work on TravBot-v3, adding dynamic events, command categories, permissions, and aliases.
