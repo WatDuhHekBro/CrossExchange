@@ -316,19 +316,9 @@ export default new Command({
 		description: "Check someone else's profile related to stonks by using their username.",
 		async run($: CommonLibrary): Promise<any>
 		{
-			if($.guild)
-			{
-				const username = $.args.join(" ");
-				const member = (await $.guild.members.fetch({
-					query: username,
-					limit: 1
-				})).first();
-				
-				if(member)
-					$.channel.send(getProfileEmbed(member.user));
-				else
-					$.channel.send(`Couldn't find a user by the name of \`${username}\`!`);
-			}
+			$.callMemberByUsername($.message, $.args.join(" "), member => {
+				$.channel.send(getProfileEmbed(member.user));
+			});
 		}
 	})
 });
