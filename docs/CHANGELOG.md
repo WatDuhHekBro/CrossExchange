@@ -1,3 +1,7 @@
+# 1.1.3
+- Added documentation.
+- Modified the `Command` class' typings.
+
 # 1.1.2
 - Modularized finding members by their username.
 
