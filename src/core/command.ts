@@ -1,6 +1,5 @@
 import {Collection, Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember} from "discord.js";
-import {generateHandler} from "./storage";
-import {promises as ffs, existsSync, writeFile} from "fs";
+import {promises as ffs} from "fs";
 import {toTitleCase} from "./lib";
 
 enum TYPES
@@ -153,7 +152,8 @@ export default class Command
 			return TYPES.MESSAGE;
 		else if(this.user && /^<@!?\d{17,19}>$/.test(param))
 			return TYPES.USER;
-		// Disallow infinity and allow for 0.
+		else if(this.id && /^\d{17,19}$/.test(param))
+			return TYPES.ID;
 		else if(this.number && !Number.isNaN(Number(param)) && param !== "Infinity" && param !== "-Infinity")
 			return TYPES.NUMBER;
 		else if(this.any)
@@ -174,6 +174,7 @@ export default class Command
 			case TYPES.EMOTE: return checkResolvedCommand(this.emote);
 			case TYPES.MESSAGE: return checkResolvedCommand(this.message);
 			case TYPES.USER: return checkResolvedCommand(this.user);
+			case TYPES.ID: return checkResolvedCommand(this.id);
 			case TYPES.NUMBER: return checkResolvedCommand(this.number);
 			case TYPES.ANY: return checkResolvedCommand(this.any);
 			default: return this;
@@ -204,9 +205,6 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 {
 	if(commands)
 		return commands;
-	
-	if(IS_DEV_MODE && !existsSync("src/commands/test.ts"))
-		writeFile("src/commands/test.ts", template, generateHandler('"test.ts" (testing/template command) successfully generated.'));
 	
 	commands = new Collection();
 	const dir = await ffs.opendir("dist/commands");
@@ -282,66 +280,3 @@ async function loadCommand(filename: string, list: string[], category?: string)
 	
 	console.log(`Loading Command: ${header} (${category ? toTitleCase(category) : "Miscellaneous"})`);
 }
-
-// The template should be built with a reductionist mentality.
-// Provide everything the user needs and then let them remove whatever they want.
-// That way, they aren't focusing on what's missing, but rather what they need for their command.
-const template =
-`import Command from "../core/command";
-import {CommonLibrary} from "../core/lib";
-
-export default new Command({
-	description: "This is a template/testing command providing common functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command. The \\"usage\\" parameter (string) overrides the default usage for the help command. The \\"endpoint\\" parameter (boolean) prevents further arguments from being passed. Also, as long as you keep the run function async, it'll return a promise allowing the program to automatically catch any synchronous errors. However, you'll have to do manual error handling if you go the then and catch route.",
-	endpoint: false,
-	usage: "",
-	permission: -1,
-	aliases: [],
-	async run($): Promise<any>
-	{
-		
-	},
-	subcommands:
-	{
-		layer: new Command({
-			description: "This is a named subcommand, meaning that the key name is what determines the keyword to use. With default settings for example, \\"$test layer\\".",
-			endpoint: false,
-			usage: "",
-			permission: -1,
-			aliases: [],
-			async run($): Promise<any>
-			{
-				
-			}
-		})
-	},
-	user: new Command({
-		description: "This is the subcommand for getting users by pinging them or copying their ID. With default settings for example, \\"$test 237359961842253835\\". The argument will be a user object and won't run if no user is found by that ID.",
-		endpoint: false,
-		usage: "",
-		permission: -1,
-		async run($): Promise<any>
-		{
-			
-		}
-	}),
-	number: new Command({
-		description: "This is a numeric subcommand, meaning that any type of number (excluding Infinity/NaN) will route to this command if present. With default settings for example, \\"$test -5.2\\". The argument with the number is already parsed so you can just use it without converting it.",
-		endpoint: false,
-		usage: "",
-		permission: -1,
-		async run($): Promise<any>
-		{
-			
-		}
-	}),
-	any: new Command({
-		description: "This is a generic subcommand, meaning that if there isn't a more specific subcommand that's called, it falls to this. With default settings for example, \\"$test reeee\\".",
-		endpoint: false,
-		usage: "",
-		permission: -1,
-		async run($): Promise<any>
-		{
-			
-		}
-	})
-});`;
