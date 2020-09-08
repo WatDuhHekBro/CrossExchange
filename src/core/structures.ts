@@ -1,5 +1,6 @@
 import FileManager from "./storage";
-import {isType, select, GenericJSON, GenericStructure} from "./lib";
+import {isType, select} from "../framework";
+import {GenericJSON, GenericStructure} from "./lib";
 import {watch} from "fs";
 import {StonksStructure, StandardMarkets} from "../modules/stonks";
 import {Guild as DiscordGuild} from "discord.js";

@@ -1,5 +1,4 @@
-import Command from "../core/command";
-import {prompt, callMemberByUsername, pluralise, pluraliseSigned} from "../core/lib";
+import {Command, prompt, callMemberByUsername, pluralise, pluraliseSigned} from "../framework";
 import {Storage, Stonks} from "../core/structures";
 import {User} from "discord.js";
 

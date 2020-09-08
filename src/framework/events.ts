@@ -1,10 +1,13 @@
-import {client} from "../index";
-import Command, {loadCommands} from "../core/command";
-import {hasPermission, getPermissionLevel, getPermissionName} from "../core/permissions";
+import {botHasPermission} from "./discord";
 import {Permissions, TextChannel, DMChannel, NewsChannel} from "discord.js";
-import {getPrefix} from "../core/structures";
-import intercept from "../modules/intercept";
-import {parseVars} from "../core/lib";
+import {parseVars} from "./util";
+import Command from "./command";
+import {hasPermission, getPermissionLevel, getPermissionName} from "./permissions";
+//import {getPrefix} from "../core/structures";
+import {client, loadCommands} from "./loader";
+
+// A list of message ID and callback pairs. You get the emote name and ID of the user reacting.
+export const eventListeners: Map<string, (emote: string, id: string) => void> = new Map();
 
 let currentChannel: TextChannel|DMChannel|NewsChannel|null = null;
 
@@ -20,13 +23,13 @@ loadCommands().then(commands => {
 		if(message.author.bot)
 			return;
 		
-		const prefix = getPrefix(message.guild);
+		const prefix = '$'; //getPrefix(message.guild);
 		
 		if(!message.content.startsWith(prefix))
 		{
 			if(message.client.user && message.mentions.has(message.client.user))
 				message.channel.send(`${message.author.toString()}, my prefix on this guild is \`${prefix}\`.`);
-			return intercept(message);
+			return;
 		}
 		
 		const [header, ...args] = message.content.substring(prefix.length).split(/ +/);
@@ -98,7 +101,7 @@ loadCommands().then(commands => {
 		{
 			message.channel.send(parseVars(command.run, {
 				author: message.author.toString(),
-				prefix: getPrefix(message.guild)
+				prefix: prefix
 			}, "???"));
 		}
 		else
@@ -121,4 +124,15 @@ loadCommands().then(commands => {
 			});
 		}
 	});
+});
+
+// Attached to the client, there can be one event listener attached to a message ID which is executed if present.
+client.on("messageReactionRemove", (reaction, user) => {
+	const canDeleteEmotes = botHasPermission(reaction.message.guild, Permissions.FLAGS.MANAGE_MESSAGES);
+	
+	if(!canDeleteEmotes)
+	{
+		const callback = eventListeners.get(reaction.message.id);
+		callback && callback(reaction.emoji.name, user.id);
+	}
 });

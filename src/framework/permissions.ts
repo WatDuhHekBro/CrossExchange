@@ -1,5 +1,5 @@
 import {User, GuildMember, Permissions} from "discord.js";
-import {Config} from "./structures";
+//import {Config} from "../core/structures";
 
 interface PermissionLevel
 {
@@ -36,17 +36,17 @@ const PermissionLevels: PermissionLevel[] = [
 	{
 		// BOT_SUPPORT //
 		name: "Bot Support",
-		check: user => Config.support.includes(user.id)
+		check: user => false //Config.support.includes(user.id)
 	},
 	{
 		// BOT_ADMIN //
 		name: "Bot Admin",
-		check: user => Config.admins.includes(user.id)
+		check: user => false //Config.admins.includes(user.id)
 	},
 	{
 		// BOT_OWNER //
 		name: "Bot Owner",
-		check: user => Config.owner === user.id
+		check: user => false //Config.owner === user.id
 	}
 ];
 

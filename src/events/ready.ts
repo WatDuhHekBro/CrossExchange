@@ -1,4 +1,4 @@
-import {client} from "../index";
+import {client} from "../framework";
 import {Config} from "../core/structures";
 
 client.once("ready", () => {

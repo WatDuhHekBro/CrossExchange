@@ -1,7 +1,6 @@
-import {Message} from "discord.js";
+import {client, random} from "../framework";
 import {Storage} from "../core/structures";
 import {getMoneyEmbed} from "../commands/money";
-import {random} from "../core/lib";
 
 const duolingo = [
 	"Spanish or vanish.",
@@ -47,8 +46,7 @@ const leFrench = [
 	"monsieur"
 ];
 
-export default async function intercept(message: Message)
-{
+client.on("message", async message => {
 	if(!Storage.getGuild(message.guild?.id || "N/A").intercept)
 		return;
 	
@@ -74,7 +72,7 @@ export default async function intercept(message: Message)
 	if(contains(msg, leFrench))
 		for(const emoji of random(french))
 			await message.react(emoji);
-}
+});
 
 function contains(str: string, array: string[])
 {

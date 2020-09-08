@@ -1,15 +1,12 @@
-import {Client} from "discord.js";
-// This is here in order to make it much less of a headache to access the client from other files.
-// This of course won't actually do anything until the setup process is complete and it logs in.
-export const client = new Client();
-
 import initializeGlobals from "./globals";
 initializeGlobals();
 
+import * as framework from "./framework/index";
+console.debug(framework);
+
+import {client, loadCommands, loadEvents} from "./framework";
 import setup from "./setup";
 import {Config} from "./core/structures";
-import {loadCommands} from "./core/command";
-import {loadEvents} from "./core/event";
 import {initializeSchedulers} from "./modules/scheduler";
 import {generateHandler} from "./core/storage";
 import {existsSync, writeFile, readFileSync} from "fs";

@@ -1,4 +1,4 @@
-import Command from "../core/command";
+import {Command} from "../framework";
 
 export default new Command({
 	description: "This is a template/testing command providing common functionality. Remove what you don't need, and rename/delete this file to generate a fresh command file here. This command should be automatically excluded from the help command. The \"usage\" parameter (string) overrides the default usage for the help command. The \"endpoint\" parameter (boolean) prevents further arguments from being passed. Also, as long as you keep the run function async, it'll return a promise allowing the program to automatically catch any synchronous errors. However, you'll have to do manual error handling if you go the then and catch route.",

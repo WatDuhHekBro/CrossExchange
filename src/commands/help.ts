@@ -1,6 +1,4 @@
-import Command from "../core/command";
-import {loadCommands, categories} from "../core/command";
-import {getPermissionName} from "../core/permissions";
+import {Command, loadCommands, categories, getPermissionName} from "../framework";
 
 export default new Command({
 	description: "Lists all commands. If a command is specified, their arguments are listed as well.",

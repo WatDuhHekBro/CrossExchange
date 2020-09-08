@@ -1,6 +1,5 @@
-import {Random} from "../core/lib";
+import {client, Random} from "../framework";
 import {Stonks} from "../core/structures";
-import {client} from "../index";
 
 /** Execute at some point in time during every 5 minute time frame. */
 class StonksScheduler

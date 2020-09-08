@@ -1,4 +1,5 @@
-import {Random, isType, select, GenericJSON, GenericStructure, split, pluralise, pluraliseSigned, random} from "../core/lib";
+import {Random, isType, select, split, pluralise, pluraliseSigned, random} from "../framework";
+import {GenericJSON, GenericStructure} from "../core/lib"
 import {Stonks, Storage} from "../core/structures";
 import {Client, Guild, TextChannel} from "discord.js";
 import {readFileSync as read} from "fs";
