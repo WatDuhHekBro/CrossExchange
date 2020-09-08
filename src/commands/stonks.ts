@@ -290,7 +290,7 @@ export default new Command({
 		}),
 		init: new Command({
 			description: "Initializes messages for market values and random events. (MAKE SURE TO DO THIS IN A DEDICATED CHANNEL!)",
-			permission: Command.PERMISSIONS.ADMIN,
+			permission: PERMISSIONS.ADMIN,
 			async run($): Promise<any>
 			{
 				if($.channel.type !== "text")

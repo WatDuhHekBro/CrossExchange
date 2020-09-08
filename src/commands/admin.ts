@@ -1,6 +1,6 @@
 import Command from "../core/command";
 import {Config, Storage} from "../core/structures";
-import {PermissionNames, getPermissionLevel} from "../core/permissions";
+import {getPermissionName, getPermissionLevel} from "../core/permissions";
 import {logs} from "../globals";
 
 function getInterceptMessage(activated: boolean)
@@ -26,13 +26,13 @@ export default new Command({
 		if(!$.member)
 			return $.channel.send("Couldn't find a member object for you! Did you make sure you used this in a server?");
 		const permLevel = getPermissionLevel($.member);
-		$.channel.send(`${$.author.toString()}, your permission level is \`${PermissionNames[permLevel]}\` (${permLevel}).`);
+		$.channel.send(`${$.author.toString()}, your permission level is \`${getPermissionName(permLevel)}\` (${permLevel}).`);
 	},
 	subcommands:
 	{
 		set: new Command({
 			description: "Set different per-guild settings for the bot.",
-			permission: Command.PERMISSIONS.ADMIN,
+			permission: PERMISSIONS.ADMIN,
 			run: "You have to specify the option you want to set.",
 			subcommands:
 			{
@@ -88,7 +88,7 @@ export default new Command({
 		}),
 		diag: new Command({
 			description: "Requests a debug log with the \"info\" verbosity level.",
-			permission: Command.PERMISSIONS.BOT_MECHANIC,
+			permission: PERMISSIONS.BOT_SUPPORT,
 			async run($): Promise<any>
 			{
 				$.channel.send(getLogBuffer("info"));

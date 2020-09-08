@@ -1,41 +1,71 @@
-import {GuildMember, Permissions} from "discord.js";
+import {User, GuildMember, Permissions} from "discord.js";
 import {Config} from "./structures";
 
-export enum PERMISSIONS {NONE, MOD, ADMIN, OWNER, BOT_MECHANIC, BOT_OWNER};
-export const PermissionNames = ["User", "Moderator", "Administrator", "Server Owner", "Bot Mechanic", "Bot Owner"];
+interface PermissionLevel
+{
+	name: string;
+	check: (user: User, member: GuildMember|null) => boolean;
+}
 
-// Here is where you enter in the functions that check for permissions.
-const PermissionChecker: ((member: GuildMember) => boolean)[] = [
-	// NONE //
-	() => true,
-	
-	// MOD //
-	member => 
-		member.hasPermission(Permissions.FLAGS.MANAGE_ROLES) ||
-		member.hasPermission(Permissions.FLAGS.MANAGE_MESSAGES) ||
-		member.hasPermission(Permissions.FLAGS.KICK_MEMBERS) ||
-		member.hasPermission(Permissions.FLAGS.BAN_MEMBERS),
-	
-	// ADMIN //
-	member => member.hasPermission(Permissions.FLAGS.ADMINISTRATOR),
-	
-	// OWNER //
-	member => member.guild.ownerID === member.id,
-	
-	// BOT_MECHANIC //
-	member => Config.mechanics.includes(member.id),
-	
-	// BOT_OWNER //
-	member => Config.owner === member.id
+const PermissionLevels: PermissionLevel[] = [
+	{
+		// NONE //
+		name: "User",
+		check: () => true
+	},
+	{
+		// MOD //
+		name: "Moderator",
+		check: (user, member) => !!member && (
+			member.hasPermission(Permissions.FLAGS.MANAGE_ROLES) ||
+			member.hasPermission(Permissions.FLAGS.MANAGE_MESSAGES) ||
+			member.hasPermission(Permissions.FLAGS.KICK_MEMBERS) ||
+			member.hasPermission(Permissions.FLAGS.BAN_MEMBERS)
+		)
+	},
+	{
+		// ADMIN //
+		name: "Administrator",
+		check: (user, member) => !!member && member.hasPermission(Permissions.FLAGS.ADMINISTRATOR)
+	},
+	{
+		// OWNER //
+		name: "Server Owner",
+		check: (user, member) => !!member && (member.guild.ownerID === user.id)
+	},
+	{
+		// BOT_SUPPORT //
+		name: "Bot Support",
+		check: user => Config.support.includes(user.id)
+	},
+	{
+		// BOT_ADMIN //
+		name: "Bot Admin",
+		check: user => Config.admins.includes(user.id)
+	},
+	{
+		// BOT_OWNER //
+		name: "Bot Owner",
+		check: user => Config.owner === user.id
+	}
 ];
 
 // After checking the lengths of these three objects, use this as the length for consistency.
-const length = Object.keys(PERMISSIONS).length / 2;
+const length = PermissionLevels.length;
 
-export function hasPermission(member: GuildMember, permission: PERMISSIONS): boolean
+export function hasPermission(member: GuildMember, permission: number): boolean
 {
+	// If the requested permission is higher than any defined permission, no one will have that permission.
+	if(permission > length)
+		return false;
+	// If the requested permission is lower than any defined permission, everyone can use it.
+	// The one gotcha is that -1 is reserved for permission inheritance when instantiating a new Command instance.
+	// So you'll want to reserve 0 for the lowest permission level which will function as expected.
+	else if(permission < 0)
+		return true;
+	
 	for(let i = length-1; i >= permission; i--)
-		if(PermissionChecker[i](member))
+		if(PermissionLevels[i].check(member.user, member))
 			return true;
 	return false;
 }
@@ -43,17 +73,15 @@ export function hasPermission(member: GuildMember, permission: PERMISSIONS): boo
 export function getPermissionLevel(member: GuildMember): number
 {
 	for(let i = length-1; i >= 0; i--)
-		if(PermissionChecker[i](member))
+		if(PermissionLevels[i].check(member.user, member))
 			return i;
 	return 0;
 }
 
-// Length Checking
-(() => {
-	const lenNames = PermissionNames.length;
-	const lenChecker = PermissionChecker.length;
-	
-	// By transitive property, lenNames and lenChecker have to be equal to each other as well.
-	if(length !== lenNames || length !== lenChecker)
-		console.error(`Permission object lengths aren't equal! Enum Length (${length}), Names Length (${lenNames}), and Functions Length (${lenChecker}). This WILL cause problems!`);
-})()
+export function getPermissionName(level: number)
+{
+	if(level > length || length < 0)
+		return "N/A";
+	else
+		return PermissionLevels[level].name;
+}

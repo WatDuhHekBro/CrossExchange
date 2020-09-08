@@ -217,7 +217,7 @@ export default new Command({
 		}),
 		set: new Command({
 			description: "Forcefully sets someone's amount of money.",
-			permission: Command.PERMISSIONS.BOT_OWNER,
+			permission: PERMISSIONS.BOT_OWNER,
 			usage: "<amount> (<user>)",
 			run: "You need to enter in the amount of money to set.",
 			number: new Command({

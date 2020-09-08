@@ -21,8 +21,12 @@ const prompts = [{
 	message: "Enter the owner's user ID here."
 }, {
 	type: "input",
-	name: "mechanics",
-	message: "Enter a list of the bot's mechanics (by their IDs) separated by spaces."
+	name: "admins",
+	message: "Enter a list of bot admins (by their IDs) separated by spaces."
+}, {
+	type: "input",
+	name: "support",
+	message: "Enter a list of bot troubleshooters (by their IDs) separated by spaces."
 }];
 
 export default {
@@ -32,11 +36,11 @@ export default {
 		{
 			const answers = await inquirer.prompt(prompts);
 			Storage.open("data");
-			Config.token = answers.token as string;
-			Config.prefix = answers.prefix as string;
-			Config.owner = answers.owner as string;
-			const mechanics = (answers.mechanics as string);
-			Config.mechanics = mechanics !== "" ? mechanics.split(" ") : [];
+			Config.token = answers.token;
+			Config.prefix = answers.prefix;
+			Config.owner = answers.owner;
+			Config.admins = answers.admins !== "" ? answers.admins.split(" ") : [];
+			Config.support = answers.support !== "" ? answers.support.split(" ") : [];
 			Config.save(false);
 		}
 	},

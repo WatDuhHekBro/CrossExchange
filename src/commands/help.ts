@@ -1,6 +1,6 @@
 import Command from "../core/command";
 import {loadCommands, categories} from "../core/command";
-import {PermissionNames} from "../core/permissions";
+import {getPermissionName} from "../core/permissions";
 
 export default new Command({
 	description: "Lists all commands. If a command is specified, their arguments are listed as well.",
@@ -40,13 +40,13 @@ export default new Command({
 			
 			if(!command || header === "test")
 				return $.channel.send(`No command found by the name \`${header}\`!`);
-
+			
 			if(command.originalCommandName)
 				header = command.originalCommandName;
 			else
 				console.warn(`originalCommandName isn't defined for ${header}?!`);
 			
-			let permLevel = command.permission ?? Command.PERMISSIONS.NONE;
+			let permLevel = command.permission || 0;
 			let usage = command.usage;
 			let invalid = false;
 			
@@ -67,7 +67,9 @@ export default new Command({
 			{
 				const type = command.resolve(param);
 				command = command.get(param);
-				permLevel = command.permission ?? permLevel;
+				
+				if(command.permission !== -1)
+					permLevel = command.permission;
 				
 				switch(type)
 				{
@@ -134,7 +136,7 @@ export default new Command({
 				}
 			}
 			
-			$.channel.send(`Command: \`${header}\`\nAliases: ${aliases}\nCategory: \`${selectedCategory}\`\nPermission Required: \`${PermissionNames[permLevel]}\` (${permLevel})\nDescription: ${command.description}\n${append}`, {split: true});
+			$.channel.send(`Command: \`${header}\`\nAliases: ${aliases}\nCategory: \`${selectedCategory}\`\nPermission Required: \`${getPermissionName(permLevel)}\` (${permLevel})\nDescription: ${command.description}\n${append}`, {split: true});
 		}
 	})
 });
