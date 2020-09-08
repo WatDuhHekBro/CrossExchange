@@ -1,5 +1,4 @@
 import Command from "../core/command";
-import {CommonLibrary} from "../core/lib";
 import {loadCommands, categories} from "../core/command";
 import {PermissionNames} from "../core/permissions";
 
@@ -7,7 +6,7 @@ export default new Command({
 	description: "Lists all commands. If a command is specified, their arguments are listed as well.",
 	usage: "([command, [subcommand/type], ...])",
 	aliases: ["h"],
-	async run($: CommonLibrary): Promise<any>
+	async run($): Promise<any>
 	{
 		const commands = await loadCommands();
 		let output = `Legend: \`<type>\`, \`[list/of/stuff]\`, \`(optional)\`, \`(<optional type>)\`, \`([optional/list/...])\``;
@@ -23,7 +22,7 @@ export default new Command({
 					const command = commands.get(header);
 					
 					if(!command)
-						return $.warn(`Command "${header}" of category "${category}" unexpectedly doesn't exist!`);
+						return console.warn(`Command "${header}" of category "${category}" unexpectedly doesn't exist!`);
 					
 					output += `\n- \`${header}\`: ${command.description}`;
 				}
@@ -33,7 +32,7 @@ export default new Command({
 		$.channel.send(output, {split: true});
 	},
 	any: new Command({
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
 			const commands = await loadCommands();
 			let header = $.args.shift() as string;
@@ -45,7 +44,7 @@ export default new Command({
 			if(command.originalCommandName)
 				header = command.originalCommandName;
 			else
-				$.warn(`originalCommandName isn't defined for ${header}?!`);
+				console.warn(`originalCommandName isn't defined for ${header}?!`);
 			
 			let permLevel = command.permission ?? Command.PERMISSIONS.NONE;
 			let usage = command.usage;
@@ -58,7 +57,7 @@ export default new Command({
 				if(headers.includes(header))
 				{
 					if(selectedCategory !== "Unknown")
-						$.warn(`Command "${header}" is somehow in multiple categories. This means that the command loading stage probably failed in properly adding categories.`);
+						console.warn(`Command "${header}" is somehow in multiple categories. This means that the command loading stage probably failed in properly adding categories.`);
 					else
 						selectedCategory = category;
 				}

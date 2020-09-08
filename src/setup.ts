@@ -2,7 +2,6 @@ import {existsSync as exists} from "fs";
 import inquirer from "inquirer";
 import Storage from "./core/storage";
 import {Config} from "./core/structures";
-import $, {setConsoleActivated} from "./core/lib";
 
 // This file is called (or at least should be called) automatically as long as a config file doesn't exist yet.
 // And that file won't be written until the data is successfully initialized.
@@ -44,8 +43,19 @@ export default {
 	/** Prompt the user to set their token again. */
 	async again()
 	{
-		$.error("It seems that the token you provided is invalid.");
-		setConsoleActivated(false);
+		console.error("It seems that the token you provided is invalid.");
+		
+		// Deactivate the console //
+		const oldConsole = console;
+		console = {
+			...oldConsole,
+			log() {},
+			warn() {},
+			error() {},
+			debug() {},
+			ready() {}
+		};
+		
 		const answers = await inquirer.prompt(prompts.slice(0, 1));
 		Config.token = answers.token as string;
 		Config.save(false);

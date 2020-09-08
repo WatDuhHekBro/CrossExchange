@@ -1,5 +1,5 @@
 import Command from "../core/command";
-import $, {CommonLibrary} from "../core/lib";
+import {prompt, callMemberByUsername, pluralise} from "../core/lib";
 import {Storage} from "../core/structures";
 import {User} from "discord.js";
 
@@ -21,11 +21,11 @@ export function getMoneyEmbed(user: User): object
 		[
 			{
 				name: "Balance",
-				value: $(profile.money).pluralise("credit", "s")
+				value: pluralise(profile.money, "credit", "s")
 			},
 			{
 				name: "uwuing Penalties",
-				value: $(profile.penalties * 350).pluralise("credit", "s")
+				value: pluralise(profile.penalties * 350, "credit", "s")
 			}
 		]
 	}};
@@ -44,16 +44,16 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object
 			})
 		},
 		title: "Transaction",
-		description: `${sender.toString()} has sent ${$(amount).pluralise("credit", "s")} to ${receiver.toString()}!`,
+		description: `${sender.toString()} has sent ${pluralise(amount, "credit", "s")} to ${receiver.toString()}!`,
 		fields:
 		[
 			{
 				name: `Sender: ${sender.username}#${sender.discriminator}`,
-				value: $(Storage.getUser(sender.id).money).pluralise("credit", "s")
+				value: pluralise(Storage.getUser(sender.id).money, "credit", "s")
 			},
 			{
 				name: `Receiver: ${receiver.username}#${receiver.discriminator}`,
-				value: $(Storage.getUser(receiver.id).money).pluralise("credit", "s")
+				value: pluralise(Storage.getUser(receiver.id).money, "credit", "s")
 			}
 		],
 		footer:
@@ -69,7 +69,7 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object
 
 export default new Command({
 	description: "See how much money you have. Also provides other commands related to money.",
-	async run($: CommonLibrary): Promise<any>
+	async run($): Promise<any>
 	{
 		$.channel.send(getMoneyEmbed($.author));
 	},
@@ -77,7 +77,7 @@ export default new Command({
 	{
 		get: new Command({
 			description: "Pick up your daily credits. The cooldown is per user and every 22 hours to allow for some leeway.",
-			async run($: CommonLibrary): Promise<any>
+			async run($): Promise<any>
 			{
 				const user = Storage.getUser($.author.id);
 				const now = Date.now();
@@ -107,7 +107,7 @@ export default new Command({
 			user: new Command({
 				run: "You need to enter an amount you're sending!",
 				number: new Command({
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						const amount = Math.floor($.args[1]);
 						const author = $.author;
@@ -121,7 +121,7 @@ export default new Command({
 							return $.channel.send("You don't have enough money to do that!", getMoneyEmbed(author));
 						else if(target.id === author.id)
 							return $.channel.send("You can't send money to yourself!");
-						else if(target.bot && process.argv[2] !== "dev")
+						else if(target.bot && !IS_DEV_MODE)
 							return $.channel.send("You can't send money to a bot!");
 						
 						sender.money -= amount;
@@ -135,7 +135,7 @@ export default new Command({
 				run: "You must use the format `money send <user> <amount>`!"
 			}),
 			any: new Command({
-				async run($: CommonLibrary): Promise<any>
+				async run($): Promise<any>
 				{
 					const last = $.args.pop();
 					
@@ -163,12 +163,12 @@ export default new Command({
 						return $.channel.send(`Couldn't find a user by the name of \`${username}\`! If you want to send money to someone in a different server, you have to use their user ID!`);
 					else if(member.user.id === author.id)
 						return $.channel.send("You can't send money to yourself!");
-					else if(member.user.bot && process.argv[2] !== "dev")
+					else if(member.user.bot && !IS_DEV_MODE)
 						return $.channel.send("You can't send money to a bot!");
 					
 					const target = member.user;
 					
-					$.prompt(await $.channel.send(`Are you sure you want to send ${$(amount).pluralise("credit", "s")} to this person?\n*(This message will automatically be deleted after 10 seconds.)*`, {embed: {
+					prompt(await $.channel.send(`Are you sure you want to send ${pluralise(amount, "credit", "s")} to this person?\n*(This message will automatically be deleted after 10 seconds.)*`, {embed: {
 						color: "#ffff00",
 						author:
 						{
@@ -190,7 +190,7 @@ export default new Command({
 		}),
 		leaderboard: new Command({
 			description: "See the richest players tracked by this bot (across servers).",
-			async run($: CommonLibrary): Promise<any>
+			async run($): Promise<any>
 			{
 				const users = Storage.users;
 				const ids = Object.keys(users);
@@ -204,7 +204,7 @@ export default new Command({
 					
 					fields.push({
 						name: `#${i+1}. ${user.username}#${user.discriminator}`,
-						value: $(users[id].money).pluralise("credit", "s")
+						value: pluralise(users[id].money, "credit", "s")
 					});
 				}
 				
@@ -221,7 +221,7 @@ export default new Command({
 			usage: "<amount> (<user>)",
 			run: "You need to enter in the amount of money to set.",
 			number: new Command({
-				async run($: CommonLibrary): Promise<any>
+				async run($): Promise<any>
 				{
 					const userObject = $.author;
 					const user = Storage.getUser(userObject.id);
@@ -230,7 +230,7 @@ export default new Command({
 					$.channel.send(`This is ${userObject}'s new amount of money.`, getMoneyEmbed(userObject));
 				},
 				user: new Command({
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						const userObject = $.args[1];
 						const user = Storage.getUser(userObject.id);
@@ -244,16 +244,16 @@ export default new Command({
 	},
 	user: new Command({
 		description: "See how much money someone else has by using their user ID or pinging them.",
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
 			$.channel.send(getMoneyEmbed($.args[0]));
 		}
 	}),
 	any: new Command({
 		description: "See how much money someone else has by using their username.",
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
-			$.callMemberByUsername($.message, $.args.join(" "), member => {
+			callMemberByUsername($.message, $.args.join(" "), member => {
 				$.channel.send(getMoneyEmbed(member.user));
 			});
 		}

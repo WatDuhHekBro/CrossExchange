@@ -1,5 +1,4 @@
 import fs from "fs";
-import $ from "./lib";
 
 const Storage = {
 	read(header: string): object
@@ -18,9 +17,9 @@ const Storage = {
 			}
 			catch(error)
 			{
-				if(process.argv[2] !== "dev")
+				if(!IS_DEV_MODE)
 				{
-					$.warn(`Malformed JSON data (header: ${header}), backing it up.`, file);
+					console.warn(`Malformed JSON data (header: ${header}), backing it up.`, file);
 					fs.writeFile(`${path}.backup`, file, generateHandler(`Backup file of "${header}" successfully written as ${file}.`));
 				}
 			}
@@ -33,7 +32,7 @@ const Storage = {
 		this.open("data");
 		const path = `data/${header}.json`;
 		
-		if(process.argv[2] === "dev" || header === "config")
+		if(IS_DEV_MODE || header === "config")
 		{
 			const result = JSON.stringify(data, null, '\t');
 			
@@ -75,9 +74,9 @@ export function generateHandler(message: string)
 {
 	return (error: Error|null) => {
 		if(error)
-			$.error(error);
+			console.error(error);
 		else
-			$.debug(message);
+			console.debug(message);
 	};
 };
 

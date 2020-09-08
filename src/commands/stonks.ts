@@ -1,5 +1,5 @@
 import Command from "../core/command";
-import $, {CommonLibrary} from "../core/lib";
+import {prompt, callMemberByUsername, pluralise, pluraliseSigned} from "../core/lib";
 import {Storage, Stonks} from "../core/structures";
 import {User} from "discord.js";
 
@@ -52,7 +52,7 @@ export const Query = {
 			Storage.save();
 			Stonks.save();
 			
-			return `You invested in and bought ${$(amount).pluralise("stock", "s")} from ${market.title}. You have now invested ${user.invested[tag]} out of its ${$(market.invested).pluralise("total stock", "s")}.`;
+			return `You invested in and bought ${pluralise(amount, "stock", "s")} from ${market.title}. You have now invested ${user.invested[tag]} out of its ${pluralise(market.invested, "total stock", "s")}.`;
 		}
 		else
 			return `You can buy up to ${capacity} stocks from ${market.title}.`;
@@ -90,10 +90,10 @@ export const Query = {
 			Storage.save();
 			Stonks.save();
 			
-			return `You sold ${$(amount).pluralise("stock", "s")} from ${market.title} for ${$(value * amount).pluralise("credit", "s")}!`;
+			return `You sold ${pluralise(amount, "stock", "s")} from ${market.title} for ${pluralise(value * amount, "credit", "s")}!`;
 		}
 		else
-			return `You can sell ${$(stocks).pluralise("stock", "s")} for ${$(stocks * value).pluralise("credit", "s")} in ${market.title}.`;
+			return `You can sell ${pluralise(stocks, "stock", "s")} for ${pluralise(stocks * value, "credit", "s")} in ${market.title}.`;
 	},
 	invalid(tag: string): string
 	{
@@ -123,23 +123,23 @@ function getProfileEmbed(user: User): object
 		[
 			{
 				name: "Net Gain/Loss",
-				value: $(profile.net).pluraliseSigned("credit", "s")
+				value: pluraliseSigned(profile.net, "credit", "s")
 			},
 			{
 				name: "Stocks Lost",
-				value: $(profile.lost).pluralise("stock", "s")
+				value: pluralise(profile.lost, "stock", "s")
 			},
 			{
 				name: "1st Most Invested",
-				value: `${Stonks.getMarket(first)?.title || first || "N/A"} - ${$(profile.invested[first] || 0).pluralise("stock", "s")}`
+				value: `${Stonks.getMarket(first)?.title || first || "N/A"} - ${pluralise(profile.invested[first] || 0, "stock", "s")}`
 			},
 			{
 				name: "2nd Most Invested",
-				value: `${Stonks.getMarket(second)?.title || second || "N/A"} - ${$(profile.invested[second] || 0).pluralise("stock", "s")}`
+				value: `${Stonks.getMarket(second)?.title || second || "N/A"} - ${pluralise(profile.invested[second] || 0, "stock", "s")}`
 			},
 			{
 				name: "3rd Most Invested",
-				value: `${Stonks.getMarket(third)?.title || third || "N/A"} - ${$(profile.invested[third] || 0).pluralise("stock", "s")}`
+				value: `${Stonks.getMarket(third)?.title || third || "N/A"} - ${pluralise(profile.invested[third] || 0, "stock", "s")}`
 			}
 		]
 	}};
@@ -147,7 +147,7 @@ function getProfileEmbed(user: User): object
 
 export default new Command({
 	description: "Check your profile related to stonks. Also provides other commands related to stonks.",
-	async run($: CommonLibrary): Promise<any>
+	async run($): Promise<any>
 	{
 		$.channel.send(getProfileEmbed($.author));
 	},
@@ -158,18 +158,18 @@ export default new Command({
 			usage: "<market> ([<amount>/all])",
 			run: "You need to enter in a market as well!",
 			any: new Command({
-				async run($: CommonLibrary): Promise<any>
+				async run($): Promise<any>
 				{
 					$.channel.send(Query.buy($.args[0], $.author.id));
 				},
 				number: new Command({
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						const result = Query.buy($.args[0], $.author.id, $.args[1]);
 						
 						if(result === Query.confirm)
 						{
-							$.prompt(await $.channel.send(result), $.author.id, () => {
+							prompt(await $.channel.send(result), $.author.id, () => {
 								$.channel.send(Query.buy($.args[0], $.author.id, $.args[1], true));
 							});
 						}
@@ -180,13 +180,13 @@ export default new Command({
 				subcommands:
 				{
 					all: new Command({
-						async run($: CommonLibrary): Promise<any>
+						async run($): Promise<any>
 						{
 							const result = Query.buy($.args[0], $.author.id, Infinity);
 							
 							if(result === Query.confirm)
 							{
-								$.prompt(await $.channel.send(result), $.author.id, () => {
+								prompt(await $.channel.send(result), $.author.id, () => {
 									$.channel.send(Query.buy($.args[0], $.author.id, Infinity, true));
 								});
 							}
@@ -196,7 +196,7 @@ export default new Command({
 					})
 				},
 				any: new Command({
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						$.channel.send(`\`${$.args[1]}\` isn't a valid amount!`);
 					}
@@ -208,12 +208,12 @@ export default new Command({
 			usage: "<market> ([<amount>/all])",
 			run: "You need to enter in a market as well!",
 			any: new Command({
-				async run($: CommonLibrary): Promise<any>
+				async run($): Promise<any>
 				{
 					$.channel.send(Query.sell($.args[0], $.author.id));
 				},
 				number: new Command({
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						$.channel.send(Query.sell($.args[0], $.author.id, $.args[1]));
 					}
@@ -221,14 +221,14 @@ export default new Command({
 				subcommands:
 				{
 					all: new Command({
-						async run($: CommonLibrary): Promise<any>
+						async run($): Promise<any>
 						{
 							$.channel.send(Query.sell($.args[0], $.author.id, Infinity));
 						}
 					})
 				},
 				any: new Command({
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						$.channel.send(`\`${$.args[1]}\` isn't a valid amount!`);
 					}
@@ -238,7 +238,7 @@ export default new Command({
 		info: new Command({
 			description: "Get info on a market or get a list of all markets.",
 			usage: "(<market>)",
-			async run($: CommonLibrary): Promise<any>
+			async run($): Promise<any>
 			{
 				let output = "";
 				
@@ -251,7 +251,7 @@ export default new Command({
 				$.channel.send(output, {split: true});
 			},
 			any: new Command({
-				async run($: CommonLibrary): Promise<any>
+				async run($): Promise<any>
 				{
 					const market = Stonks.getMarket($.args[0]);
 					
@@ -266,7 +266,7 @@ export default new Command({
 						[
 							{
 								name: "Market Value",
-								value: `${$(Math.round(market.value)).pluralise("credit", "s")} (${$(market.difference).pluraliseSigned("credit", "s")})`
+								value: `${pluralise(Math.round(market.value), "credit", "s")} (${pluraliseSigned(market.difference, "credit", "s")})`
 							}
 						]
 					}});
@@ -275,7 +275,7 @@ export default new Command({
 		}),
 		all: new Command({
 			description: "See all the markets you've invested in.",
-			async run($: CommonLibrary): Promise<any>
+			async run($): Promise<any>
 			{
 				const user = Storage.getUser($.author.id);
 				const list = Object.keys(user.invested).sort((a, b) => user.invested[b] - user.invested[a]);
@@ -283,7 +283,7 @@ export default new Command({
 				
 				for(const tag of list)
 					if(user.invested[tag] > 0)
-						output += `${Stonks.markets[tag]?.title || tag} (\`${tag}\`): ${$(user.invested[tag]).pluralise("stock", "s")}\n`;
+						output += `${Stonks.markets[tag]?.title || tag} (\`${tag}\`): ${pluralise(user.invested[tag], "stock", "s")}\n`;
 				
 				$.channel.send(output, {split: true});
 			}
@@ -291,14 +291,14 @@ export default new Command({
 		init: new Command({
 			description: "Initializes messages for market values and random events. (MAKE SURE TO DO THIS IN A DEDICATED CHANNEL!)",
 			permission: Command.PERMISSIONS.ADMIN,
-			async run($: CommonLibrary): Promise<any>
+			async run($): Promise<any>
 			{
 				if($.channel.type !== "text")
 					return $.channel.send("You need to be in a text channel to use this command!");
 				
 				const channel = $.channel;
 				
-				$.prompt(await channel.send(`Are you sure you want to set ${channel.toString()} as the channel dedicated to displaying market values and events for the stonks bot?\n*(This message will automatically be deleted after 10 seconds.)*`), $.author.id, () => {
+				prompt(await channel.send(`Are you sure you want to set ${channel.toString()} as the channel dedicated to displaying market values and events for the stonks bot?\n*(This message will automatically be deleted after 10 seconds.)*`), $.author.id, () => {
 					Stonks.addGuild(channel);
 					Stonks.save();
 				});
@@ -307,16 +307,16 @@ export default new Command({
 	},
 	user: new Command({
 		description: "Check someone else's profile related to stonks by using their user ID or pinging them.",
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
 			$.channel.send(getProfileEmbed($.args[0]));
 		}
 	}),
 	any: new Command({
 		description: "Check someone else's profile related to stonks by using their username.",
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
-			$.callMemberByUsername($.message, $.args.join(" "), member => {
+			callMemberByUsername($.message, $.args.join(" "), member => {
 				$.channel.send(getProfileEmbed(member.user));
 			});
 		}

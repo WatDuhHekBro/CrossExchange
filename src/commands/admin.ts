@@ -1,7 +1,7 @@
 import Command from "../core/command";
-import {CommonLibrary, logs} from "../core/lib";
 import {Config, Storage} from "../core/structures";
 import {PermissionNames, getPermissionLevel} from "../core/permissions";
+import {logs} from "../globals";
 
 function getInterceptMessage(activated: boolean)
 {
@@ -21,7 +21,7 @@ function getLogBuffer(type: string)
 
 export default new Command({
 	description: "An all-in-one command to do admin stuff. You need to be either an admin of the server or one of the bot's mechanics to use this command.",
-	async run($: CommonLibrary): Promise<any>
+	async run($): Promise<any>
 	{
 		if(!$.member)
 			return $.channel.send("Couldn't find a member object for you! Did you make sure you used this in a server?");
@@ -39,14 +39,14 @@ export default new Command({
 				prefix: new Command({
 					description: "Set a custom prefix for your guild. Removes your custom prefix if none is provided.",
 					usage: "(<prefix>)",
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						Storage.getGuild($.guild?.id || "N/A").prefix = null;
 						Storage.save();
 						$.channel.send(`The custom prefix for this guild has been removed. My prefix is now back to \`${Config.prefix}\`.`);
 					},
 					any: new Command({
-						async run($: CommonLibrary): Promise<any>
+						async run($): Promise<any>
 						{
 							Storage.getGuild($.guild?.id || "N/A").prefix = $.args[0];
 							Storage.save();
@@ -57,7 +57,7 @@ export default new Command({
 				intercept: new Command({
 					description: "Disable the bot from doing stuff when non-command messages are sent. This is stuff like if you say \"oil\" or \"duolingo\" in chat. Toggles the option if none is selected.",
 					usage: "(<on/off>)",
-					async run($: CommonLibrary): Promise<any>
+					async run($): Promise<any>
 					{
 						const guild = Storage.getGuild($.guild?.id || "N/A");
 						guild.intercept = !guild.intercept;
@@ -67,7 +67,7 @@ export default new Command({
 					subcommands:
 					{
 						on: new Command({
-							async run($: CommonLibrary): Promise<any>
+							async run($): Promise<any>
 							{
 								Storage.getGuild($.guild?.id || "N/A").intercept = true;
 								Storage.save();
@@ -75,7 +75,7 @@ export default new Command({
 							}
 						}),
 						off: new Command({
-							async run($: CommonLibrary): Promise<any>
+							async run($): Promise<any>
 							{
 								Storage.getGuild($.guild?.id || "N/A").intercept = false;
 								Storage.save();
@@ -89,13 +89,13 @@ export default new Command({
 		diag: new Command({
 			description: "Requests a debug log with the \"info\" verbosity level.",
 			permission: Command.PERMISSIONS.BOT_MECHANIC,
-			async run($: CommonLibrary): Promise<any>
+			async run($): Promise<any>
 			{
 				$.channel.send(getLogBuffer("info"));
 			},
 			any: new Command({
 				description: `Select a verbosity to listen to. Available levels: \`[${Object.keys(logs).join(", ")}]\``,
-				async run($: CommonLibrary): Promise<any>
+				async run($): Promise<any>
 				{
 					const type = $.args[0];
 					

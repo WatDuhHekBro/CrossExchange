@@ -1,150 +1,20 @@
-import {GenericWrapper, NumberWrapper, StringWrapper, ArrayWrapper} from "./wrappers";
-import {Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember, Permissions} from "discord.js";
-import chalk from "chalk";
+import {Message, Guild, GuildMember, Permissions} from "discord.js";
 import FileManager from "./storage";
 import {eventListeners} from "../events/messageReactionRemove";
 import {client} from "../index";
 
-/** A type that describes what the library module does. */
-export interface CommonLibrary
-{
-	// Wrapper Object //
-	/** Wraps the value you enter with an object that provides extra functionality and provides common utility functions. */
-	(value: number): NumberWrapper;
-	(value: string): StringWrapper;
-	<T>(value: T[]): ArrayWrapper<T>;
-	<T>(value: T): GenericWrapper<T>;
-	
-	// Common Library Functions //
-	/** <Promise>.catch($.handler.bind($)) or <Promise>.catch(error => $.handler(error)) */
-	handler: (error: Error) => void;
-	log: (...args: any[]) => void;
-	warn: (...args: any[]) => void;
-	error: (...args: any[]) => void;
-	debug: (...args: any[]) => void;
-	ready: (...args: any[]) => void;
-	paginate: (message: Message, senderID: string, total: number, callback: (page: number) => void, duration?: number) => void;
-	prompt: (message: Message, senderID: string, onConfirm: () => void, duration?: number) => void;
-	getMemberByUsername: (guild: Guild, username: string) => Promise<GuildMember|undefined>;
-	callMemberByUsername: (message: Message, username: string, onSuccess: (member: GuildMember) => void) => Promise<void>;
-	
-	// Dynamic Properties //
-	args: any[];
-	client: Client;
-	message: Message;
-	channel: TextChannel|DMChannel|NewsChannel;
-	guild: Guild|null;
-	author: User;
-	member: GuildMember|null;
-}
-
-export default function $(value: number): NumberWrapper;
-export default function $(value: string): StringWrapper;
-export default function $<T>(value: T[]): ArrayWrapper<T>;
-export default function $<T>(value: T): GenericWrapper<T>;
-export default function $(value: any)
-{
-	if(isType(value, Number))
-		return new NumberWrapper(value);
-	else if(isType(value, String))
-		return new StringWrapper(value);
-	else if(isType(value, Array))
-		return new ArrayWrapper(value);
-	else
-		return new GenericWrapper(value);
-}
-
 // If you use promises, use this function to display the error in chat.
 // Case #1: await $.channel.send(""); --> Automatically caught by Command.execute().
 // Case #2: $.channel.send("").catch($.handler.bind($)); --> Manually caught by the user.
-$.handler = function(this: CommonLibrary, error: Error)
+export function handler(error: Error)
 {
 	if(this)
 		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error.stack ?? error}\`\`\``);
 	else
-		$.warn("No context was attached to $.handler! Make sure to use .catch($.handler.bind($)) or .catch(error => $.handler(error)) instead!");
+		console.warn("No context was attached to $.handler! Make sure to use .catch($.handler.bind($)) or .catch(error => $.handler(error)) instead!");
 	
-	$.error(error);
+	console.error(error);
 };
-
-// Logs with different levels of verbosity.
-export const logs: {[type: string]: string} = {
-	error: "",
-	warn: "",
-	info: "",
-	verbose: ""
-};
-
-let enabled = true;
-export function setConsoleActivated(activated: boolean) {enabled = activated};
-
-// The custom console. In order of verbosity, error, warn, log, and debug. Ready is a variation of log.
-// General Purpose Logger
-$.log = (...args: any[]) => {
-	if(enabled)
-		console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgWhite("INFO"), ...args);
-	const text = `[${formatUTCTimestamp()}] [INFO] ${args.join(" ")}\n`;
-	logs.info += text;
-	logs.verbose += text;
-};
-// "It'll still work, but you should really check up on this."
-$.warn = (...args: any[]) => {
-	if(enabled)
-		console.warn(chalk.white.bgGray(formatTimestamp()), chalk.black.bgYellow("WARN"), ...args);
-	const text = `[${formatUTCTimestamp()}] [WARN] ${args.join(" ")}\n`;
-	logs.warn += text;
-	logs.info += text;
-	logs.verbose += text;
-};
-// Used for anything which prevents the program from actually running.
-$.error = (...args: any[]) => {
-	if(enabled)
-		console.error(chalk.white.bgGray(formatTimestamp()), chalk.white.bgRed("ERROR"), ...args);
-	const text = `[${formatUTCTimestamp()}] [ERROR] ${args.join(" ")}\n`;
-	logs.error += text;
-	logs.warn += text;
-	logs.info += text;
-	logs.verbose += text;
-};
-// Be as verbose as possible. If anything might help when debugging an error, then include it. This only shows in your console if you run this with "dev", but you can still get it from "logs.verbose".
-// $.debug(`core/lib::parseArgs("testing \"in progress\"") = ["testing", "in progress"]`) --> <path>/::(<object>.)<function>(<args>) = <value>
-// Would probably be more suited for debugging program logic rather than function logic, which can be checked using unit tests.
-$.debug = (...args: any[]) => {
-	if(process.argv[2] === "dev" && enabled)
-		console.debug(chalk.white.bgGray(formatTimestamp()), chalk.white.bgBlue("DEBUG"), ...args);
-	const text = `[${formatUTCTimestamp()}] [DEBUG] ${args.join(" ")}\n`;
-	logs.verbose += text;
-};
-// Used once at the start of the program when the bot loads.
-$.ready = (...args: any[]) => {
-	if(enabled)
-		console.log(chalk.white.bgGray(formatTimestamp()), chalk.black.bgGreen("READY"), ...args);
-	const text = `[${formatUTCTimestamp()}] [READY] ${args.join(" ")}\n`;
-	logs.info += text;
-	logs.verbose += text;
-};
-
-export function formatTimestamp(now = new Date())
-{
-	const year = now.getFullYear();
-	const month = (now.getMonth() + 1).toString().padStart(2, '0');
-	const day = now.getDate().toString().padStart(2, '0');
-	const hour = now.getHours().toString().padStart(2, '0');
-	const minute = now.getMinutes().toString().padStart(2, '0');
-	const second = now.getSeconds().toString().padStart(2, '0');
-	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-}
-
-export function formatUTCTimestamp(now = new Date())
-{
-	const year = now.getUTCFullYear();
-	const month = (now.getUTCMonth() + 1).toString().padStart(2, '0');
-	const day = now.getUTCDate().toString().padStart(2, '0');
-	const hour = now.getUTCHours().toString().padStart(2, '0');
-	const minute = now.getUTCMinutes().toString().padStart(2, '0');
-	const second = now.getUTCSeconds().toString().padStart(2, '0');
-	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-}
 
 export function botHasPermission(guild: Guild|null, permission: number): boolean
 {
@@ -153,7 +23,8 @@ export function botHasPermission(guild: Guild|null, permission: number): boolean
 
 // Pagination function that allows for customization via a callback.
 // Define your own pages outside the function because this only manages the actual turning of pages.
-$.paginate = async(message: Message, senderID: string, total: number, callback: (page: number) => void, duration = 60000) => {
+export async function paginate(message: Message, senderID: string, total: number, callback: (page: number) => void, duration = 60000)
+{
 	let page = 0;
 	const turn = (amount: number) => {
 		page += amount;
@@ -199,7 +70,8 @@ $.paginate = async(message: Message, senderID: string, total: number, callback: 
 };
 
 // Waits for the sender to either confirm an action or let it pass (and delete the message).
-$.prompt = async(message: Message, senderID: string, onConfirm: () => void, duration = 10000) => {
+export async function prompt(message: Message, senderID: string, onConfirm: () => void, duration = 10000)
+{
 	let isDeleted = false;
 	
 	message.react('✅');
@@ -223,7 +95,8 @@ $.prompt = async(message: Message, senderID: string, onConfirm: () => void, dura
 		message.delete();
 };
 
-$.getMemberByUsername = async(guild: Guild, username: string) => {
+export async function getMemberByUsername(guild: Guild, username: string)
+{
 	return (await guild.members.fetch({
 		query: username,
 		limit: 1
@@ -231,13 +104,14 @@ $.getMemberByUsername = async(guild: Guild, username: string) => {
 };
 
 /** Convenience function to handle false cases automatically. */
-$.callMemberByUsername = async(message: Message, username: string, onSuccess: (member: GuildMember) => void) => {
+export async function callMemberByUsername(message: Message, username: string, onSuccess: (member: GuildMember) => void)
+{
 	const guild = message.guild;
 	const send = message.channel.send;
 	
 	if(guild)
 	{
-		const member = await $.getMemberByUsername(guild, username);
+		const member = await getMemberByUsername(guild, username);
 		
 		if(member)
 			onSuccess(member);
@@ -334,7 +208,7 @@ export function parseVars(line: string, definitions: {[key: string]: string}, in
 	return result;
 }
 
-export function isType(value: any, type: any): boolean
+export function isType(value: any, type: Function|null|undefined): boolean
 {
 	if(value === undefined && type === undefined)
 		return true;
@@ -400,3 +274,66 @@ export const Random = {
 	sign: (number = 1) => number * (Random.chance(0.5) ? -1 : 1),
 	deviation: (base: number, deviation: number) => Random.num(base - deviation, base + deviation)
 };
+
+/**
+ * Pluralises a word and chooses a suffix attached to the root provided.
+ * - pluralise("credit", "s") = credit/credits
+ * - pluralise("part", "ies", "y") = party/parties
+ * - pluralise("sheep") = sheep
+ */
+export function pluralise(amount: number, word: string, plural = "", singular = "", excludeNumber = false): string
+{
+	let result = excludeNumber ? "" : `${amount} `;
+
+	if(amount === 1)
+		result += word + singular;
+	else
+		result += word + plural;
+
+	return result;
+}
+
+/**
+ * Pluralises a word for changes.
+ * - (-1).pluraliseSigned() = '-1 credits'
+ * - (0).pluraliseSigned() = '+0 credits'
+ * - (1).pluraliseSigned() = '+1 credit'
+ */
+export function pluraliseSigned(amount: number, word: string, plural = "", singular = "", excludeNumber = false): string
+{
+	const sign = amount >= 0 ? '+' : '';
+	return `${sign}${pluralise(amount, word, plural, singular, excludeNumber)}`;
+}
+
+export function replaceAll(text: string, before: string, after: string): string
+{
+	while(text.indexOf(before) !== -1)
+		text = text.replace(before, after);
+	return text;
+}
+	
+export function toTitleCase(text: string): string
+{
+	return text.replace(/([^\W_]+[^\s-]*) */g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}
+
+/** Returns a random element from this array. */
+export function random<T>(list: T[]): T
+{
+	return list[Math.floor(Math.random() * list.length)];
+}
+
+/**
+* Splits up this array into a specified length.
+* `$([1,2,3,4,5,6,7,8,9,10]).split(3)` = `[[1,2,3],[4,5,6],[7,8,9],[10]]`
+*/
+export function split<T>(list: T[], lengthOfEachSection: number): T[][]
+{
+	const amountOfSections = Math.ceil(list.length / lengthOfEachSection);
+	const sections: T[][] = new Array(amountOfSections);
+
+	for (let index = 0; index < amountOfSections; index++)
+		sections[index] = list.slice(index * lengthOfEachSection, (index + 1) * lengthOfEachSection);
+
+	return sections;
+}

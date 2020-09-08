@@ -1,9 +1,20 @@
-import $, {isType, parseVars, CommonLibrary} from "./lib";
-import {Collection} from "discord.js";
+import {parseVars, handler, toTitleCase} from "./lib";
+import {Collection, Client, Message, TextChannel, DMChannel, NewsChannel, Guild, User, GuildMember} from "discord.js";
 import {generateHandler} from "./storage";
 import {promises as ffs, existsSync, writeFile} from "fs";
 import {PERMISSIONS} from "./permissions";
 import {getPrefix} from "../core/structures";
+
+interface CommandMenu
+{
+	args: any[];
+	client: Client;
+	message: Message;
+	channel: TextChannel|DMChannel|NewsChannel;
+	guild: Guild|null;
+	author: User;
+	member: GuildMember|null;
+}
 
 interface CommandOptions
 {
@@ -12,14 +23,21 @@ interface CommandOptions
 	usage?: string;
 	permission?: PERMISSIONS|null;
 	aliases?: string[];
-	run?: (($: CommonLibrary) => Promise<any>)|string;
+	run?: (($: CommandMenu) => Promise<any>)|string;
 	subcommands?: {[key: string]: Command};
 	user?: Command;
 	number?: Command;
 	any?: Command;
 }
 
-export enum TYPES {SUBCOMMAND, USER, NUMBER, ANY, NONE};
+export enum TYPES
+{
+	SUBCOMMAND,
+	USER,
+	NUMBER,
+	ANY,
+	NONE
+}
 
 export default class Command
 {
@@ -29,7 +47,7 @@ export default class Command
 	public readonly permission: PERMISSIONS|null;
 	public readonly aliases: string[]; // This is to keep the array intact for parent Command instances to use. It'll also be used when loading top-level aliases.
 	public originalCommandName: string|null; // If the command is an alias, what's the original name?
-	public run: (($: CommonLibrary) => Promise<any>)|string;
+	public run: (($: CommandMenu) => Promise<any>)|string;
 	public readonly subcommands: Collection<string, Command>; // This is the final data structure you'll actually use to work with the commands the aliases point to.
 	public user: Command|null;
 	public number: Command|null;
@@ -70,9 +88,9 @@ export default class Command
 				for(const alias of aliases)
 				{
 					if(baseSubcommands.includes(alias))
-						$.warn(`"${alias}" in subcommand "${name}" was attempted to be declared as an alias but it already exists in the base commands! (Look at the next "Loading Command" line to see which command is affected.)`);
+						console.warn(`"${alias}" in subcommand "${name}" was attempted to be declared as an alias but it already exists in the base commands! (Look at the next "Loading Command" line to see which command is affected.)`);
 					else if(this.subcommands.has(alias))
-						$.warn(`Duplicate alias "${alias}" at subcommand "${name}"! (Look at the next "Loading Command" line to see which command is affected.)`);
+						console.warn(`Duplicate alias "${alias}" at subcommand "${name}"! (Look at the next "Loading Command" line to see which command is affected.)`);
 					else
 						this.subcommands.set(alias, subcmd);
 				}
@@ -80,16 +98,16 @@ export default class Command
 		}
 		
 		if(this.user && this.user.aliases.length > 0)
-			$.warn(`There are aliases defined for a "user"-type subcommand, but those aliases won't be used. (Look at the next "Loading Command" line to see which command is affected.)`);
+			console.warn(`There are aliases defined for a "user"-type subcommand, but those aliases won't be used. (Look at the next "Loading Command" line to see which command is affected.)`);
 		if(this.number && this.number.aliases.length > 0)
-			$.warn(`There are aliases defined for a "number"-type subcommand, but those aliases won't be used. (Look at the next "Loading Command" line to see which command is affected.)`);
+			console.warn(`There are aliases defined for a "number"-type subcommand, but those aliases won't be used. (Look at the next "Loading Command" line to see which command is affected.)`);
 		if(this.any && this.any.aliases.length > 0)
-			$.warn(`There are aliases defined for an "any"-type subcommand, but those aliases won't be used. (Look at the next "Loading Command" line to see which command is affected.)`);
+			console.warn(`There are aliases defined for an "any"-type subcommand, but those aliases won't be used. (Look at the next "Loading Command" line to see which command is affected.)`);
 	}
 	
-	public execute($: CommonLibrary)
+	public execute($: CommandMenu)
 	{
-		if(isType(this.run, String))
+		if(typeof this.run === "string")
 		{
 			$.channel.send(parseVars(this.run as string, {
 				author: $.author.toString(),
@@ -97,7 +115,7 @@ export default class Command
 			}, "???"));
 		}
 		else
-			(this.run as Function)($).catch($.handler.bind($));
+			this.run($).catch(handler.bind($));
 	}
 	
 	public resolve(param: string): TYPES
@@ -144,7 +162,7 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 	if(commands)
 		return commands;
 	
-	if(process.argv[2] === "dev" && !existsSync("src/commands/test.ts"))
+	if(IS_DEV_MODE && !existsSync("src/commands/test.ts"))
 		writeFile("src/commands/test.ts", template, generateHandler('"test.ts" (testing/template command) successfully generated.'));
 	
 	commands = new Collection();
@@ -161,7 +179,7 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 				continue;
 			
 			const subdir = await ffs.opendir(`dist/commands/${selected.name}`);
-			const category = $(selected.name).toTitleCase();
+			const category = toTitleCase(selected.name);
 			const list: string[] = [];
 			let cmd;
 			
@@ -172,7 +190,7 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 					if(cmd.name === "subcommands")
 						continue;
 					else
-						$.warn(`You can't have multiple levels of directories! From: "dist/commands/${cmd.name}"`);
+						console.warn(`You can't have multiple levels of directories! From: "dist/commands/${cmd.name}"`);
 				}
 				else
 					loadCommand(cmd.name, list, selected.name);
@@ -194,32 +212,32 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 async function loadCommand(filename: string, list: string[], category?: string)
 {
 	if(!commands)
-		return $.error(`Function "loadCommand" was called without first initializing commands!`);
+		return console.error(`Function "loadCommand" was called without first initializing commands!`);
 	
 	const prefix = category ?? "";
 	const header = filename.substring(0, filename.indexOf(".js"));
 	const command = (await import(`../commands/${prefix}/${header}`)).default as Command|undefined;
 	
 	if(!command)
-		return $.warn(`Command "${header}" has no default export which is a Command instance!`);
+		return console.warn(`Command "${header}" has no default export which is a Command instance!`);
 	
 	command.originalCommandName = header;
 	list.push(header);
 	
 	if(commands.has(header))
-		$.warn(`Command "${header}" already exists! Make sure to make each command uniquely identifiable across categories!`);
+		console.warn(`Command "${header}" already exists! Make sure to make each command uniquely identifiable across categories!`);
 	else
 		commands.set(header, command);
 	
 	for(const alias of command.aliases)
 	{
 		if(commands.has(alias))
-			$.warn(`Top-level alias "${alias}" from command "${header}" already exists either as a command or alias!`);
+			console.warn(`Top-level alias "${alias}" from command "${header}" already exists either as a command or alias!`);
 		else
 			commands.set(alias, command);
 	}
 	
-	$.log(`Loading Command: ${header} (${category ? $(category).toTitleCase() : "Miscellaneous"})`);
+	console.log(`Loading Command: ${header} (${category ? toTitleCase(category) : "Miscellaneous"})`);
 }
 
 // The template should be built with a reductionist mentality.
@@ -235,7 +253,7 @@ export default new Command({
 	usage: "",
 	permission: null,
 	aliases: [],
-	async run($: CommonLibrary): Promise<any>
+	async run($): Promise<any>
 	{
 		
 	},
@@ -247,7 +265,7 @@ export default new Command({
 			usage: "",
 			permission: null,
 			aliases: [],
-			async run($: CommonLibrary): Promise<any>
+			async run($): Promise<any>
 			{
 				
 			}
@@ -258,7 +276,7 @@ export default new Command({
 		endpoint: false,
 		usage: "",
 		permission: null,
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
 			
 		}
@@ -268,7 +286,7 @@ export default new Command({
 		endpoint: false,
 		usage: "",
 		permission: null,
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
 			
 		}
@@ -278,7 +296,7 @@ export default new Command({
 		endpoint: false,
 		usage: "",
 		permission: null,
-		async run($: CommonLibrary): Promise<any>
+		async run($): Promise<any>
 		{
 			
 		}

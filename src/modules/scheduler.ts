@@ -1,4 +1,4 @@
-import $, {Random} from "../core/lib";
+import {Random} from "../core/lib";
 import {Stonks} from "../core/structures";
 import {client} from "../index";
 
@@ -30,8 +30,8 @@ class StonksScheduler
 	{
 		this.setBounds();
 		this.scheduled = this.upper + Random.int(0, 300000);
-		$.debug(`Scheduling next iteration for... ${new Date(this.scheduled).toUTCString()}`);
-		$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
+		console.debug(`Scheduling next iteration for... ${new Date(this.scheduled).toUTCString()}`);
+		console.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
 		
 		setTimeout(() => {
 			Stonks.triggerStonks(client);
@@ -68,8 +68,8 @@ class EventScheduler
 	{
 		this.setBounds();
 		this.scheduled = this.upper + Random.int(0, 86400000);
-		$.debug(`Scheduling next event for... ${new Date(this.scheduled).toUTCString()}`);
-		$.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
+		console.debug(`Scheduling next event for... ${new Date(this.scheduled).toUTCString()}`);
+		console.debug(`Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`);
 		
 		setTimeout(() => {
 			Stonks.triggerEvent(client);

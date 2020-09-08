@@ -1,6 +1,5 @@
 import {GuildMember, Permissions} from "discord.js";
 import {Config} from "./structures";
-import $ from "./lib";
 
 export enum PERMISSIONS {NONE, MOD, ADMIN, OWNER, BOT_MECHANIC, BOT_OWNER};
 export const PermissionNames = ["User", "Moderator", "Administrator", "Server Owner", "Bot Mechanic", "Bot Owner"];
@@ -56,5 +55,5 @@ export function getPermissionLevel(member: GuildMember): number
 	
 	// By transitive property, lenNames and lenChecker have to be equal to each other as well.
 	if(length !== lenNames || length !== lenChecker)
-		$.error(`Permission object lengths aren't equal! Enum Length (${length}), Names Length (${lenNames}), and Functions Length (${lenChecker}). This WILL cause problems!`);
+		console.error(`Permission object lengths aren't equal! Enum Length (${length}), Names Length (${lenNames}), and Functions Length (${lenChecker}). This WILL cause problems!`);
 })()

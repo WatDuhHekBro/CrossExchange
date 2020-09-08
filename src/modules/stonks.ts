@@ -1,4 +1,4 @@
-import $, {Random, isType, select, GenericJSON, GenericStructure} from "../core/lib";
+import {Random, isType, select, GenericJSON, GenericStructure, split, pluralise, pluraliseSigned, random} from "../core/lib";
 import {Stonks, Storage} from "../core/structures";
 import {Client, Guild, TextChannel} from "discord.js";
 import {readFileSync as read} from "fs";
@@ -8,7 +8,7 @@ function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: 
 {
 	const sections: object[] = [];
 	// For the stonks board, the maximum allowed fields for embeds is 25, but 24 looks much nicer when it's inline.
-	const tags = $(Object.keys(markets)).split(24);
+	const tags = split(Object.keys(markets), 24);
 	
 	for(const list of tags)
 	{
@@ -19,7 +19,7 @@ function getStonksEmbedArray(markets: {[tag: string]: Market}, latestTimestamp: 
 			const market = markets[tag];
 			fields.push({
 				name: market.title || "N/A",
-				value: `${$(Math.round(market.value)).pluralise("credit", "s")} (${$(market.difference).pluraliseSigned("credit", "s")})`,
+				value: `${pluralise(Math.round(market.value), "credit", "s")} (${pluraliseSigned(market.difference, "credit", "s")})`,
 				inline: true
 			});
 		}
@@ -124,7 +124,7 @@ class Event
 					if(isType(market[0], Number) && isType(market[1], Number))
 						this.effects = data.effects;
 					else
-						$.warn(`Tag "${tag}" of the selected effect is invalid!`, data.effects);
+						console.warn(`Tag "${tag}" of the selected effect is invalid!`, data.effects);
 				}
 			}
 		}
@@ -180,7 +180,7 @@ export class StonksStructure extends GenericStructure
 	
 	public async triggerStonks(client: Client): Promise<any>
 	{
-		$.debug(`Triggered stonks at ${new Date().toUTCString()}.`);
+		console.debug(`Triggered stonks at ${new Date().toUTCString()}.`);
 		
 		for(const tag in this.markets)
 		{
@@ -192,7 +192,7 @@ export class StonksStructure extends GenericStructure
 			
 			if(value <= 0)
 			{
-				$.debug(`Market crash at "${tag}".`);
+				console.debug(`Market crash at "${tag}".`);
 				
 				for(const id in Storage.users)
 				{
@@ -220,18 +220,18 @@ export class StonksStructure extends GenericStructure
 			const guild = client.guilds.cache.get(guildID);
 			
 			if(!guild)
-				return $.warn(`Guild "${guildID}" not found! Ignoring this guild.`);
+				return console.warn(`Guild "${guildID}" not found! Ignoring this guild.`);
 			
 			const container = this.guilds[guildID];
 			const channel = guild.channels.cache.get(container.channel);
 			const stored = container.messages;
 			
 			if(!channel)
-				return $.warn(`Channel "${container.channel}" of guild "${guild.id}" is not a valid channel ID! Ignoring this guild.`);
+				return console.warn(`Channel "${container.channel}" of guild "${guild.id}" is not a valid channel ID! Ignoring this guild.`);
 			if(channel.type !== "text")
-				return $.warn(`Channel "${channel.id}" of guild "${guild.id}" is not a text channel! Ignoring this guild.`);
+				return console.warn(`Channel "${channel.id}" of guild "${guild.id}" is not a text channel! Ignoring this guild.`);
 			if(stored.length !== total)
-				$.warn(`The length of the generated embed (${total}) isn't the same as the total amount of messages provided (${stored.length}). Using the amount of messages provided, meaning some data points might be cut off.`);
+				console.warn(`The length of the generated embed (${total}) isn't the same as the total amount of messages provided (${stored.length}). Using the amount of messages provided, meaning some data points might be cut off.`);
 			
 			const textChannel = channel as TextChannel;
 			
@@ -242,7 +242,7 @@ export class StonksStructure extends GenericStructure
 				textChannel.messages.fetch(messageID).then(message => {
 					message.edit("Market Values", embeds[0]);
 				}).catch(() => {
-					$.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
+					console.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
 				});
 			}
 			else if(stored.length > 1)
@@ -254,7 +254,7 @@ export class StonksStructure extends GenericStructure
 					textChannel.messages.fetch(messageID).then(message => {
 						message.edit(`Market Values (Page ${i+1} of ${stored.length})`, embeds[i]);
 					}).catch(() => {
-						$.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
+						console.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
 					});
 				}
 			}
@@ -264,8 +264,8 @@ export class StonksStructure extends GenericStructure
 	// This will also contain the code that executes an event's instructions because there's no way to keep that contained in the event class itself.
 	public async triggerEvent(client: Client): Promise<any>
 	{
-		$.debug(`Triggered event at ${new Date().toUTCString()}.`);
-		const event = $(StandardEvents).random();
+		console.debug(`Triggered event at ${new Date().toUTCString()}.`);
+		const event = random(StandardEvents);
 		const changes: {[market: string]: number} = {};
 		
 		// Gather a list of changes and apply them to the market.
@@ -297,9 +297,9 @@ export class StonksStructure extends GenericStructure
 			const channel = guild.channels.cache.get(container.channel);
 			
 			if(!channel)
-				return $.warn(`Channel "${container.channel}" of guild "${guild.id}" is not a valid channel ID! Ignoring this guild.`);
+				return console.warn(`Channel "${container.channel}" of guild "${guild.id}" is not a valid channel ID! Ignoring this guild.`);
 			if(channel.type !== "text")
-				return $.warn(`Channel "${channel.id}" of guild "${guild.id}" is not a text channel! Ignoring this guild.`);
+				return console.warn(`Channel "${channel.id}" of guild "${guild.id}" is not a text channel! Ignoring this guild.`);
 			
 			const textChannel = channel as TextChannel;
 			const messageID = container.event;
@@ -307,7 +307,7 @@ export class StonksStructure extends GenericStructure
 			textChannel.messages.fetch(messageID).then(message => {
 				message.edit("Latest Event", embed);
 			}).catch(() => {
-				$.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
+				console.error(`"${messageID}" isn't a valid message ID in channel "${container.channel}", guild "${guild.id}"!`);
 			});
 		}
 	}

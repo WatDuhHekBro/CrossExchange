@@ -1,7 +1,7 @@
 import {Message} from "discord.js";
-import $ from "../core/lib";
 import {Storage} from "../core/structures";
 import {getMoneyEmbed} from "../commands/money";
+import {random} from "../core/lib";
 
 const duolingo = [
 	"Spanish or vanish.",
@@ -66,13 +66,13 @@ export default async function intercept(message: Message)
 	}
 	
 	if(msg.includes("duolingo"))
-		message.channel.send(`${$(duolingo).random()}\n${$(duo).random()}`);
+		message.channel.send(`${random(duolingo)}\n${random(duo)}`);
 	
 	if(msg.includes("oil"))
 		message.channel.send("***DID SOMEONE SAY OIL?!***\nhttps://cdn.discordapp.com/attachments/382973609968271361/730598140910108673/leaCheeseAmerican.png");
 	
 	if(contains(msg, leFrench))
-		for(const emoji of $(french).random())
+		for(const emoji of random(french))
 			await message.react(emoji);
 }
 
