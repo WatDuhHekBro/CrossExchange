@@ -1,8 +1,8 @@
-export * from "./discord";
-export * from "./util";
-export * from "./loader";
-export * from "./permissions";
-export {default as Command} from "./command";
+export * from "./modules/discord";
+export * from "./modules/util";
+export * from "./modules/loader";
+export * from "./modules/permissions";
+export {default as Command} from "./modules/command";
 
 /*export = {
 	...util,

@@ -1,4 +1,4 @@
-import Storage from "../core/storage";
+import Storage from "../../core/storage";
 import path from "path";
 import {Client, Collection} from "discord.js";
 import {promises as ffs} from "fs";
