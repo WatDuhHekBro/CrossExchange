@@ -1,13 +1,11 @@
 import {botHasPermission} from "./discord";
 import {Permissions, TextChannel, DMChannel, NewsChannel} from "discord.js";
 import {parseVars} from "./util";
-import Command from "./command";
+import {Command} from "./command";
 import {hasPermission, getPermissionLevel, getPermissionName} from "./permissions";
 import {getPrefix} from "./dynamic";
-import {client, loadCommands} from "./loader";
-
-// A list of message ID and callback pairs. You get the emote name and ID of the user reacting.
-export const eventListeners: Map<string, (emote: string, id: string) => void> = new Map();
+import {loadCommands} from "./loader";
+import {client, eventListeners} from "./constants";
 
 let currentChannel: TextChannel|DMChannel|NewsChannel|null = null;
 

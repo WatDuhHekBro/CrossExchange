@@ -1,11 +1,8 @@
 import initializeGlobals from "./modules/globals";
 initializeGlobals();
 
-import * as framework from "./framework/index";
-console.debug(framework);
-
-import {client, loadCommands, loadEvents} from "./framework";
 import setup from "./modules/setup";
+import {launch} from "./framework";
 import {Config, Storage} from "./structures";
 import {initializeSchedulers} from "./modules/scheduler";
 import {generateHandler} from "./modules/storage";
@@ -14,59 +11,56 @@ import {Permissions} from "discord.js";
 
 // Begin the command loading here rather than when it's needed like in the message event.
 setup.init().then(() => {
-	loadCommands();
-	loadEvents();
 	initializeSchedulers();
-	client.login(Config.token).catch(setup.again);
-});
-
-framework.launch({
-	permissions: [
+	launch(Config.token, {
+		catch: setup.again,
+		permissions: [
+			{
+				// NONE //
+				name: "User",
+				check: () => true
+			},
+			{
+				// MOD //
+				name: "Moderator",
+				check: (user, member) => !!member && (
+					member.hasPermission(Permissions.FLAGS.MANAGE_ROLES) ||
+					member.hasPermission(Permissions.FLAGS.MANAGE_MESSAGES) ||
+					member.hasPermission(Permissions.FLAGS.KICK_MEMBERS) ||
+					member.hasPermission(Permissions.FLAGS.BAN_MEMBERS)
+				)
+			},
+			{
+				// ADMIN //
+				name: "Administrator",
+				check: (user, member) => !!member && member.hasPermission(Permissions.FLAGS.ADMINISTRATOR)
+			},
+			{
+				// OWNER //
+				name: "Server Owner",
+				check: (user, member) => !!member && (member.guild.ownerID === user.id)
+			},
+			{
+				// BOT_SUPPORT //
+				name: "Bot Support",
+				check: user => Config.support.includes(user.id)
+			},
+			{
+				// BOT_ADMIN //
+				name: "Bot Admin",
+				check: user => Config.admins.includes(user.id)
+			},
+			{
+				// BOT_OWNER //
+				name: "Bot Owner",
+				check: user => Config.owner === user.id
+			}
+		],
+		getPrefix(guild)
 		{
-			// NONE //
-			name: "User",
-			check: () => true
-		},
-		{
-			// MOD //
-			name: "Moderator",
-			check: (user, member) => !!member && (
-				member.hasPermission(Permissions.FLAGS.MANAGE_ROLES) ||
-				member.hasPermission(Permissions.FLAGS.MANAGE_MESSAGES) ||
-				member.hasPermission(Permissions.FLAGS.KICK_MEMBERS) ||
-				member.hasPermission(Permissions.FLAGS.BAN_MEMBERS)
-			)
-		},
-		{
-			// ADMIN //
-			name: "Administrator",
-			check: (user, member) => !!member && member.hasPermission(Permissions.FLAGS.ADMINISTRATOR)
-		},
-		{
-			// OWNER //
-			name: "Server Owner",
-			check: (user, member) => !!member && (member.guild.ownerID === user.id)
-		},
-		{
-			// BOT_SUPPORT //
-			name: "Bot Support",
-			check: user => Config.support.includes(user.id)
-		},
-		{
-			// BOT_ADMIN //
-			name: "Bot Admin",
-			check: user => Config.admins.includes(user.id)
-		},
-		{
-			// BOT_OWNER //
-			name: "Bot Owner",
-			check: user => Config.owner === user.id
+			return (guild && Storage.getGuild(guild.id).prefix) ?? Config.prefix;
 		}
-	],
-	getPrefix(guild)
-	{
-		return (guild && Storage.getGuild(guild.id).prefix) ?? Config.prefix;
-	}
+	});
 });
 
 // The template should be built with a reductionist mentality.

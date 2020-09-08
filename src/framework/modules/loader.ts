@@ -1,17 +1,15 @@
 import path from "path";
-import {Client, Collection} from "discord.js";
+import {Collection} from "discord.js";
 import {promises as ffs, existsSync, mkdirSync, readdirSync} from "fs";
 import {toTitleCase} from "./util";
-import Command from "./command";
+import {Command} from "./command";
+import {categories} from "./constants";
 
-export const client = new Client();
 const BASE_DIR = path.dirname(process.argv[1]);
 const COMMANDS_DIR = path.join(BASE_DIR, "commands");
 const EVENTS_DIR = path.join(BASE_DIR, "events");
 
 let commands: Collection<string, Command>|null = null;
-export const categories: Collection<string, string[]> = new Collection();
-export const aliases: Collection<string, string> = new Collection(); // Top-level aliases only.
 
 /** Returns the cache of the commands if it exists and searches the directory if not. */
 export async function loadCommands(): Promise<Collection<string, Command>>

@@ -1,14 +1,7 @@
 // User-Defined Behavior
 import {User, GuildMember, Guild} from "discord.js";
-
-export let PermissionLevels: PermissionLevel[] = [];
-export let getPrefix: (guild: Guild|null) => string = () => ".";
-
-export function launch(settings?: LaunchSettings)
-{
-	if(settings?.getPrefix)
-		getPrefix = settings.getPrefix;
-}
+import {client} from "./constants";
+import {loadCommands, loadEvents} from "./loader";
 
 interface PermissionLevel
 {
@@ -18,6 +11,19 @@ interface PermissionLevel
 
 interface LaunchSettings
 {
+	catch: (error: Error) => void;
 	permissions?: PermissionLevel[];
 	getPrefix?: (guild: Guild|null) => string;
+}
+
+export let PermissionLevels: PermissionLevel[] = [];
+export let getPrefix: (guild: Guild|null) => string = () => ".";
+
+export function launch(token: string, settings?: LaunchSettings)
+{
+	if(settings?.getPrefix)
+		getPrefix = settings.getPrefix;
+	loadCommands();
+	loadEvents();
+	client.login(token).catch(settings?.catch || console.error);
 }

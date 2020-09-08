@@ -1,6 +1,5 @@
 import {Message, Guild, GuildMember, Permissions} from "discord.js";
-import {eventListeners} from "./events";
-import {client} from "./loader";
+import {client, eventListeners} from "./constants";
 
 export function botHasPermission(guild: Guild|null, permission: number): boolean
 {

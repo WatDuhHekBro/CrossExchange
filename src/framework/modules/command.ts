@@ -44,7 +44,7 @@ interface CommandOptions
 	any?: Command;
 }
 
-export default class Command
+export class Command
 {
 	public readonly description: string;
 	public readonly endpoint: boolean;
