@@ -1,4 +1,4 @@
-import FileManager from "../core/storage";
+import FileManager from "../modules/storage";
 import {watch} from "fs";
 import {ConfigStructure} from "./config";
 import {StorageStructure} from "./storage";

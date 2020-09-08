@@ -1,14 +1,14 @@
-import initializeGlobals from "./globals";
+import initializeGlobals from "./modules/globals";
 initializeGlobals();
 
 import * as framework from "./framework/index";
 console.debug(framework);
 
 import {client, loadCommands, loadEvents} from "./framework";
-import setup from "./setup";
+import setup from "./modules/setup";
 import {Config, Storage} from "./structures";
 import {initializeSchedulers} from "./modules/scheduler";
-import {generateHandler} from "./core/storage";
+import {generateHandler} from "./modules/storage";
 import {existsSync, writeFile, readFileSync} from "fs";
 import {Permissions} from "discord.js";
 

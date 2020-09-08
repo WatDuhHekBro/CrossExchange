@@ -1,4 +1,4 @@
-import FileManager from "../core/storage";
+import FileManager from "../modules/storage";
 
 export interface GenericJSON
 {

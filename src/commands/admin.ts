@@ -1,6 +1,6 @@
 import {Command, getPermissionName, getPermissionLevel} from "../framework";
 import {Config, Storage} from "../structures";
-import {logs} from "../globals";
+import {logs} from "../modules/globals";
 
 function getInterceptMessage(activated: boolean)
 {
