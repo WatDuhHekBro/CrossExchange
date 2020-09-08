@@ -13,7 +13,7 @@ import {Permissions} from "discord.js";
 setup.init().then(() => {
 	initializeSchedulers();
 	launch(Config.token, {
-		catch: setup.again,
+		onFail: setup.again,
 		permissions: [
 			{
 				// NONE //

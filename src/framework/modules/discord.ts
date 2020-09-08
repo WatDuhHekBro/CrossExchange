@@ -52,7 +52,7 @@ export async function paginate(message: Message, senderID: string, total: number
 	eventListeners.delete(message.id);
 	message.reactions.cache.get('⬅️')?.users.remove(message.author);
 	message.reactions.cache.get('➡️')?.users.remove(message.author);
-};
+}
 
 // Waits for the sender to either confirm an action or let it pass (and delete the message).
 export async function prompt(message: Message, senderID: string, onConfirm: () => void, duration = 10000)
@@ -78,7 +78,7 @@ export async function prompt(message: Message, senderID: string, onConfirm: () =
 	
 	if(!isDeleted)
 		message.delete();
-};
+}
 
 export async function getMemberByUsername(guild: Guild, username: string)
 {
@@ -86,7 +86,7 @@ export async function getMemberByUsername(guild: Guild, username: string)
 		query: username,
 		limit: 1
 	})).first();
-};
+}
 
 /** Convenience function to handle false cases automatically. */
 export async function callMemberByUsername(message: Message, username: string, onSuccess: (member: GuildMember) => void)
@@ -105,4 +105,4 @@ export async function callMemberByUsername(message: Message, username: string, o
 	}
 	else
 		send("You must execute this command in a server!");
-};
+}

@@ -3,15 +3,15 @@ import {User, GuildMember, Guild} from "discord.js";
 import {client} from "./constants";
 import {loadCommands, loadEvents} from "./loader";
 
-interface PermissionLevel
+export interface PermissionLevel
 {
 	name: string;
 	check: (user: User, member: GuildMember|null) => boolean;
 }
 
-interface LaunchSettings
+export interface LaunchSettings
 {
-	catch: (error: Error) => void;
+	onFail: (error: Error) => void;
 	permissions?: PermissionLevel[];
 	getPrefix?: (guild: Guild|null) => string;
 }
@@ -25,5 +25,5 @@ export function launch(token: string, settings?: LaunchSettings)
 		getPrefix = settings.getPrefix;
 	loadCommands();
 	loadEvents();
-	client.login(token).catch(settings?.catch || console.error);
+	client.login(token).catch(settings?.onFail || console.error);
 }
