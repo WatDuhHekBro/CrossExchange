@@ -1,4 +1,4 @@
-import {Command, getPermissionName, getPermissionLevel} from "../framework";
+import {Command, getPermissionName, getPermissionLevel} from "onion-lasers";
 import {Config, Storage} from "../structures";
 import {logs} from "../modules/globals";
 

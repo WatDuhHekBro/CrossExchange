@@ -1,4 +1,4 @@
-import {Command, pluralise, prompt, callMemberByUsername} from "../framework";
+import {Command, pluralise, prompt, callMemberByUsername} from "onion-lasers";
 import {Storage} from "../structures";
 import {User} from "discord.js";
 

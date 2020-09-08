@@ -1,4 +1,4 @@
-import {client, random} from "../framework";
+import {client, random} from "onion-lasers";
 import {Storage} from "../structures";
 import {getMoneyEmbed} from "../commands/money";
 

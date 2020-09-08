@@ -1,4 +1,4 @@
-import {Command, loadCommands, categories, getPermissionName} from "../framework";
+import {Command, loadCommands, categories, getPermissionName} from "onion-lasers";
 
 export default new Command({
 	description: "Lists all commands. If a command is specified, their arguments are listed as well.",

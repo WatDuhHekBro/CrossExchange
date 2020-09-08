@@ -1,5 +1,5 @@
 import {GenericJSON, GenericStructure} from "./util";
-import {select} from "../framework";
+import {select} from "onion-lasers";
 
 export class ConfigStructure extends GenericStructure
 {

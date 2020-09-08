@@ -1,5 +1,5 @@
 import {GenericJSON, GenericStructure} from "./util";
-import {isType, select} from "../framework";
+import {isType, select} from "onion-lasers";
 import {StandardMarkets} from "./stonks";
 
 class User

@@ -2,7 +2,7 @@ import initializeGlobals from "./modules/globals";
 initializeGlobals();
 
 import setup from "./modules/setup";
-import {launch} from "./framework";
+import {launch} from "onion-lasers";
 import {Config, Storage} from "./structures";
 import {initializeSchedulers} from "./modules/scheduler";
 import {generateHandler} from "./modules/storage";

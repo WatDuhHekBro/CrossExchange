@@ -1,4 +1,4 @@
-import {Random, isType, select, split, pluralise, pluraliseSigned, random} from "../framework";
+import {Random, isType, select, split, pluralise, pluraliseSigned, random} from "onion-lasers";
 import {GenericJSON, GenericStructure} from "./util"
 import {Stonks, Storage} from ".";
 import {Client, Guild, TextChannel} from "discord.js";

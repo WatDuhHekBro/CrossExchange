@@ -1,4 +1,4 @@
-import {client} from "../framework";
+import {client} from "onion-lasers";
 import {Config} from "../structures";
 
 client.once("ready", () => {
