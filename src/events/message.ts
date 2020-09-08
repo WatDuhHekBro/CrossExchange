@@ -1,10 +1,18 @@
 import {client} from "../index";
 import Command, {loadCommands} from "../core/command";
 import {hasPermission, getPermissionLevel, getPermissionName} from "../core/permissions";
-import {Permissions} from "discord.js";
+import {Permissions, TextChannel, DMChannel, NewsChannel} from "discord.js";
 import {getPrefix} from "../core/structures";
 import intercept from "../modules/intercept";
-import {handler, parseVars} from "../core/lib";
+import {parseVars} from "../core/lib";
+
+let currentChannel: TextChannel|DMChannel|NewsChannel|null = null;
+
+process.on("unhandledRejection", (error: Error|null|undefined) => {
+	if(currentChannel)
+		currentChannel.send(`There was an error while trying to execute that command!\`\`\`${error?.stack ?? error}\`\`\``);
+	console.error(error);
+});
 
 loadCommands().then(commands => {
 	client.on("message", async message => {
@@ -25,6 +33,8 @@ loadCommands().then(commands => {
 		
 		if(!commands.has(header))
 			return;
+		
+		currentChannel = message.channel;
 		
 		if(message.channel.type === "text" && !message.channel.permissionsFor(message.client.user || "")?.has(Permissions.FLAGS.SEND_MESSAGES))
 		{
@@ -102,8 +112,13 @@ loadCommands().then(commands => {
 				member: message.member,
 				message: message
 			};
-			command.run(menu).catch(handler.bind(menu));
+			
+			// This will catch all errors made by awaited functions, however, it will NOT catch regular old promises.
+			// That's why there's process.on("unhandledRejection") above.
+			command.run(menu).catch((error: Error) => {
+				message.channel.send(`There was an error while trying to execute that command!\`\`\`${error.stack ?? error}\`\`\``);
+				console.error(error);
+			});
 		}
 	});
 });
-

@@ -3,19 +3,6 @@ import FileManager from "./storage";
 import {eventListeners} from "../events/messageReactionRemove";
 import {client} from "../index";
 
-// If you use promises, use this function to display the error in chat.
-// Case #1: await $.channel.send(""); --> Automatically caught by Command.execute().
-// Case #2: $.channel.send("").catch($.handler.bind($)); --> Manually caught by the user.
-export function handler(error: Error)
-{
-	if(this)
-		this.channel.send(`There was an error while trying to execute that command!\`\`\`${error.stack ?? error}\`\`\``);
-	else
-		console.warn("No context was attached to $.handler! Make sure to use .catch($.handler.bind($)) or .catch(error => $.handler(error)) instead!");
-	
-	console.error(error);
-};
-
 export function botHasPermission(guild: Guild|null, permission: number): boolean
 {
 	return !!(client.user && guild?.members.resolve(client.user)?.hasPermission(permission))
