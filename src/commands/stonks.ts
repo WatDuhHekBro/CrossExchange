@@ -1,5 +1,5 @@
 import {Command, prompt, callMemberByUsername, pluralise, pluraliseSigned} from "../framework";
-import {Storage, Stonks} from "../core/structures";
+import {Storage, Stonks} from "../structures";
 import {User} from "discord.js";
 
 /**

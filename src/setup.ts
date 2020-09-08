@@ -1,7 +1,7 @@
 import {existsSync as exists} from "fs";
 import inquirer from "inquirer";
 import Storage from "./core/storage";
-import {Config} from "./core/structures";
+import {Config} from "./structures";
 
 // This file is called (or at least should be called) automatically as long as a config file doesn't exist yet.
 // And that file won't be written until the data is successfully initialized.

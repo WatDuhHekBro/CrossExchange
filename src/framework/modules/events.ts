@@ -3,7 +3,7 @@ import {Permissions, TextChannel, DMChannel, NewsChannel} from "discord.js";
 import {parseVars} from "./util";
 import Command from "./command";
 import {hasPermission, getPermissionLevel, getPermissionName} from "./permissions";
-//import {getPrefix} from "../core/structures";
+import {getPrefix} from "./dynamic";
 import {client, loadCommands} from "./loader";
 
 // A list of message ID and callback pairs. You get the emote name and ID of the user reacting.
@@ -23,7 +23,7 @@ loadCommands().then(commands => {
 		if(message.author.bot)
 			return;
 		
-		const prefix = '$'; //getPrefix(message.guild);
+		const prefix = getPrefix(message.guild);
 		
 		if(!message.content.startsWith(prefix))
 		{

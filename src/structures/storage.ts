@@ -1,28 +1,6 @@
-import FileManager from "./storage";
+import {GenericJSON, GenericStructure} from "./util";
 import {isType, select} from "../framework";
-import {GenericJSON, GenericStructure} from "./lib";
-import {watch} from "fs";
-import {StonksStructure, StandardMarkets} from "../modules/stonks";
-import {Guild as DiscordGuild} from "discord.js";
-
-class ConfigStructure extends GenericStructure
-{
-	public token: string;
-	public prefix: string;
-	public owner: string;
-	public admins: string[];
-	public support: string[];
-	
-	constructor(data: GenericJSON)
-	{
-		super("config");
-		this.token = select(data.token, "<ENTER YOUR TOKEN HERE>", String);
-		this.prefix = select(data.prefix, "$", String);
-		this.owner = select(data.owner, "", String);
-		this.admins = select(data.admins, [], String, true);
-		this.support = select(data.support, [], String, true);
-	}
-}
+import {StandardMarkets} from "./stonks";
 
 class User
 {
@@ -67,7 +45,7 @@ class Guild
 	}
 }
 
-class StorageStructure extends GenericStructure
+export class StorageStructure extends GenericStructure
 {
 	public users: {[id: string]: User};
 	public guilds: {[id: string]: Guild};
@@ -118,31 +96,4 @@ class StorageStructure extends GenericStructure
 			return guild;
 		}
 	}
-}
-
-// Exports instances. Don't worry, importing it from different files will load the same instance.
-export let Config = new ConfigStructure(FileManager.read("config"));
-export let Storage = new StorageStructure(FileManager.read("storage"));
-export let Stonks = new StonksStructure(FileManager.read("stonks"));
-
-// This part will allow the user to manually edit any JSON files they want while the program is running which'll update the program's cache.
-// However, fs.watch is a buggy mess that should be avoided in production. While it helps test out stuff for development, it's not a good idea to have it running outside of development as it causes all sorts of issues.
-if(IS_DEV_MODE)
-{
-	watch("data", (event, filename) => {
-		console.debug("File Watcher:", event, filename);
-		const header = filename.substring(0, filename.indexOf(".json"));
-		
-		switch(header)
-		{
-			case "config": Config = new ConfigStructure(FileManager.read("config")); break;
-			case "storage": Storage = new StorageStructure(FileManager.read("storage")); break;
-			case "stonks": Stonks = new StonksStructure(FileManager.read("stonks")); break;
-		}
-	});
-}
-
-export function getPrefix(guild: DiscordGuild|null): string
-{
-	return Storage.getGuild(guild?.id || "N/A").prefix ?? Config.prefix;
 }

@@ -1,5 +1,5 @@
 import {Command, pluralise, prompt, callMemberByUsername} from "../framework";
-import {Storage} from "../core/structures";
+import {Storage} from "../structures";
 import {User} from "discord.js";
 
 export function getMoneyEmbed(user: User): object

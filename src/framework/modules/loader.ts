@@ -1,12 +1,13 @@
-import Storage from "../../core/storage";
 import path from "path";
 import {Client, Collection} from "discord.js";
-import {promises as ffs} from "fs";
+import {promises as ffs, existsSync, mkdirSync, readdirSync} from "fs";
 import {toTitleCase} from "./util";
 import Command from "./command";
 
 export const client = new Client();
 const BASE_DIR = path.dirname(process.argv[1]);
+const COMMANDS_DIR = path.join(BASE_DIR, "commands");
+const EVENTS_DIR = path.join(BASE_DIR, "events");
 
 let commands: Collection<string, Command>|null = null;
 export const categories: Collection<string, string[]> = new Collection();
@@ -19,7 +20,7 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 		return commands;
 	
 	commands = new Collection();
-	const dir = await ffs.opendir("dist/commands");
+	const dir = await ffs.opendir(COMMANDS_DIR);
 	const listMisc: string[] = [];
 	let selected;
 	
@@ -31,7 +32,7 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 			if(selected.name === "subcommands")
 				continue;
 			
-			const subdir = await ffs.opendir(`dist/commands/${selected.name}`);
+			const subdir = await ffs.opendir(path.join(COMMANDS_DIR, selected.name));
 			const category = toTitleCase(selected.name);
 			const list: string[] = [];
 			let cmd;
@@ -43,7 +44,7 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 					if(cmd.name === "subcommands")
 						continue;
 					else
-						console.warn(`You can't have multiple levels of directories! From: "dist/commands/${cmd.name}"`);
+						console.warn(`You can't have multiple levels of directories! From: "${path.join(COMMANDS_DIR, cmd.name)}"`);
 				}
 				else
 					loadCommand(cmd.name, list, selected.name);
@@ -64,14 +65,12 @@ export async function loadCommands(): Promise<Collection<string, Command>>
 
 export function loadEvents()
 {
-	const eventsDir = path.join(BASE_DIR, "events");
-	
-	for(const file of Storage.open(eventsDir, (filename: string) => filename.endsWith(".js")))
+	for(const file of open(EVENTS_DIR, (filename: string) => filename.endsWith(".js")))
 	{
 		const header = file.substring(0, file.indexOf(".js"));
 		console.log(`Loading Event: ${header}`);
 		
-		import(path.join(eventsDir, header)).then(() => {
+		import(path.join(EVENTS_DIR, header)).then(() => {
 			console.log(`Event ${header} successfully loaded!`);
 		}).catch(() => {
 			console.error(`Event ${header} failed to load!`);
@@ -87,7 +86,7 @@ async function loadCommand(filename: string, list: string[], category?: string)
 	
 	const prefix = category ?? "";
 	const header = filename.substring(0, filename.indexOf(".js"));
-	const command = (await import(`../commands/${prefix}/${header}`)).default as Command|undefined;
+	const command = (await import(path.join(COMMANDS_DIR, prefix, header))).default as Command|undefined;
 	
 	if(!command)
 		return console.warn(`Command "${header}" has no default export which is a Command instance!`);
@@ -109,4 +108,17 @@ async function loadCommand(filename: string, list: string[], category?: string)
 	}
 	
 	console.log(`Loading Command: ${header} (${category ? toTitleCase(category) : "Miscellaneous"})`);
+}
+
+function open(path: string, filter?: (value: string, index: number, array: string[]) => unknown): string[]
+{
+	if(!existsSync(path))
+		mkdirSync(path);
+	
+	let directory = readdirSync(path);
+	
+	if(filter)
+		directory = directory.filter(filter);
+	
+	return directory;
 }

@@ -1,5 +1,5 @@
 import {client, random} from "../framework";
-import {Storage} from "../core/structures";
+import {Storage} from "../structures";
 import {getMoneyEmbed} from "../commands/money";
 
 const duolingo = [

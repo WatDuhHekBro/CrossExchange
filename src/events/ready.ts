@@ -1,5 +1,5 @@
 import {client} from "../framework";
-import {Config} from "../core/structures";
+import {Config} from "../structures";
 
 client.once("ready", () => {
 	if(client.user)
