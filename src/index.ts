@@ -11,8 +11,8 @@ export const client = new Client();
 
 // Begin the command loading here rather than when it's needed like in the message event.
 setup.init().then(() => {
-	loadCommands();
-	loadEvents(client);
-	initializeSchedulers();
-	client.login(Config.token).catch(setup.again);
+    loadCommands();
+    loadEvents(client);
+    initializeSchedulers();
+    client.login(Config.token).catch(setup.again);
 });
