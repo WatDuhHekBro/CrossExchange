@@ -1,7 +1,7 @@
-import {Message} from "discord.js";
-import $ from "../core/lib";
-import {Storage} from "../core/structures";
+import {client} from "../index";
+import {Storage} from "../structures";
 import {getMoneyEmbed} from "../commands/money";
+import {random} from "../lib";
 
 const duolingo = [
     "Spanish or vanish.",
@@ -42,8 +42,8 @@ const leFrench = [
     "monsieur"
 ];
 
-export default async function intercept(message: Message) {
-    if (!Storage.getGuild(message.guild?.id || "N/A").intercept) return;
+client.on("message", async (message) => {
+    if (message.author.bot || !Storage.getGuild(message.guild?.id || "N/A").intercept) return;
 
     const msg = message.content.toLowerCase();
 
@@ -57,15 +57,15 @@ export default async function intercept(message: Message) {
         message.channel.send("Don't uwu, 350 credit penalty.", getMoneyEmbed(message.author));
     }
 
-    if (msg.includes("duolingo")) message.channel.send(`${$(duolingo).random()}\n${$(duo).random()}`);
+    if (msg.includes("duolingo")) message.channel.send(`${random(duolingo)}\n${random(duo)}`);
 
     if (msg.includes("oil"))
         message.channel.send(
             "***DID SOMEONE SAY OIL?!***\nhttps://cdn.discordapp.com/attachments/382973609968271361/730598140910108673/leaCheeseAmerican.png"
         );
 
-    if (contains(msg, leFrench)) for (const emoji of $(french).random()) await message.react(emoji);
-}
+    if (contains(msg, leFrench)) for (const emoji of random(french)) await message.react(emoji);
+});
 
 function contains(str: string, array: string[]) {
     for (let entry of array) if (str.includes(entry)) return true;

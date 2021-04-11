@@ -1,8 +1,25 @@
-import {existsSync as exists} from "fs";
+import {existsSync as exists, readFileSync as read, writeFile as write} from "fs";
 import inquirer from "inquirer";
-import Storage from "./core/storage";
-import {Config} from "./core/structures";
-import $, {setConsoleActivated} from "./core/lib";
+import Storage, {generateHandler} from "./storage";
+import {Config} from "../structures";
+
+// Generate template while in dev mode.
+if (IS_DEV_MODE && !exists("src/commands/test.ts")) {
+    write(
+        "src/commands/test.ts",
+        read("src/commands/template.ts"),
+        generateHandler('"test.ts" (testing/template command) successfully generated.')
+    );
+}
+
+// A generic process handler is set to catch unhandled rejections other than the ones from Lavalink and Discord.
+process.on("unhandledRejection", (reason: any) => {
+    const isDiscordError = reason?.name === "DiscordAPIError";
+
+    if (!isDiscordError) {
+        console.error(reason.stack);
+    }
+});
 
 // This file is called (or at least should be called) automatically as long as a config file doesn't exist yet.
 // And that file won't be written until the data is successfully initialized.
@@ -46,8 +63,19 @@ export default {
     },
     /** Prompt the user to set their token again. */
     async again() {
-        $.error("It seems that the token you provided is invalid.");
-        setConsoleActivated(false);
+        console.error("It seems that the token you provided is invalid.");
+
+        // Deactivate the console //
+        const oldConsole = console;
+        console = {
+            ...oldConsole,
+            log() {},
+            warn() {},
+            error() {},
+            debug() {},
+            ready() {}
+        };
+
         const answers = await inquirer.prompt(prompts.slice(0, 1));
         Config.token = answers.token as string;
         Config.save(false);

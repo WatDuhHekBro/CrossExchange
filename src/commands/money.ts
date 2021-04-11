@@ -1,6 +1,6 @@
-import Command from "../core/command";
-import $, {CommonLibrary} from "../core/lib";
-import {Storage} from "../core/structures";
+import {Command, NamedCommand, RestCommand, getMemberByName, CHANNEL_TYPE, confirm} from "onion-lasers";
+import {pluralise} from "../lib";
+import {Storage} from "../structures";
 import {User} from "discord.js";
 
 export function getMoneyEmbed(user: User): object {
@@ -19,11 +19,11 @@ export function getMoneyEmbed(user: User): object {
             fields: [
                 {
                     name: "Balance",
-                    value: $(profile.money).pluralise("credit", "s")
+                    value: pluralise(profile.money, "credit", "s")
                 },
                 {
                     name: "uwuing Penalties",
-                    value: $(profile.penalties * 350).pluralise("credit", "s")
+                    value: pluralise(profile.penalties * 350, "credit", "s")
                 }
             ]
         }
@@ -42,18 +42,15 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object {
                 })
             },
             title: "Transaction",
-            description: `${sender.toString()} has sent ${$(amount).pluralise(
-                "credit",
-                "s"
-            )} to ${receiver.toString()}!`,
+            description: `${sender} has sent ${pluralise(amount, "credit", "s")} to ${receiver}!`,
             fields: [
                 {
-                    name: `Sender: ${sender.username}#${sender.discriminator}`,
-                    value: $(Storage.getUser(sender.id).money).pluralise("credit", "s")
+                    name: `Sender: ${sender.tag}`,
+                    value: pluralise(Storage.getUser(sender.id).money, "credit", "s")
                 },
                 {
-                    name: `Receiver: ${receiver.username}#${receiver.discriminator}`,
-                    value: $(Storage.getUser(receiver.id).money).pluralise("credit", "s")
+                    name: `Receiver: ${receiver.tag}`,
+                    value: pluralise(Storage.getUser(receiver.id).money, "credit", "s")
                 }
             ],
             footer: {
@@ -67,34 +64,34 @@ function getSendEmbed(sender: User, receiver: User, amount: number): object {
     };
 }
 
-export default new Command({
+export default new NamedCommand({
     description: "See how much money you have. Also provides other commands related to money.",
-    async run($: CommonLibrary): Promise<any> {
-        $.channel.send(getMoneyEmbed($.author));
+    async run({send, author}) {
+        send(getMoneyEmbed(author));
     },
     subcommands: {
-        get: new Command({
+        get: new NamedCommand({
             description:
                 "Pick up your daily credits. The cooldown is per user and every 22 hours to allow for some leeway.",
-            async run($: CommonLibrary): Promise<any> {
-                const user = Storage.getUser($.author.id);
+            async run({send, author}) {
+                const user = Storage.getUser(author.id);
                 const now = Date.now();
 
                 if (user.lastReceived === -1) {
                     user.money = 100;
                     user.lastReceived = now;
                     Storage.save();
-                    $.channel.send(
+                    send(
                         "Here's 100 credits to get started, the price of a sandwich in Rookie Harbor.",
-                        getMoneyEmbed($.author)
+                        getMoneyEmbed(author)
                     );
                 } else if (now - user.lastReceived >= 79200000) {
                     user.money += 25;
                     user.lastReceived = now;
                     Storage.save();
-                    $.channel.send("Here's your daily 25 credits.", getMoneyEmbed($.author));
+                    send("Here's your daily 25 credits.", getMoneyEmbed(author));
                 } else
-                    $.channel.send(
+                    send(
                         `It's too soon to pick up your daily credits. You have about ${(
                             (user.lastReceived + 79200000 - now) /
                             3600000
@@ -102,85 +99,67 @@ export default new Command({
                     );
             }
         }),
-        send: new Command({
+        send: new NamedCommand({
             description: "Send money to someone.",
             usage: "<user> <amount>",
             run: "Who are you sending this money to?",
+            id: "user",
             user: new Command({
                 run: "You need to enter an amount you're sending!",
                 number: new Command({
-                    async run($: CommonLibrary): Promise<any> {
-                        const amount = Math.floor($.args[1]);
-                        const author = $.author;
+                    async run({send, author, args}) {
+                        const amount = Math.floor(args[1]);
                         const sender = Storage.getUser(author.id);
-                        const target = $.args[0];
+                        const target = args[0];
                         const receiver = Storage.getUser(target.id);
 
-                        if (amount <= 0) return $.channel.send("You must send at least one credit!");
+                        if (amount <= 0) return send("You must send at least one credit!");
                         else if (sender.money < amount)
-                            return $.channel.send("You don't have enough money to do that!", getMoneyEmbed(author));
-                        else if (target.id === author.id) return $.channel.send("You can't send money to yourself!");
-                        else if (target.bot && process.argv[2] !== "dev")
-                            return $.channel.send("You can't send money to a bot!");
+                            return send("You don't have enough money to do that!", getMoneyEmbed(author));
+                        else if (target.id === author.id) return send("You can't send money to yourself!");
+                        else if (target.bot && !IS_DEV_MODE) return send("You can't send money to a bot!");
 
                         sender.money -= amount;
                         receiver.money += amount;
                         Storage.save();
-                        $.channel.send(getSendEmbed(author, target, amount));
+                        return send(getSendEmbed(author, target, amount));
                     }
                 })
             }),
             number: new Command({
                 run: "You must use the format `money send <user> <amount>`!"
             }),
-            any: new Command({
-                async run($: CommonLibrary): Promise<any> {
-                    const last = $.args.pop();
+            any: new RestCommand({
+                channelType: CHANNEL_TYPE.GUILD,
+                async run({send, guild, author, args}) {
+                    const last = args.pop();
 
-                    if (!/\d+/g.test(last) && $.args.length === 0)
-                        return $.channel.send("You need to enter an amount you're sending!");
+                    if (!/\d+/g.test(last) && args.length === 0)
+                        return send("You need to enter an amount you're sending!");
 
                     const amount = Math.floor(last);
-                    const author = $.author;
                     const sender = Storage.getUser(author.id);
 
-                    if (amount <= 0) return $.channel.send("You must send at least one credit!");
+                    if (amount <= 0) return send("You must send at least one credit!");
                     else if (sender.money < amount)
-                        return $.channel.send("You don't have enough money to do that!", getMoneyEmbed(author));
-                    else if (!$.guild)
-                        return $.channel.send(
-                            "You have to use this in a server if you want to send money with a username!"
-                        );
+                        return send("You don't have enough money to do that!", getMoneyEmbed(author));
 
-                    const username = $.args.join(" ");
-                    const member = (
-                        await $.guild.members.fetch({
-                            query: username,
-                            limit: 1
-                        })
-                    ).first();
-
-                    if (!member)
-                        return $.channel.send(
-                            `Couldn't find a user by the name of \`${username}\`! If you want to send money to someone in a different server, you have to use their user ID!`
-                        );
-                    else if (member.user.id === author.id) return $.channel.send("You can't send money to yourself!");
-                    else if (member.user.bot && process.argv[2] !== "dev")
-                        return $.channel.send("You can't send money to a bot!");
+                    const username = args.join(" ");
+                    const member = await getMemberByName(guild!, username);
+                    if (typeof member === "string") return send(member);
+                    else if (member.user.id === author.id) return send("You can't send money to yourself!");
+                    else if (member.user.bot && !IS_DEV_MODE) return send("You can't send money to a bot!");
 
                     const target = member.user;
 
-                    $.prompt(
-                        await $.channel.send(
-                            `Are you sure you want to send ${$(amount).pluralise(
-                                "credit",
-                                "s"
-                            )} to this person?\n*(This message will automatically be deleted after 10 seconds.)*`,
+                    const confirmed = await confirm(
+                        await send(
+                            `Are you sure you want to send ${pluralise(amount, "credit", "s")} to this person?`,
                             {
                                 embed: {
                                     color: "#ffff00",
                                     author: {
-                                        name: `${target.username}#${target.discriminator}`,
+                                        name: target.tag,
                                         icon_url: target.displayAvatarURL({
                                             format: "png",
                                             dynamic: true
@@ -189,21 +168,24 @@ export default new Command({
                                 }
                             }
                         ),
-                        $.author.id,
-                        () => {
-                            const receiver = Storage.getUser(target.id);
-                            sender.money -= amount;
-                            receiver.money += amount;
-                            Storage.save();
-                            $.channel.send(getSendEmbed(author, target, amount));
-                        }
+                        author.id
                     );
+
+                    if (confirmed) {
+                        const receiver = Storage.getUser(target.id);
+                        sender.money -= amount;
+                        receiver.money += amount;
+                        Storage.save();
+                        send(getSendEmbed(author, target, amount));
+                    }
+
+                    return;
                 }
             })
         }),
-        leaderboard: new Command({
+        leaderboard: new NamedCommand({
             description: "See the richest players tracked by this bot (across servers).",
-            async run($: CommonLibrary): Promise<any> {
+            async run({send, client}) {
                 const users = Storage.users;
                 const ids = Object.keys(users);
                 ids.sort((a, b) => users[b].money - users[a].money);
@@ -211,15 +193,15 @@ export default new Command({
 
                 for (let i = 0, limit = Math.min(10, ids.length); i < limit; i++) {
                     const id = ids[i];
-                    const user = await $.client.users.fetch(id);
+                    const user = await client.users.fetch(id);
 
                     fields.push({
-                        name: `#${i + 1}. ${user.username}#${user.discriminator}`,
-                        value: $(users[id].money).pluralise("credit", "s")
+                        name: `#${i + 1}. ${user.tag}`,
+                        value: pluralise(users[id].money, "credit", "s")
                     });
                 }
 
-                $.channel.send({
+                send({
                     embed: {
                         title: "Top 10 Richest Players",
                         color: "#ffff00",
@@ -228,43 +210,46 @@ export default new Command({
                 });
             }
         }),
-        set: new Command({
+        set: new NamedCommand({
             description: "Forcefully sets someone's amount of money.",
-            permission: Command.PERMISSIONS.BOT_OWNER,
+            permission: PERMISSIONS.BOT_OWNER,
             usage: "<amount> (<user>)",
             run: "You need to enter in the amount of money to set.",
             number: new Command({
-                async run($: CommonLibrary): Promise<any> {
-                    const userObject = $.author;
+                async run({send, author, args}) {
+                    const userObject = author;
                     const user = Storage.getUser(userObject.id);
-                    user.money = $.args[0];
+                    user.money = args[0];
                     Storage.save();
-                    $.channel.send(`This is ${userObject}'s new amount of money.`, getMoneyEmbed(userObject));
+                    send(`This is ${userObject}'s new amount of money.`, getMoneyEmbed(userObject));
                 },
+                id: "user",
                 user: new Command({
-                    async run($: CommonLibrary): Promise<any> {
-                        const userObject = $.args[1];
+                    async run({send, args}) {
+                        const userObject = args[1];
                         const user = Storage.getUser(userObject.id);
-                        user.money = $.args[0];
+                        user.money = args[0];
                         Storage.save();
-                        $.channel.send(`This is ${userObject}'s new amount of money.`, getMoneyEmbed(userObject));
+                        send(`This is ${userObject}'s new amount of money.`, getMoneyEmbed(userObject));
                     }
                 })
             })
         })
     },
+    id: "user",
     user: new Command({
         description: "See how much money someone else has by using their user ID or pinging them.",
-        async run($: CommonLibrary): Promise<any> {
-            $.channel.send(getMoneyEmbed($.args[0]));
+        async run({send, args}) {
+            send(getMoneyEmbed(args[0]));
         }
     }),
-    any: new Command({
+    any: new RestCommand({
         description: "See how much money someone else has by using their username.",
-        async run($: CommonLibrary): Promise<any> {
-            $.callMemberByUsername($.message, $.args.join(" "), (member) => {
-                $.channel.send(getMoneyEmbed(member.user));
-            });
+        channelType: CHANNEL_TYPE.GUILD,
+        async run({send, guild, combined}) {
+            const member = await getMemberByName(guild!, combined);
+            if (typeof member !== "string") send(getMoneyEmbed(member.user));
+            else send(member);
         }
     })
 });

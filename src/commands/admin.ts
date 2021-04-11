@@ -1,7 +1,6 @@
-import Command from "../core/command";
-import {CommonLibrary, logs} from "../core/lib";
-import {Config, Storage} from "../core/structures";
-import {PermissionNames, getPermissionLevel} from "../core/permissions";
+import {Command, NamedCommand, CHANNEL_TYPE, getPermissionLevel, getPermissionName} from "onion-lasers";
+import {Config, Storage} from "../structures";
+import {logs} from "../modules/globals";
 
 function getInterceptMessage(activated: boolean) {
     if (activated) return "I am now intercepting messages.";
@@ -19,89 +18,84 @@ function getLogBuffer(type: string) {
     };
 }
 
-export default new Command({
+export default new NamedCommand({
     description:
         "An all-in-one command to do admin stuff. You need to be either an admin of the server or one of the bot's mechanics to use this command.",
-    async run($: CommonLibrary): Promise<any> {
-        if (!$.member)
-            return $.channel.send(
-                "Couldn't find a member object for you! Did you make sure you used this in a server?"
-            );
-        const permLevel = getPermissionLevel($.member);
-        $.channel.send(
-            `${$.author.toString()}, your permission level is \`${PermissionNames[permLevel]}\` (${permLevel}).`
-        );
+    async run({send, author, member}) {
+        const permLevel = getPermissionLevel(author, member);
+        send(`${author}, your permission level is \`${getPermissionName(permLevel)}\` (${permLevel}).`);
     },
     subcommands: {
-        set: new Command({
+        set: new NamedCommand({
             description: "Set different per-guild settings for the bot.",
-            permission: Command.PERMISSIONS.ADMIN,
+            permission: PERMISSIONS.ADMIN,
+            channelType: CHANNEL_TYPE.GUILD,
             run: "You have to specify the option you want to set.",
             subcommands: {
-                prefix: new Command({
+                prefix: new NamedCommand({
                     description: "Set a custom prefix for your guild. Removes your custom prefix if none is provided.",
                     usage: "(<prefix>)",
-                    async run($: CommonLibrary): Promise<any> {
-                        Storage.getGuild($.guild?.id || "N/A").prefix = null;
+                    async run({send, guild}) {
+                        Storage.getGuild(guild!.id).prefix = null;
                         Storage.save();
-                        $.channel.send(
+                        send(
                             `The custom prefix for this guild has been removed. My prefix is now back to \`${Config.prefix}\`.`
                         );
                     },
                     any: new Command({
-                        async run($: CommonLibrary): Promise<any> {
-                            Storage.getGuild($.guild?.id || "N/A").prefix = $.args[0];
+                        async run({send, guild, args}) {
+                            Storage.getGuild(guild!.id).prefix = args[0];
                             Storage.save();
-                            $.channel.send(`The custom prefix for this guild is now \`${$.args[0]}\`.`);
+                            send(`The custom prefix for this guild is now \`${args[0]}\`.`);
                         }
                     })
                 }),
-                intercept: new Command({
+                intercept: new NamedCommand({
                     description:
                         'Disable the bot from doing stuff when non-command messages are sent. This is stuff like if you say "oil" or "duolingo" in chat. Toggles the option if none is selected.',
                     usage: "(<on/off>)",
-                    async run($: CommonLibrary): Promise<any> {
-                        const guild = Storage.getGuild($.guild?.id || "N/A");
-                        guild.intercept = !guild.intercept;
+                    async run({send, guild}) {
+                        const guildStorage = Storage.getGuild(guild!.id);
+                        guildStorage.intercept = !guildStorage.intercept;
                         Storage.save();
-                        $.channel.send(getInterceptMessage(guild.intercept));
+                        send(getInterceptMessage(guildStorage.intercept));
                     },
                     subcommands: {
-                        on: new Command({
-                            async run($: CommonLibrary): Promise<any> {
-                                Storage.getGuild($.guild?.id || "N/A").intercept = true;
+                        on: new NamedCommand({
+                            async run({send, guild}) {
+                                Storage.getGuild(guild!.id).intercept = true;
                                 Storage.save();
-                                $.channel.send(getInterceptMessage(true));
+                                send(getInterceptMessage(true));
                             }
                         }),
-                        off: new Command({
-                            async run($: CommonLibrary): Promise<any> {
-                                Storage.getGuild($.guild?.id || "N/A").intercept = false;
+                        off: new NamedCommand({
+                            async run({send, guild}) {
+                                Storage.getGuild(guild!.id).intercept = false;
                                 Storage.save();
-                                $.channel.send(getInterceptMessage(false));
+                                send(getInterceptMessage(false));
                             }
                         })
                     }
                 })
             }
         }),
-        diag: new Command({
+        diag: new NamedCommand({
             description: 'Requests a debug log with the "info" verbosity level.',
-            permission: Command.PERMISSIONS.BOT_MECHANIC,
-            async run($: CommonLibrary): Promise<any> {
-                $.channel.send(getLogBuffer("info"));
+            permission: PERMISSIONS.BOT_MECHANIC,
+            async run({send}) {
+                send(getLogBuffer("info"));
             },
             any: new Command({
                 description: `Select a verbosity to listen to. Available levels: \`[${Object.keys(logs).join(", ")}]\``,
-                async run($: CommonLibrary): Promise<any> {
-                    const type = $.args[0];
+                async run({send, args}) {
+                    const type = args[0];
 
-                    if (type in logs) $.channel.send(getLogBuffer(type));
+                    if (type in logs) send(getLogBuffer(type));
                     else
-                        $.channel.send(
+                        send(
                             `Couldn't find a verbosity level named \`${type}\`! The available types are \`[${Object.keys(
                                 logs
-                            )}]\`.`
+                            ).join(", ")}]\`.`
                         );
                 }
             })

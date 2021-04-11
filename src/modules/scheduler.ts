@@ -1,5 +1,5 @@
-import $, {Random} from "../core/lib";
-import {Stonks} from "../core/structures";
+import {Random} from "../lib";
+import {Stonks} from "../structures";
 import {client} from "../index";
 
 /** Execute at some point in time during every 5 minute time frame. */
@@ -26,8 +26,8 @@ class StonksScheduler {
     private activate() {
         this.setBounds();
         this.scheduled = this.upper + Random.int(0, 300000);
-        $.debug(`Scheduling next iteration for... ${new Date(this.scheduled).toUTCString()}`);
-        $.debug(
+        console.debug(`Scheduling next iteration for... ${new Date(this.scheduled).toUTCString()}`);
+        console.debug(
             `Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`
         );
 
@@ -62,8 +62,8 @@ class EventScheduler {
     private activate() {
         this.setBounds();
         this.scheduled = this.upper + Random.int(0, 86400000);
-        $.debug(`Scheduling next event for... ${new Date(this.scheduled).toUTCString()}`);
-        $.debug(
+        console.debug(`Scheduling next event for... ${new Date(this.scheduled).toUTCString()}`);
+        console.debug(
             `Lower Bound: ${new Date(this.lower).toUTCString()}, Upper Bound: ${new Date(this.upper).toUTCString()}`
         );
 
@@ -74,7 +74,5 @@ class EventScheduler {
     }
 }
 
-export function initializeSchedulers() {
-    new StonksScheduler();
-    new EventScheduler();
-}
+new StonksScheduler();
+new EventScheduler();
