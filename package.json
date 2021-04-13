@@ -16,7 +16,7 @@
         "chalk": "^4.1.0",
         "discord.js": "^12.5.3",
         "inquirer": "^8.0.0",
-        "onion-lasers": "file:onion-lasers-1.0.0.tgz"
+        "onion-lasers": "^1.0.0"
     },
     "devDependencies": {
         "@types/inquirer": "^7.3.1",

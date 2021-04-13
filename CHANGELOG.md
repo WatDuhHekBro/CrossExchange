@@ -1,3 +1,6 @@
+# 1.2.0
+- Moved command handler code to [Onion Lasers](https://github.com/WatDuhHekBro/OnionLasers).
+
 # 1.1.3
 - Added documentation.
 - Modified the `Command` class' typings.
