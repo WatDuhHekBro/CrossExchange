@@ -1,16 +1,7 @@
-import {existsSync as exists, readFileSync as read, writeFile as write} from "fs";
+import {existsSync as exists} from "fs";
 import inquirer from "inquirer";
-import Storage, {generateHandler} from "./storage";
+import Storage from "./storage";
 import {Config} from "../structures";
-
-// Generate template while in dev mode.
-if (IS_DEV_MODE && !exists("src/commands/test.ts")) {
-    write(
-        "src/commands/test.ts",
-        read("src/commands/template.ts"),
-        generateHandler('"test.ts" (testing/template command) successfully generated.')
-    );
-}
 
 // A generic process handler is set to catch unhandled rejections other than the ones from Lavalink and Discord.
 process.on("unhandledRejection", (reason: any) => {

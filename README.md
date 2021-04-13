@@ -1,5 +1,5 @@
 # CrossExchange
-Yet another Discord bot. This time, a CrossCode-themed stock market.
+Yet another Discord bot. This time, a CrossCode-themed stock market. Uses the [Onion Lasers Command Handler](https://github.com/WatDuhHekBro/OnionLasers).
 
 # Getting Started
 1. `npm install`
@@ -9,9 +9,8 @@ Yet another Discord bot. This time, a CrossCode-themed stock market.
 # Getting Started (Developers)
 1. `npm install`
 2. `npm run dev`
-3. Familiarize yourself with the [project's structure](docs/Documentation.md).
-4. Make sure to avoid using `npm run build`! This will remove all your dev dependencies (in order to reduce space used). Instead, use `npm run once` to compile and build in non-dev mode.
-5. Begin developing.
+
+*Note: Make sure to avoid using `npm run build`! This will remove all your dev dependencies (in order to reduce space used). Instead, use `npm run once` to compile and build in non-dev mode.*
 
 ## Don't forget to...
 - ...update the [changelog](docs/CHANGELOG.md) and any other necessary docs.
