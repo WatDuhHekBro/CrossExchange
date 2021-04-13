@@ -44,7 +44,6 @@ const leFrench = [
 
 client.on("message", async (message) => {
     if (message.author.bot || !Storage.getGuild(message.guild?.id || "N/A").intercept) return;
-
     const msg = message.content.toLowerCase();
 
     if (msg.includes("uwu") || msg.includes("owo")) {
@@ -57,9 +56,9 @@ client.on("message", async (message) => {
         message.channel.send("Don't uwu, 350 credit penalty.", getMoneyEmbed(message.author));
     }
 
-    if (msg.includes("duolingo")) message.channel.send(`${random(duolingo)}\n${random(duo)}`);
+    if (/\bduolingo\b/.test(msg)) message.channel.send(`${random(duolingo)}\n${random(duo)}`);
 
-    if (msg.includes("oil"))
+    if (/\boil\b/.test(msg))
         message.channel.send(
             "***DID SOMEONE SAY OIL?!***\nhttps://cdn.discordapp.com/attachments/382973609968271361/730598140910108673/leaCheeseAmerican.png"
         );
@@ -68,6 +67,6 @@ client.on("message", async (message) => {
 });
 
 function contains(str: string, array: string[]) {
-    for (let entry of array) if (str.includes(entry)) return true;
+    for (const entry of array) if (new RegExp(`\\b${entry}\\b`).test(str)) return true;
     return false;
 }
