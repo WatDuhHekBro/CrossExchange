@@ -1,5 +1,6 @@
 # 1.2.0
 - Moved command handler code to [Onion Lasers](https://github.com/WatDuhHekBro/OnionLasers).
+- Improved intercept searching.
 
 # 1.1.3
 - Added documentation.
